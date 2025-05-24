@@ -49,7 +49,7 @@ This will publish the views to `resources/views/vendor/payment-gateway/` where y
 php artisan db:seed --class="Database\Seeders\PaymentMethodSeeder"
 ```
 
-## Usage
+## Basic Usage
 
 ### Creating a Payment Order
 
@@ -73,7 +73,24 @@ $paymentUrl = PaymentGateway::getPaymentUrl($paymentOrder);
 return redirect($paymentUrl);
 ```
 
-### Creating a Custom Payment Plugin
+### Alternative Direct Model Usage
+
+```php
+use Trinavo\PaymentGateway\Models\PaymentOrder;
+
+$paymentOrder = PaymentOrder::create([
+    'amount' => 100.00,
+    'currency' => 'USD',
+    'customer_name' => 'John Doe',
+    'customer_email' => 'john@example.com',
+    'description' => 'Order #12345',
+]);
+
+// Redirect to checkout
+return redirect("/payment-gateway/checkout/{$paymentOrder->order_code}");
+```
+
+## Creating a Custom Payment Plugin
 
 1. Create a class that implements `PaymentPluginInterface`:
 
@@ -199,8 +216,8 @@ This will publish the views to `resources/views/vendor/payment-gateway/` where y
 
 The package includes built-in support for English and Arabic. Language files are located in:
 
-- `resources/lang/en/messages.php` - English translations
-- `resources/lang/ar/messages.php` - Arabic translations
+- `lang/en.json` - English translations
+- `lang/ar.json` - Arabic translations
 
 You can add more languages by creating additional language files following the same structure.
 
@@ -214,7 +231,7 @@ The package includes a dummy payment plugin for testing purposes. It provides bu
 
 ## API Reference
 
-### PaymentGatewayService Methods
+### PaymentGateway Facade Methods
 
 - `createPaymentOrder(array $data): PaymentOrder` - Create a new payment order
 - `getPaymentUrl(PaymentOrder $order): string` - Get checkout URL for an order
@@ -222,14 +239,16 @@ The package includes a dummy payment plugin for testing purposes. It provides bu
 - `processPayment(PaymentOrder $order, PaymentMethod $method)` - Process payment
 - `handlePaymentSuccess(PaymentOrder $order, array $data)` - Handle successful payment
 - `handlePaymentFailure(PaymentOrder $order, array $data)` - Handle failed payment
+- `getPaymentOrderByCode(string $orderCode): ?PaymentOrder` - Get order by code
+- `registerPaymentMethod(array $data): PaymentMethod` - Register new payment method
 
-### PaymentOrder Model
+### PaymentOrder Model Methods
 
 - `isPending()`, `isProcessing()`, `isCompleted()`, `isFailed()`, `isCancelled()` - Status checks
 - `markAsProcessing()`, `markAsCompleted()`, `markAsFailed()` - Status updates
 - `getFormattedAmountAttribute()` - Get formatted amount with currency
 
-### PaymentMethod Model
+### PaymentMethod Model Methods
 
 - `getSetting(string $key, $default = null)` - Get setting value
 - `setSetting(string $key, $value, bool $encrypted = false)` - Set setting value
@@ -246,6 +265,20 @@ The package registers the following routes under the `/payment-gateway` prefix:
 - `GET /success/{order}` - Success page
 - `GET /failure/{order}` - Failure page
 - `GET /status/{order}` - Status page
+- `GET /dummy/{order}/{action}` - Dummy payment actions (success|failure|callback)
+
+## Documentation
+
+For detailed documentation, see the [docs](docs/) directory:
+
+- [Installation Guide](docs/installation.md)
+- [Quick Start](docs/quick-start.md)
+- [Configuration](docs/configuration.md)
+- [Payment Orders](docs/payment-orders.md)
+- [Payment Methods](docs/payment-methods.md)
+- [Creating Plugins](docs/creating-plugins.md)
+- [Views & Layouts](docs/views-layouts.md)
+- [Troubleshooting](docs/troubleshooting/common-issues.md)
 
 ## License
 
