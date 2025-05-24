@@ -20,8 +20,12 @@ class PaymentGatewayServiceProvider extends ServiceProvider
             return new PaymentGatewayService;
         });
 
-        // Register facade alias (this matches composer.json)
-        $this->app->alias(PaymentGatewayService::class, 'PaymentGateway');
+        // Register commands
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Trinavo\PaymentGateway\Console\InstallPaymentGatewayCommand::class,
+            ]);
+        }
     }
 
     public function boot()

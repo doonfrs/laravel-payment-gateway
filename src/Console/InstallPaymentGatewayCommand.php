@@ -1,6 +1,6 @@
 <?php
 
-namespace Trinavo\LivewirePageBuilder\Console;
+namespace Trinavo\PaymentGateway\Console;
 
 use Illuminate\Console\Command;
 
