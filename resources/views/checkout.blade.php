@@ -1,8 +1,6 @@
 @extends('payment-gateway::layouts.payment-gateway')
 
-@section('title', __('payment-gateway::messages.payment_checkout'))
-
-
+@section('title', __('payment_checkout'))
 
 @section('content')
     <div class="container mx-auto px-4 py-8">
@@ -10,8 +8,8 @@
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4">
-                    <h1 class="text-2xl font-bold">{{ __('payment-gateway::messages.payment_checkout') }}</h1>
-                    <p class="text-blue-100 mt-1">{{ __('payment-gateway::messages.complete_payment_securely') }}</p>
+                    <h1 class="text-2xl font-bold">{{ __('payment_checkout') }}</h1>
+                    <p class="text-blue-100 mt-1">{{ __('complete_payment_securely') }}</p>
                 </div>
 
                 <div class="p-6">
@@ -19,21 +17,20 @@
                     <div class="grid md:grid-cols-2 gap-6 mb-8">
                         <div>
                             <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('payment-gateway::messages.order_details') }}</h2>
+                                {{ __('order_details') }}</h2>
                             <div class="space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('payment-gateway::messages.order_code') }}:</span>
+                                    <span class="text-gray-600">{{ __('order_code') }}:</span>
                                     <span class="font-medium text-gray-900">{{ $paymentOrder->order_code }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('payment-gateway::messages.amount') }}:</span>
+                                    <span class="text-gray-600">{{ __('amount') }}:</span>
                                     <span
                                         class="font-bold text-xl text-green-600">{{ $paymentOrder->formatted_amount }}</span>
                                 </div>
                                 @if ($paymentOrder->description)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.description') }}:</span>
+                                        <span class="text-gray-600">{{ __('description') }}:</span>
                                         <span class="font-medium text-gray-900">{{ $paymentOrder->description }}</span>
                                     </div>
                                 @endif
@@ -42,26 +39,23 @@
 
                         <div>
                             <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('payment-gateway::messages.customer_information') }}</h2>
+                                {{ __('customer_information') }}</h2>
                             <div class="space-y-3">
                                 @if ($paymentOrder->customer_name)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.customer_name') }}:</span>
+                                        <span class="text-gray-600">{{ __('customer_name') }}:</span>
                                         <span class="font-medium text-gray-900">{{ $paymentOrder->customer_name }}</span>
                                     </div>
                                 @endif
                                 @if ($paymentOrder->customer_email)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.customer_email') }}:</span>
+                                        <span class="text-gray-600">{{ __('customer_email') }}:</span>
                                         <span class="font-medium text-gray-900">{{ $paymentOrder->customer_email }}</span>
                                     </div>
                                 @endif
                                 @if ($paymentOrder->customer_phone)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.customer_phone') }}:</span>
+                                        <span class="text-gray-600">{{ __('customer_phone') }}:</span>
                                         <span class="font-medium text-gray-900">{{ $paymentOrder->customer_phone }}</span>
                                     </div>
                                 @endif
@@ -74,7 +68,7 @@
                     <!-- Payment Methods -->
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900 mb-6">
-                            {{ __('payment-gateway::messages.select_payment_method') }}</h2>
+                            {{ __('select_payment_method') }}</h2>
 
                         @if ($errors ?? false && $errors->any())
                             <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -88,7 +82,7 @@
                                     </div>
                                     <div class="ml-3">
                                         <h3 class="text-sm font-medium text-red-800">
-                                            {{ __('payment-gateway::messages.errors_with_submission') }}</h3>
+                                            {{ __('errors_with_submission') }}</h3>
                                         <div class="mt-2 text-sm text-red-700">
                                             <ul class="list-disc pl-5 space-y-1">
                                                 @foreach ($errors->all() as $error)
@@ -148,10 +142,10 @@
                                                 </div>
                                                 <div class="ml-3">
                                                     <h3 class="text-sm font-medium text-yellow-800">
-                                                        {{ __('payment-gateway::messages.no_payment_methods_available') }}
+                                                        {{ __('no_payment_methods_available') }}
                                                     </h3>
                                                     <p class="mt-1 text-sm text-yellow-700">
-                                                        {{ __('payment-gateway::messages.contact_support_assistance') }}
+                                                        {{ __('contact_support_assistance') }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -172,7 +166,7 @@
                                                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
                                                 </path>
                                             </svg>
-                                            {{ __('payment-gateway::messages.proceed_to_payment') }}
+                                            {{ __('proceed_to_payment') }}
                                         </span>
                                     </button>
                                 </div>

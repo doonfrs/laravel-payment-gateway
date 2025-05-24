@@ -1,6 +1,6 @@
 @extends('payment-gateway::layouts.payment-gateway')
 
-@section('title', __('payment-gateway::messages.dummy_payment_gateway'))
+@section('title', __('dummy_payment_gateway'))
 
 
 
@@ -11,7 +11,7 @@
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4">
                     <h1 class="text-2xl font-bold">{{ $paymentMethod->display_name ?: $paymentMethod->name }}</h1>
-                    <p class="text-purple-100 mt-1">{{ __('payment-gateway::messages.test_payment_gateway') }}</p>
+                    <p class="text-purple-100 mt-1">{{ __('test_payment_gateway') }}</p>
                 </div>
 
                 <div class="p-6">
@@ -19,21 +19,20 @@
                     <div class="grid md:grid-cols-2 gap-6 mb-8">
                         <div>
                             <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('payment-gateway::messages.order_summary') }}</h2>
+                                {{ __('order_summary') }}</h2>
                             <div class="space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('payment-gateway::messages.order_code') }}:</span>
+                                    <span class="text-gray-600">{{ __('order_code') }}:</span>
                                     <span class="font-medium text-gray-900">{{ $paymentOrder->order_code }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('payment-gateway::messages.amount') }}:</span>
+                                    <span class="text-gray-600">{{ __('amount') }}:</span>
                                     <span
                                         class="font-bold text-xl text-green-600">{{ $paymentOrder->formatted_amount }}</span>
                                 </div>
                                 @if ($paymentOrder->description)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.description') }}:</span>
+                                        <span class="text-gray-600">{{ __('description') }}:</span>
                                         <span class="font-medium text-gray-900">{{ $paymentOrder->description }}</span>
                                     </div>
                                 @endif
@@ -42,19 +41,17 @@
 
                         <div>
                             <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('payment-gateway::messages.customer_details') }}</h2>
+                                {{ __('customer_details') }}</h2>
                             <div class="space-y-3">
                                 @if ($paymentOrder->customer_name)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.customer_name') }}:</span>
+                                        <span class="text-gray-600">{{ __('customer_name') }}:</span>
                                         <span class="font-medium text-gray-900">{{ $paymentOrder->customer_name }}</span>
                                     </div>
                                 @endif
                                 @if ($paymentOrder->customer_email)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.customer_email') }}:</span>
+                                        <span class="text-gray-600">{{ __('customer_email') }}:</span>
                                         <span class="font-medium text-gray-900">{{ $paymentOrder->customer_email }}</span>
                                     </div>
                                 @endif
@@ -67,9 +64,9 @@
                     <!-- Test Payment Scenarios -->
                     <div class="text-center">
                         <h2 class="text-2xl font-bold text-gray-900 mb-4">
-                            {{ __('payment-gateway::messages.test_payment_scenarios') }}</h2>
+                            {{ __('test_payment_scenarios') }}</h2>
                         <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
-                            {{ __('payment-gateway::messages.dummy_payment_description') }}
+                            {{ __('dummy_payment_description') }}
                         </p>
 
                         <div class="grid md:grid-cols-3 gap-6 mb-8">
@@ -86,16 +83,16 @@
                                         </svg>
                                     </div>
                                     <h3 class="text-lg font-semibold text-green-800 mb-2">
-                                        {{ __('payment-gateway::messages.direct_success') }}</h3>
+                                        {{ __('direct_success') }}</h3>
                                     <p class="text-sm text-green-600 mb-4">
-                                        {{ __('payment-gateway::messages.simulate_immediate_success') }}</p>
+                                        {{ __('simulate_immediate_success') }}</p>
                                     <a href="{{ route('payment-gateway.dummy-action', ['order' => $paymentOrder->order_code, 'action' => 'success']) }}"
                                         class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M5 13l4 4L19 7"></path>
                                         </svg>
-                                        {{ __('payment-gateway::messages.pay_successfully') }}
+                                        {{ __('pay_successfully') }}
                                     </a>
                                 </div>
                             </div>
@@ -113,16 +110,16 @@
                                         </svg>
                                     </div>
                                     <h3 class="text-lg font-semibold text-red-800 mb-2">
-                                        {{ __('payment-gateway::messages.direct_failure') }}</h3>
+                                        {{ __('direct_failure') }}</h3>
                                     <p class="text-sm text-red-600 mb-4">
-                                        {{ __('payment-gateway::messages.simulate_immediate_failure') }}</p>
+                                        {{ __('simulate_immediate_failure') }}</p>
                                     <a href="{{ route('payment-gateway.dummy-action', ['order' => $paymentOrder->order_code, 'action' => 'failure']) }}"
                                         class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
-                                        {{ __('payment-gateway::messages.fail_payment') }}
+                                        {{ __('fail_payment') }}
                                     </a>
                                 </div>
                             </div>
@@ -141,9 +138,9 @@
                                         </svg>
                                     </div>
                                     <h3 class="text-lg font-semibold text-blue-800 mb-2">
-                                        {{ __('payment-gateway::messages.external_callback') }}</h3>
+                                        {{ __('external_callback') }}</h3>
                                     <p class="text-sm text-blue-600 mb-4">
-                                        {{ __('payment-gateway::messages.simulate_external_callback') }}</p>
+                                        {{ __('simulate_external_callback') }}</p>
                                     <a href="{{ route('payment-gateway.dummy-action', ['order' => $paymentOrder->order_code, 'action' => 'callback']) }}"
                                         class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +148,7 @@
                                                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
                                             </path>
                                         </svg>
-                                        {{ __('payment-gateway::messages.external_payment') }}
+                                        {{ __('external_payment') }}
                                     </a>
                                 </div>
                             </div>
@@ -162,9 +159,9 @@
                         <!-- Manual Callback Testing -->
                         <div class="bg-gray-50 rounded-lg p-6 mb-8">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('payment-gateway::messages.manual_callback_testing') }}</h3>
+                                {{ __('manual_callback_testing') }}</h3>
                             <p class="text-gray-600 mb-6">
-                                {{ __('payment-gateway::messages.test_callback_functionality') }}
+                                {{ __('test_callback_functionality') }}
                             </p>
 
                             <div class="flex flex-wrap justify-center gap-4">
@@ -179,7 +176,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M5 13l4 4L19 7"></path>
                                         </svg>
-                                        {{ __('payment-gateway::messages.send_success_callback') }}
+                                        {{ __('send_success_callback') }}
                                     </button>
                                 </form>
 
@@ -194,7 +191,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
-                                        {{ __('payment-gateway::messages.send_failure_callback') }}
+                                        {{ __('send_failure_callback') }}
                                     </button>
                                 </form>
                             </div>
@@ -207,7 +204,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                             </svg>
-                            {{ __('payment-gateway::messages.back_to_payment_methods') }}
+                            {{ __('back_to_payment_methods') }}
                         </a>
                     </div>
                 </div>

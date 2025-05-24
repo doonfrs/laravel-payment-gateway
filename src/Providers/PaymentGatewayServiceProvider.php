@@ -2,7 +2,6 @@
 
 namespace Trinavo\PaymentGateway\Providers;
 
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\ServiceProvider;
 use Trinavo\PaymentGateway\Services\PaymentGatewayService;
 
@@ -43,11 +42,6 @@ class PaymentGatewayServiceProvider extends ServiceProvider
         // Load routes
         $this->loadRoutesFrom(__DIR__.'/../Http/routes.php');
 
-        // Load translations
-        $this->loadTranslationsFrom(__DIR__.'/../../lang', 'payment-gateway');
-
-        Lang::addNamespace('payment-gateway', realpath(__DIR__.'/../../lang'));
-
         // Load views
         $this->loadViewsFrom(__DIR__.'/../../resources/views', 'payment-gateway');
 
@@ -56,10 +50,12 @@ class PaymentGatewayServiceProvider extends ServiceProvider
             __DIR__.'/../../resources/views' => resource_path('views/vendor/payment-gateway'),
         ], 'views');
 
-        // Publish translation files
-        $this->publishes([
-            __DIR__.'/../../lang' => lang_path('vendor/payment-gateway'),
-        ], 'payment-gateway-translations');
+        // Load translations from JSON files
+        $this->loadJsonTranslationsFrom(__DIR__.'/../../lang');
 
+        // Publish language files
+        $this->publishes([
+            __DIR__.'/../../lang' => $this->app->langPath(),
+        ], 'lang');
     }
 }

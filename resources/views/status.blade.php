@@ -1,6 +1,6 @@
 @extends('payment-gateway::layouts.payment-gateway')
 
-@section('title', __('payment-gateway::messages.payment_status'))
+@section('title', __('payment_status'))
 
 @section('content')
     <div class="container mx-auto px-4 py-8">
@@ -8,8 +8,8 @@
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-4">
-                    <h1 class="text-2xl font-bold">{{ __('payment-gateway::messages.payment_status') }}</h1>
-                    <p class="text-indigo-100 mt-1">{{ __('payment-gateway::messages.order_code') }}:
+                    <h1 class="text-2xl font-bold">{{ __('payment_status') }}</h1>
+                    <p class="text-indigo-100 mt-1">{{ __('order_code') }}:
                         {{ $paymentOrder->order_code }}</p>
                 </div>
 
@@ -26,8 +26,8 @@
                                 </svg>
                             </div>
                             <h2 class="text-2xl font-bold text-yellow-800 mb-2">
-                                {{ __('payment-gateway::messages.pending') }}</h2>
-                            <p class="text-gray-600">{{ __('payment-gateway::messages.status_pending_message') }}</p>
+                                {{ __('pending') }}</h2>
+                            <p class="text-gray-600">{{ __('status_pending_message') }}</p>
                         @elseif($paymentOrder->status === 'processing')
                             <div
                                 class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
@@ -39,8 +39,8 @@
                                 </svg>
                             </div>
                             <h2 class="text-2xl font-bold text-blue-800 mb-2">
-                                {{ __('payment-gateway::messages.processing') }}</h2>
-                            <p class="text-gray-600">{{ __('payment-gateway::messages.status_processing_message') }}</p>
+                                {{ __('processing') }}</h2>
+                            <p class="text-gray-600">{{ __('status_processing_message') }}</p>
                         @elseif($paymentOrder->status === 'completed')
                             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor"
@@ -50,8 +50,8 @@
                                 </svg>
                             </div>
                             <h2 class="text-2xl font-bold text-green-800 mb-2">
-                                {{ __('payment-gateway::messages.completed') }}</h2>
-                            <p class="text-gray-600">{{ __('payment-gateway::messages.status_completed_message') }}</p>
+                                {{ __('completed') }}</h2>
+                            <p class="text-gray-600">{{ __('status_completed_message') }}</p>
                         @elseif($paymentOrder->status === 'failed')
                             <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor"
@@ -60,9 +60,9 @@
                                         d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                             </div>
-                            <h2 class="text-2xl font-bold text-red-800 mb-2">{{ __('payment-gateway::messages.failed') }}
+                            <h2 class="text-2xl font-bold text-red-800 mb-2">{{ __('failed') }}
                             </h2>
-                            <p class="text-gray-600">{{ __('payment-gateway::messages.status_failed_message') }}</p>
+                            <p class="text-gray-600">{{ __('status_failed_message') }}</p>
                         @elseif($paymentOrder->status === 'cancelled')
                             <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor"
@@ -73,8 +73,8 @@
                                 </svg>
                             </div>
                             <h2 class="text-2xl font-bold text-gray-800 mb-2">
-                                {{ __('payment-gateway::messages.cancelled') }}</h2>
-                            <p class="text-gray-600">{{ __('payment-gateway::messages.status_cancelled_message') }}</p>
+                                {{ __('cancelled') }}</h2>
+                            <p class="text-gray-600">{{ __('status_cancelled_message') }}</p>
                         @else
                             <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor"
@@ -84,9 +84,9 @@
                                     </path>
                                 </svg>
                             </div>
-                            <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ __('payment-gateway::messages.status') }}
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ __('status') }}
                             </h2>
-                            <p class="text-gray-600">{{ __('payment-gateway::messages.status_unknown_message') }}</p>
+                            <p class="text-gray-600">{{ __('status_unknown_message') }}</p>
                         @endif
                     </div>
 
@@ -94,19 +94,19 @@
                     <div class="grid md:grid-cols-2 gap-8 mb-8">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('payment-gateway::messages.order_information') }}</h3>
+                                {{ __('order_information') }}</h3>
                             <div class="bg-gray-50 rounded-lg p-4 space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('payment-gateway::messages.order_code') }}:</span>
+                                    <span class="text-gray-600">{{ __('order_code') }}:</span>
                                     <span class="font-medium text-gray-900">{{ $paymentOrder->order_code }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('payment-gateway::messages.amount') }}:</span>
+                                    <span class="text-gray-600">{{ __('amount') }}:</span>
                                     <span
                                         class="font-bold text-xl text-gray-900">{{ $paymentOrder->formatted_amount }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('payment-gateway::messages.status') }}:</span>
+                                    <span class="text-gray-600">{{ __('status') }}:</span>
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                     @if ($paymentOrder->status === 'completed') bg-green-100 text-green-800
@@ -114,17 +114,17 @@
                                     @elseif($paymentOrder->status === 'processing') bg-blue-100 text-blue-800
                                     @elseif($paymentOrder->status === 'pending') bg-yellow-100 text-yellow-800
                                     @else bg-gray-100 text-gray-800 @endif">
-                                        {{ __('payment-gateway::messages.' . $paymentOrder->status) }}
+                                        {{ __('' . $paymentOrder->status) }}
                                     </span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('payment-gateway::messages.created_at') }}:</span>
+                                    <span class="text-gray-600">{{ __('created_at') }}:</span>
                                     <span
                                         class="font-medium text-gray-900">{{ $paymentOrder->created_at->format('M d, Y H:i:s') }}</span>
                                 </div>
                                 @if ($paymentOrder->paid_at)
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ __('payment-gateway::messages.paid_at') }}:</span>
+                                        <span class="text-gray-600">{{ __('paid_at') }}:</span>
                                         <span
                                             class="font-medium text-gray-900">{{ $paymentOrder->paid_at->format('M d, Y H:i:s') }}</span>
                                     </div>
@@ -134,26 +134,23 @@
 
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('payment-gateway::messages.customer_information') }}</h3>
+                                {{ __('customer_information') }}</h3>
                             <div class="bg-gray-50 rounded-lg p-4 space-y-3">
                                 @if ($paymentOrder->customer_name)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.customer_name') }}:</span>
+                                        <span class="text-gray-600">{{ __('customer_name') }}:</span>
                                         <span class="font-medium text-gray-900">{{ $paymentOrder->customer_name }}</span>
                                     </div>
                                 @endif
                                 @if ($paymentOrder->customer_email)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.customer_email') }}:</span>
+                                        <span class="text-gray-600">{{ __('customer_email') }}:</span>
                                         <span class="font-medium text-gray-900">{{ $paymentOrder->customer_email }}</span>
                                     </div>
                                 @endif
                                 @if ($paymentOrder->paymentMethod)
                                     <div class="flex justify-between">
-                                        <span
-                                            class="text-gray-600">{{ __('payment-gateway::messages.payment_method') }}:</span>
+                                        <span class="text-gray-600">{{ __('payment_method') }}:</span>
                                         <span
                                             class="font-medium text-gray-900">{{ $paymentOrder->paymentMethod->display_name ?: $paymentOrder->paymentMethod->name }}</span>
                                     </div>
@@ -165,7 +162,7 @@
                     @if ($paymentOrder->description)
                         <div class="mb-8">
                             <h3 class="text-lg font-semibold text-gray-900 mb-3">
-                                {{ __('payment-gateway::messages.description') }}</h3>
+                                {{ __('description') }}</h3>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <p class="text-blue-800">{{ $paymentOrder->description }}</p>
                             </div>
@@ -175,7 +172,7 @@
                     @if ($paymentOrder->payment_data && isset($paymentOrder->payment_data['error']))
                         <div class="mb-8">
                             <h3 class="text-lg font-semibold text-gray-900 mb-3">
-                                {{ __('payment-gateway::messages.error') }}</h3>
+                                {{ __('error') }}</h3>
                             <div class="bg-red-50 border border-red-200 rounded-lg p-4">
                                 <div class="flex">
                                     <div class="flex-shrink-0">
@@ -205,7 +202,7 @@
                                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
                                         </path>
                                     </svg>
-                                    {{ __('payment-gateway::messages.refresh_status') }}
+                                    {{ __('refresh_status') }}
                                 </button>
                             @endif
 
@@ -217,7 +214,7 @@
                                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
                                         </path>
                                     </svg>
-                                    {{ __('payment-gateway::messages.continue_payment') }}
+                                    {{ __('continue_payment') }}
                                 </a>
                             @endif
 
@@ -228,7 +225,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                                     </svg>
-                                    {{ __('payment-gateway::messages.continue') }}
+                                    {{ __('continue') }}
                                 </a>
                             @endif
 
@@ -240,7 +237,7 @@
                                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
                                         </path>
                                     </svg>
-                                    {{ __('payment-gateway::messages.try_again') }}
+                                    {{ __('try_again') }}
                                 </a>
                             @endif
                         </div>
