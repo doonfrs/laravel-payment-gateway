@@ -20,8 +20,8 @@ class PaymentGatewayServiceProvider extends ServiceProvider
             return new PaymentGatewayService;
         });
 
-        // Register facade alias
-        $this->app->alias(PaymentGatewayService::class, 'payment-gateway');
+        // Register facade alias (this matches composer.json)
+        $this->app->alias(PaymentGatewayService::class, 'PaymentGateway');
     }
 
     public function boot()

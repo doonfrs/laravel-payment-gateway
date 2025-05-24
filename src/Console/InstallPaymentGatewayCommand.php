@@ -4,9 +4,9 @@ namespace Trinavo\LivewirePageBuilder\Console;
 
 use Illuminate\Console\Command;
 
-class InstallPageBuilderCommand extends Command
+class InstallPaymentGatewayCommand extends Command
 {
-    protected $signature = 'pagebuilder:install 
+    protected $signature = 'payment-gateway:install 
                            {--force : Force overwrite of existing files}
                            {--silent : Run in silent mode with default options}';
 
