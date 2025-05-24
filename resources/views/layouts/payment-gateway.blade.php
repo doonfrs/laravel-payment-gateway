@@ -10,9 +10,6 @@
 
     <!-- Scripts and Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- Additional Styles -->
-    @stack('styles')
 </head>
 
 <body class="bg-gray-50 min-h-screen">
@@ -26,4 +23,4 @@
     @stack('scripts')
 </body>
 
-</html> 
+</html>

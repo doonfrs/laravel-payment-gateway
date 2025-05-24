@@ -2,18 +2,6 @@
 
 @section('title', __('payment-gateway::messages.payment_status'))
 
-@push('styles')
-    <style>
-        .status-indicator {
-            animation: pulse 2s infinite;
-        }
-
-        .status-indicator.completed {
-            animation: none;
-        }
-    </style>
-@endpush
-
 @section('content')
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-4xl mx-auto">
@@ -30,7 +18,7 @@
                     <div class="text-center mb-8">
                         @if ($paymentOrder->status === 'pending')
                             <div
-                                class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 status-indicator">
+                                class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
                                 <svg class="w-12 h-12 text-yellow-600" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -42,7 +30,7 @@
                             <p class="text-gray-600">{{ __('payment-gateway::messages.status_pending_message') }}</p>
                         @elseif($paymentOrder->status === 'processing')
                             <div
-                                class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 status-indicator">
+                                class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
                                 <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -54,8 +42,7 @@
                                 {{ __('payment-gateway::messages.processing') }}</h2>
                             <p class="text-gray-600">{{ __('payment-gateway::messages.status_processing_message') }}</p>
                         @elseif($paymentOrder->status === 'completed')
-                            <div
-                                class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 status-indicator completed">
+                            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -66,8 +53,7 @@
                                 {{ __('payment-gateway::messages.completed') }}</h2>
                             <p class="text-gray-600">{{ __('payment-gateway::messages.status_completed_message') }}</p>
                         @elseif($paymentOrder->status === 'failed')
-                            <div
-                                class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 status-indicator completed">
+                            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -78,8 +64,7 @@
                             </h2>
                             <p class="text-gray-600">{{ __('payment-gateway::messages.status_failed_message') }}</p>
                         @elseif($paymentOrder->status === 'cancelled')
-                            <div
-                                class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 status-indicator completed">
+                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -91,8 +76,7 @@
                                 {{ __('payment-gateway::messages.cancelled') }}</h2>
                             <p class="text-gray-600">{{ __('payment-gateway::messages.status_cancelled_message') }}</p>
                         @else
-                            <div
-                                class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 status-indicator">
+                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
