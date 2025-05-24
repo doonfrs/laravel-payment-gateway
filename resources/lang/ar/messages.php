@@ -1,0 +1,95 @@
+<?php
+
+return [
+    // General
+    'default_title' => 'بوابة الدفع',
+    'payment_checkout' => 'إتمام الدفع',
+    'payment_successful' => 'تم الدفع بنجاح',
+    'payment_failed' => 'فشل الدفع',
+    'payment_status' => 'حالة الدفع',
+    'dummy_payment_gateway' => 'بوابة دفع تجريبية',
+
+    // Common
+    'order_code' => 'رقم الطلب',
+    'amount' => 'المبلغ',
+    'status' => 'الحالة',
+    'description' => 'الوصف',
+    'customer_name' => 'الاسم',
+    'customer_email' => 'البريد الإلكتروني',
+    'customer_phone' => 'الهاتف',
+    'payment_method' => 'طريقة الدفع',
+    'transaction_id' => 'رقم المعاملة',
+    'created_at' => 'تاريخ الإنشاء',
+    'paid_at' => 'تاريخ الدفع',
+    'attempted_at' => 'تاريخ المحاولة',
+
+    // Checkout
+    'complete_payment_securely' => 'أكمل دفعتك بأمان',
+    'order_details' => 'تفاصيل الطلب',
+    'customer_information' => 'معلومات العميل',
+    'select_payment_method' => 'اختر طريقة الدفع',
+    'proceed_to_payment' => 'المتابعة للدفع',
+    'no_payment_methods_available' => 'لا توجد طرق دفع متاحة',
+    'contact_support_assistance' => 'يرجى التواصل مع الدعم للمساعدة.',
+    'errors_with_submission' => 'كانت هناك أخطاء في إرسالك',
+
+    // Success
+    'payment_processed_successfully' => 'تم معالجة دفعتك بنجاح',
+    'thank_you_payment' => 'شكراً لك على دفعتك!',
+    'transaction_completed_successfully' => 'تم إكمال معاملتك بنجاح.',
+    'confirmation_email_sent' => 'سيتم إرسال بريد إلكتروني للتأكيد إلى عنوان بريدك الإلكتروني المسجل.',
+    'continue' => 'متابعة',
+
+    // Failure
+    'payment_could_not_processed' => 'لا يمكن معالجة دفعتك',
+    'payment_not_successful' => 'لم يكن الدفع ناجحاً',
+    'unable_process_payment' => 'للأسف، لم نتمكن من معالجة دفعتك. يرجى المحاولة مرة أخرى أو استخدام طريقة دفع مختلفة.',
+    'try_again_different_method' => 'يمكنك المحاولة مرة أخرى بنفس طريقة الدفع أو طريقة مختلفة.',
+    'try_again' => 'حاول مرة أخرى',
+    'return_to_store' => 'العودة للمتجر',
+    'payment_error' => 'خطأ في الدفع',
+    'error_details' => 'تفاصيل الخطأ',
+
+    // Status
+    'order_information' => 'معلومات الطلب',
+    'payment_details' => 'تفاصيل الدفع',
+    'error' => 'خطأ',
+    'refresh_status' => 'تحديث الحالة',
+    'continue_payment' => 'متابعة الدفع',
+
+    // Status Messages
+    'status_pending_message' => 'دفعتك في انتظار المعالجة. يرجى إكمال الدفع للمتابعة.',
+    'status_processing_message' => 'يتم حالياً معالجة دفعتك. يرجى الانتظار بينما نؤكد معاملتك.',
+    'status_completed_message' => 'تم إكمال دفعتك بنجاح. شكراً لك على شرائك!',
+    'status_failed_message' => 'لا يمكن معالجة دفعتك. يرجى المحاولة مرة أخرى أو التواصل مع الدعم.',
+    'status_cancelled_message' => 'تم إلغاء دفعتك. يمكنك إعادة بدء عملية الدفع إذا لزم الأمر.',
+    'status_unknown_message' => 'حالة الدفع غير معروفة. يرجى التواصل مع الدعم للمساعدة.',
+
+    // Dummy Payment
+    'test_payment_gateway' => 'بوابة دفع تجريبية',
+    'order_summary' => 'ملخص الطلب',
+    'customer_details' => 'تفاصيل العميل',
+    'test_payment_scenarios' => 'سيناريوهات الدفع التجريبية',
+    'dummy_payment_description' => 'هذه بوابة دفع تجريبية لأغراض الاختبار. اختر أحد الخيارات أدناه لمحاكاة سيناريوهات دفع مختلفة.',
+    'direct_success' => 'نجاح مباشر',
+    'direct_failure' => 'فشل مباشر',
+    'external_callback' => 'استدعاء خارجي',
+    'simulate_immediate_success' => 'محاكاة نجاح الدفع الفوري',
+    'simulate_immediate_failure' => 'محاكاة فشل الدفع الفوري',
+    'simulate_external_callback' => 'محاكاة استدعاء البوابة الخارجية',
+    'pay_successfully' => 'ادفع بنجاح',
+    'fail_payment' => 'فشل الدفع',
+    'external_payment' => 'دفع خارجي',
+    'manual_callback_testing' => 'اختبار الاستدعاء اليدوي',
+    'test_callback_functionality' => 'اختبر وظيفة الاستدعاء يدوياً عن طريق إرسال قيم حالة مختلفة.',
+    'send_success_callback' => 'إرسال استدعاء النجاح',
+    'send_failure_callback' => 'إرسال استدعاء الفشل',
+    'back_to_payment_methods' => 'العودة لطرق الدفع',
+
+    // Status Labels
+    'pending' => 'في الانتظار',
+    'processing' => 'قيد المعالجة',
+    'completed' => 'مكتمل',
+    'failed' => 'فاشل',
+    'cancelled' => 'ملغي',
+];

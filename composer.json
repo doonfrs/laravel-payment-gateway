@@ -10,7 +10,10 @@
         }
     ],
     "require": {
-        "php": "^8.2"
+        "php": "^8.2",
+        "blade-ui-kit/blade-heroicons": "^2.6",
+        "blade-ui-kit/blade-icons": "^1.8",
+        "davidhsianturi/blade-bootstrap-icons": "^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -26,7 +29,10 @@
         "laravel": {
             "providers": [
                 "Trinavo\\PaymentGateway\\Providers\\PaymentGatewayServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "PaymentGateway": "Trinavo\\PaymentGateway\\Facades\\PaymentGateway"
+            }
         }
     },
     "minimum-stability": "dev",

@@ -1,0 +1,95 @@
+<?php
+
+return [
+    // General
+    'default_title' => 'Payment Gateway',
+    'payment_checkout' => 'Payment Checkout',
+    'payment_successful' => 'Payment Successful',
+    'payment_failed' => 'Payment Failed',
+    'payment_status' => 'Payment Status',
+    'dummy_payment_gateway' => 'Dummy Payment Gateway',
+
+    // Common
+    'order_code' => 'Order Code',
+    'amount' => 'Amount',
+    'status' => 'Status',
+    'description' => 'Description',
+    'customer_name' => 'Name',
+    'customer_email' => 'Email',
+    'customer_phone' => 'Phone',
+    'payment_method' => 'Payment Method',
+    'transaction_id' => 'Transaction ID',
+    'created_at' => 'Created',
+    'paid_at' => 'Paid At',
+    'attempted_at' => 'Attempted At',
+
+    // Checkout
+    'complete_payment_securely' => 'Complete your payment securely',
+    'order_details' => 'Order Details',
+    'customer_information' => 'Customer Information',
+    'select_payment_method' => 'Select Payment Method',
+    'proceed_to_payment' => 'Proceed to Payment',
+    'no_payment_methods_available' => 'No payment methods available',
+    'contact_support_assistance' => 'Please contact support for assistance.',
+    'errors_with_submission' => 'There were errors with your submission',
+
+    // Success
+    'payment_processed_successfully' => 'Your payment has been processed successfully',
+    'thank_you_payment' => 'Thank you for your payment!',
+    'transaction_completed_successfully' => 'Your transaction has been completed successfully.',
+    'confirmation_email_sent' => 'A confirmation email will be sent to your registered email address.',
+    'continue' => 'Continue',
+
+    // Failure
+    'payment_could_not_processed' => 'Your payment could not be processed',
+    'payment_not_successful' => 'Payment was not successful',
+    'unable_process_payment' => 'Unfortunately, we were unable to process your payment. Please try again or use a different payment method.',
+    'try_again_different_method' => 'You can try again with the same or different payment method.',
+    'try_again' => 'Try Again',
+    'return_to_store' => 'Return to Store',
+    'payment_error' => 'Payment Error',
+    'error_details' => 'Error Details',
+
+    // Status
+    'order_information' => 'Order Information',
+    'payment_details' => 'Payment Details',
+    'error' => 'Error',
+    'refresh_status' => 'Refresh Status',
+    'continue_payment' => 'Continue Payment',
+
+    // Status Messages
+    'status_pending_message' => 'Your payment is waiting to be processed. Please complete the payment to continue.',
+    'status_processing_message' => 'Your payment is currently being processed. Please wait while we confirm your transaction.',
+    'status_completed_message' => 'Your payment has been completed successfully. Thank you for your purchase!',
+    'status_failed_message' => 'Your payment could not be processed. Please try again or contact support.',
+    'status_cancelled_message' => 'Your payment has been cancelled. You can restart the payment process if needed.',
+    'status_unknown_message' => 'Payment status is unknown. Please contact support for assistance.',
+
+    // Dummy Payment
+    'test_payment_gateway' => 'Test Payment Gateway',
+    'order_summary' => 'Order Summary',
+    'customer_details' => 'Customer Details',
+    'test_payment_scenarios' => 'Test Payment Scenarios',
+    'dummy_payment_description' => 'This is a dummy payment gateway for testing purposes. Choose one of the options below to simulate different payment scenarios.',
+    'direct_success' => 'Direct Success',
+    'direct_failure' => 'Direct Failure',
+    'external_callback' => 'External Callback',
+    'simulate_immediate_success' => 'Simulate immediate payment success',
+    'simulate_immediate_failure' => 'Simulate immediate payment failure',
+    'simulate_external_callback' => 'Simulate external gateway callback',
+    'pay_successfully' => 'Pay Successfully',
+    'fail_payment' => 'Fail Payment',
+    'external_payment' => 'External Payment',
+    'manual_callback_testing' => 'Manual Callback Testing',
+    'test_callback_functionality' => 'Test the callback functionality manually by sending different status values.',
+    'send_success_callback' => 'Send Success Callback',
+    'send_failure_callback' => 'Send Failure Callback',
+    'back_to_payment_methods' => 'Back to Payment Methods',
+
+    // Status Labels
+    'pending' => 'Pending',
+    'processing' => 'Processing',
+    'completed' => 'Completed',
+    'failed' => 'Failed',
+    'cancelled' => 'Cancelled',
+];

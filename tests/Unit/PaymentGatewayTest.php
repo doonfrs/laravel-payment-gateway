@@ -3,7 +3,7 @@
 namespace Trinavo\MultiTenancy\Tests\Unit;
 
 use Orchestra\Testbench\TestCase;
-use Trinavo\MultiTenancy\MultiTenancyServiceProvider;
+use Trinavo\PaymentGateway\Providers\PaymentGatewayServiceProvider;
 
 class PaymentGatewayTest extends TestCase
 {
