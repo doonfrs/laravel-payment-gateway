@@ -12,20 +12,26 @@ class PaymentGatewayService
     /**
      * Create a new payment order
      */
-    public function createPaymentOrder(array $data): PaymentOrder
+    public function createPaymentOrder(
+        float $amount, string $currency = 'USD',
+        ?string $customerName = null, ?string $customerEmail = null,
+        ?string $customerPhone = null, ?array $customerData = null,
+        ?string $description = null, ?string $successCallback = null,
+        ?string $failureCallback = null, ?string $successUrl = null,
+        ?string $failureUrl = null): PaymentOrder
     {
         $paymentOrder = PaymentOrder::create([
-            'amount' => $data['amount'],
-            'currency' => $data['currency'] ?? 'USD',
-            'customer_name' => $data['customer_name'] ?? null,
-            'customer_email' => $data['customer_email'] ?? null,
-            'customer_phone' => $data['customer_phone'] ?? null,
-            'customer_data' => $data['customer_data'] ?? null,
-            'description' => $data['description'] ?? null,
-            'success_callback' => $data['success_callback'] ?? null,
-            'failure_callback' => $data['failure_callback'] ?? null,
-            'success_url' => $data['success_url'] ?? null,
-            'failure_url' => $data['failure_url'] ?? null,
+            'amount' => $amount,
+            'currency' => $currency,
+            'customer_name' => $customerName,
+            'customer_email' => $customerEmail,
+            'customer_phone' => $customerPhone,
+            'customer_data' => $customerData,
+            'description' => $description,
+            'success_callback' => $successCallback,
+            'failure_callback' => $failureCallback,
+            'success_url' => $successUrl,
+            'failure_url' => $failureUrl,
         ]);
 
         return $paymentOrder;
@@ -36,7 +42,10 @@ class PaymentGatewayService
      */
     public function getPaymentUrl(PaymentOrder $paymentOrder): string
     {
-        return URL::route('payment-gateway.checkout', ['order' => $paymentOrder->order_code]);
+        return URL::route('payment-gateway.checkout',
+            [
+                'order' => $paymentOrder->order_code,
+            ]);
     }
 
     /**
