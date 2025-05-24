@@ -161,7 +161,7 @@ class ExamplePaymentPlugin implements PaymentPluginInterface
 Look at the included `DummyPaymentPlugin` for a working example:
 
 ```php
-// Located at: src/Plugins/DummyPaymentPlugin.php
+// Located at: src/Plugins/Dummy/DummyPaymentPlugin.php
 
 public function processPayment(PaymentOrder $paymentOrder)
 {
