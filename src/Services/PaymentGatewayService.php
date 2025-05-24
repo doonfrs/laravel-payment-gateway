@@ -2,8 +2,8 @@
 
 namespace Trinavo\PaymentGateway\Services;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Trinavo\PaymentGateway\Models\PaymentMethod;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 
@@ -102,18 +102,13 @@ class PaymentGatewayService
      */
     protected function executeCallback(string $callback, PaymentOrder $paymentOrder): void
     {
-        try {
-            // Create a safe environment for callback execution
-            $order = $paymentOrder;
-            eval($callback);
-        } catch (\Exception $e) {
-            // Log the error but don't throw to avoid breaking the payment flow
-            Log::error('Payment callback execution failed', [
-                'order_id' => $paymentOrder->id,
-                'callback' => $callback,
-                'error' => $e->getMessage(),
-            ]);
+        // Create a safe environment for callback execution
+        $order = $paymentOrder;
+        if (! Str::endsWith($callback, ';')) {
+            $callback .= ';';
         }
+        eval($callback);
+
     }
 
     /**
