@@ -1,6 +1,6 @@
 <?php
 
-namespace Trinavo\PaymentGateway\Plugins;
+namespace Trinavo\PaymentGateway\Plugins\Dummy;
 
 use Illuminate\Support\Facades\URL;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;

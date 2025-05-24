@@ -81,7 +81,7 @@ class ExampleController extends Controller
     {
         $paymentMethod = PaymentGateway::registerPaymentMethod([
             'name' => 'dummy',
-            'plugin_class' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class,
+            'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
             'display_name' => 'Dummy Payment Method',
             'description' => 'Dummy payment method',
             'enabled' => true,

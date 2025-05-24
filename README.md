@@ -171,7 +171,7 @@ class StripePaymentPlugin implements PaymentPluginInterface
 ```php
 // config/payment-gateway.php
 'plugins' => [
-    'dummy' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class,
+    'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
     'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
 ],
 ```

@@ -204,7 +204,7 @@ class PaymentController extends Controller
     protected function getPluginClass(string $plugin): string
     {
         $pluginMap = [
-            'dummy' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class,
+            'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
         ];
 
         if (! isset($pluginMap[$plugin])) {

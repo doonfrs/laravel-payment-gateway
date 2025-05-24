@@ -189,7 +189,7 @@ public function handleCallback(array $callbackData): array
 ```php
 // config/payment-gateway.php
 'plugins' => [
-    'dummy' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class,
+    'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
     'example' => \App\PaymentPlugins\ExamplePaymentPlugin::class,
 ],
 ```

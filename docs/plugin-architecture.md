@@ -74,7 +74,7 @@ Plugins are registered in the configuration file:
 ```php
 // config/payment-gateway.php
 'plugins' => [
-    'dummy' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class,
+    'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
     'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
     'paypal' => \App\PaymentPlugins\PayPalPaymentPlugin::class,
     'razorpay' => \App\PaymentPlugins\RazorpayPaymentPlugin::class,

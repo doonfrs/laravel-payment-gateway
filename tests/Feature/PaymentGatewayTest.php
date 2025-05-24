@@ -62,7 +62,7 @@ class PaymentGatewayTest extends TestCase
     {
         $paymentMethod = PaymentGateway::registerPaymentMethod([
             'name' => 'test_method',
-            'plugin_class' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class,
+            'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
             'display_name' => 'Test Payment Method',
             'enabled' => true,
         ]);

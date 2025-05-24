@@ -54,7 +54,7 @@ $methods = PaymentMethod::where('enabled', true)->get();
 // If empty, create dummy payment method
 PaymentMethod::create([
     'name' => 'dummy',
-    'plugin_class' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class,
+    'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
     'display_name' => 'Test Payment',
     'enabled' => true,
     'sort_order' => 1,

@@ -44,7 +44,7 @@ use Trinavo\PaymentGateway\Models\PaymentMethod;
 
 PaymentMethod::create([
     'name' => 'dummy',
-    'plugin_class' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class,
+    'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
     'display_name' => 'Test Payment Gateway',
     'enabled' => true,
     'sort_order' => 1,

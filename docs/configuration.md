@@ -24,7 +24,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'plugins' => [
-        'dummy' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class,
+        'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
     ],
 ];
 ```

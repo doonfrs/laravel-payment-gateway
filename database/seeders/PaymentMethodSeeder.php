@@ -10,7 +10,7 @@ class PaymentMethodSeeder extends Seeder
     public function run()
     {
         PaymentMethod::updateOrCreate(
-            ['plugin_class' => \Trinavo\PaymentGateway\Plugins\DummyPaymentPlugin::class],
+            ['plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class],
             [
                 'name' => 'dummy_payment',
                 'display_name' => 'Dummy Payment Gateway',
