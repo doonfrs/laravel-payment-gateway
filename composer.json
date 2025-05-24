@@ -1,0 +1,40 @@
+{
+    "name": "trinavo/laravel-payment-gateway",
+    "description": "Payment gateway package for Laravel applications",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Trinavo",
+            "email": "info@trinavo.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Trinavo\\PaymentGateway\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Trinavo\\PaymentGateway\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Trinavo\\PaymentGateway\\Providers\\PaymentGatewayServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "orchestra/testbench": "^10.1",
+        "phpunit/phpunit": "^11.5",
+        "laravel/framework": "^12.6",
+        "laravel/pint": "^1.22"
+    }
+}

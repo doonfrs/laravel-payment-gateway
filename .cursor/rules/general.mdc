@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+* This is a package not a full laravel project, please do not try to run artisan commands
