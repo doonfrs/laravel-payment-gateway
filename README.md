@@ -20,7 +20,22 @@ A powerful and flexible payment gateway package for Laravel applications that su
 composer require trinavo/laravel-payment-gateway
 ```
 
-## Configuration
+## Quick Setup
+
+For the fastest setup, use the install command:
+
+```bash
+php artisan payment-gateway:install
+```
+
+This command will:
+
+- Publish configuration files
+- Add Tailwind CSS source paths
+- Optionally publish views and translations
+- Run database migrations
+
+## Manual Configuration
 
 ### 1. Publish the Configuration
 
@@ -35,7 +50,15 @@ php artisan vendor:publish --provider="Trinavo\PaymentGateway\PaymentGatewayServ
 php artisan migrate
 ```
 
-### 3. Publish Views (Optional)
+### 3. Configure Tailwind CSS
+
+Add this line to your `resources/css/app.css`:
+
+```css
+@source '../../vendor/trinavo/laravel-payment-gateway/resources/**/*.php';
+```
+
+### 4. Publish Views (Optional)
 
 ```bash
 php artisan vendor:publish --provider="Trinavo\PaymentGateway\PaymentGatewayServiceProvider" --tag="views"
@@ -43,7 +66,7 @@ php artisan vendor:publish --provider="Trinavo\PaymentGateway\PaymentGatewayServ
 
 This will publish the views to `resources/views/vendor/payment-gateway/` where you can customize the layout, styling, and content.
 
-### 4. Seed Payment Methods (Optional)
+### 5. Seed Payment Methods (Optional)
 
 ```bash
 php artisan db:seed --class="Database\Seeders\PaymentMethodSeeder"

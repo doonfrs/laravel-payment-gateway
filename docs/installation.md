@@ -80,45 +80,32 @@ This creates a dummy payment method for testing purposes.
 
 ## Step 7: Configure Asset Compilation
 
-The package uses Tailwind CSS for styling. Ensure your `vite.config.js` includes the package views:
+The package uses Tailwind CSS for styling. You have two options:
 
-```javascript
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
+### Option A: Use the Install Command (Recommended)
 
-export default defineConfig({
-    plugins: [
-        laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
-            refresh: true,
-        }),
-    ],
-    // Add this to include package views in Tailwind compilation
-    content: [
-        './resources/**/*.blade.php',
-        './resources/**/*.js',
-        './vendor/trinavo/laravel-payment-gateway/resources/views/**/*.blade.php',
-    ],
-});
+Run the install command which automatically configures everything:
+
+```bash
+php artisan payment-gateway:install
 ```
 
-And ensure your `tailwind.config.js` includes the package paths:
+This command will:
 
-```javascript
-/** @type {import('tailwindcss').Config} */
-export default {
-    content: [
-        "./resources/**/*.blade.php",
-        "./resources/**/*.js",
-        "./resources/**/*.vue",
-        "./vendor/trinavo/laravel-payment-gateway/resources/views/**/*.blade.php",
-    ],
-    theme: {
-        extend: {},
-    },
-    plugins: [],
-}
+- Add the required source path to your `resources/css/app.css`
+- Publish configuration files
+- Optionally publish views and translations
+- Run migrations
+
+### Option B: Manual Configuration
+
+If you prefer manual setup, add this line to your `resources/css/app.css`:
+
+```css
+@source '../../vendor/trinavo/laravel-payment-gateway/resources/**/*.php';
 ```
+
+This tells Tailwind to scan the package views for CSS classes.
 
 ## Step 8: Build Assets
 
