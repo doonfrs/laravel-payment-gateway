@@ -31,7 +31,7 @@ class PaymentController extends Controller
             return redirect()->route('payment-gateway.status', ['order' => $orderCode]);
         }
 
-        $paymentMethods = $this->paymentGateway->getAvailablePaymentMethods();
+        $paymentMethods = $this->paymentGateway->getAvailablePaymentMethodsForOrder($paymentOrder);
 
         return view('payment-gateway::checkout', [
             'paymentOrder' => $paymentOrder,
@@ -62,6 +62,12 @@ class PaymentController extends Controller
 
         if (! $paymentMethod->enabled) {
             return back()->withErrors(['payment_method_id' => 'Selected payment method is not available']);
+        }
+
+        // Check if the payment method is ignored for this order
+        if ($paymentOrder->isPluginIgnored($paymentMethod->name) ||
+            $paymentOrder->isPluginIgnored($paymentMethod->plugin_class)) {
+            return back()->withErrors(['payment_method_id' => 'Selected payment method is not available for this order']);
         }
 
         try {

@@ -25,6 +25,7 @@ class PaymentOrder extends Model
         'payment_method_id',
         'external_transaction_id',
         'payment_data',
+        'ignored_plugins',
         'paid_at',
     ];
 
@@ -32,6 +33,7 @@ class PaymentOrder extends Model
         'amount' => 'decimal:2',
         'customer_data' => 'array',
         'payment_data' => 'array',
+        'ignored_plugins' => 'array',
         'paid_at' => 'datetime',
     ];
 
@@ -115,5 +117,29 @@ class PaymentOrder extends Model
     public function getFormattedAmountAttribute(): string
     {
         return number_format($this->amount, 2).' '.$this->currency;
+    }
+
+    /**
+     * Check if a plugin is ignored for this payment order
+     */
+    public function isPluginIgnored(string $pluginName): bool
+    {
+        return in_array($pluginName, $this->ignored_plugins ?? []);
+    }
+
+    /**
+     * Get the list of ignored plugins
+     */
+    public function getIgnoredPlugins(): array
+    {
+        return $this->ignored_plugins ?? [];
+    }
+
+    /**
+     * Set the ignored plugins for this payment order
+     */
+    public function setIgnoredPlugins(array $plugins): void
+    {
+        $this->update(['ignored_plugins' => $plugins]);
     }
 }

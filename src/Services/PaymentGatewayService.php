@@ -18,7 +18,7 @@ class PaymentGatewayService
         ?string $customerPhone = null, ?array $customerData = null,
         ?string $description = null, ?string $successCallback = null,
         ?string $failureCallback = null, ?string $successUrl = null,
-        ?string $failureUrl = null): PaymentOrder
+        ?string $failureUrl = null, ?array $ignoredPlugins = null): PaymentOrder
     {
         $paymentOrder = PaymentOrder::create([
             'amount' => $amount,
@@ -32,6 +32,7 @@ class PaymentGatewayService
             'failure_callback' => $failureCallback,
             'success_url' => $successUrl,
             'failure_url' => $failureUrl,
+            'ignored_plugins' => $ignoredPlugins,
         ]);
 
         return $paymentOrder;
@@ -54,6 +55,32 @@ class PaymentGatewayService
     public function getAvailablePaymentMethods(): \Illuminate\Database\Eloquent\Collection
     {
         return PaymentMethod::enabled()->ordered()->get();
+    }
+
+    /**
+     * Get available payment methods for a specific payment order
+     * This will filter out any plugins that are ignored for this order
+     */
+    public function getAvailablePaymentMethodsForOrder(PaymentOrder $paymentOrder): \Illuminate\Database\Eloquent\Collection
+    {
+        $paymentMethods = PaymentMethod::enabled()->ordered()->get();
+
+        // Filter out ignored plugins
+        $ignoredPlugins = $paymentOrder->getIgnoredPlugins();
+
+        if (empty($ignoredPlugins)) {
+            return $paymentMethods;
+        }
+
+        return $paymentMethods->filter(function (PaymentMethod $paymentMethod) use ($ignoredPlugins) {
+            // Check if this payment method's plugin is in the ignored list
+            // We need to check both the plugin class name and the payment method name
+            $pluginClass = $paymentMethod->plugin_class;
+            $pluginName = $paymentMethod->name;
+
+            return ! in_array($pluginName, $ignoredPlugins) &&
+                   ! in_array($pluginClass, $ignoredPlugins);
+        });
     }
 
     /**

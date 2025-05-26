@@ -89,6 +89,7 @@ $paymentOrder = PaymentGateway::createPaymentOrder([
     'failure_callback' => '$order->markAsFailed();', // PHP code to execute on failure
     'success_url' => 'https://yoursite.com/success',
     'failure_url' => 'https://yoursite.com/failed',
+    'ignored_plugins' => ['stripe', 'paypal'], // Optional: plugins to exclude for this order
 ]);
 
 // Get payment URL and redirect user
@@ -112,6 +113,47 @@ $paymentOrder = PaymentOrder::create([
 // Redirect to checkout
 return redirect("/payment-gateway/checkout/{$paymentOrder->order_code}");
 ```
+
+### Ignoring Specific Plugins for Orders
+
+You can exclude specific payment plugins from being available for individual orders by passing an `ignored_plugins` array:
+
+```php
+use Trinavo\PaymentGateway\Facades\PaymentGateway;
+
+// Create an order that excludes certain payment methods
+$paymentOrder = PaymentGateway::createPaymentOrder([
+    'amount' => 100.00,
+    'currency' => 'USD',
+    'customer_name' => 'John Doe',
+    'customer_email' => 'john@example.com',
+    'description' => 'Order #12345',
+    'ignored_plugins' => ['stripe', 'paypal'], // These plugins won't be available
+]);
+
+// You can also set ignored plugins after creation
+$paymentOrder->setIgnoredPlugins(['dummy', 'bank_transfer']);
+
+// Check if a plugin is ignored
+if ($paymentOrder->isPluginIgnored('stripe')) {
+    // Stripe is not available for this order
+}
+
+// Get all ignored plugins
+$ignoredPlugins = $paymentOrder->getIgnoredPlugins();
+```
+
+The `ignored_plugins` array can contain:
+
+- **Plugin names** (e.g., 'stripe', 'paypal', 'dummy')
+- **Plugin class names** (e.g., 'App\PaymentPlugins\StripePaymentPlugin')
+
+This is useful for scenarios like:
+
+- **Subscription payments** where only certain methods are allowed
+- **High-risk transactions** where specific gateways should be avoided
+- **Regional restrictions** where some payment methods aren't available
+- **Customer preferences** where users have blocked certain payment types
 
 ## Creating a Custom Payment Plugin
 
@@ -253,9 +295,10 @@ The package includes a dummy payment plugin for testing purposes. It provides bu
 
 ### PaymentGateway Facade Methods
 
-- `createPaymentOrder(array $data): PaymentOrder` - Create a new payment order
+- `createPaymentOrder(array $data): PaymentOrder` - Create a new payment order (supports `ignored_plugins` array)
 - `getPaymentUrl(PaymentOrder $order): string` - Get checkout URL for an order
 - `getAvailablePaymentMethods()` - Get enabled payment methods
+- `getAvailablePaymentMethodsForOrder(PaymentOrder $order)` - Get available methods for specific order (respects ignored plugins)
 - `processPayment(PaymentOrder $order, PaymentMethod $method)` - Process payment
 - `handlePaymentSuccess(PaymentOrder $order, array $data)` - Handle successful payment
 - `handlePaymentFailure(PaymentOrder $order, array $data)` - Handle failed payment
