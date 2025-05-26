@@ -306,3 +306,52 @@ For detailed documentation, see the [docs](docs/) directory:
 ## License
 
 MIT License
+
+## Plugin System
+
+The Laravel Payment Gateway uses a flexible plugin system that allows you to integrate with any payment provider. All plugins are loaded dynamically from the configuration file.
+
+### Adding New Payment Plugins
+
+1. **Configure the plugin** in `config/payment-gateway.php`:
+
+```php
+'plugins' => [
+    'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
+    'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
+    'paypal' => \App\PaymentPlugins\PayPalPaymentPlugin::class,
+],
+```
+
+2. **Create a payment method record**:
+
+```php
+use Trinavo\PaymentGateway\Models\PaymentMethod;
+
+PaymentMethod::create([
+    'name' => 'stripe',
+    'plugin_class' => \App\PaymentPlugins\StripePaymentPlugin::class,
+    'display_name' => 'Credit Card (Stripe)',
+    'enabled' => true,
+    'sort_order' => 1,
+]);
+```
+
+3. **Configure plugin settings**:
+
+```php
+$paymentMethod = PaymentMethod::where('name', 'stripe')->first();
+$paymentMethod->setSetting('publishable_key', env('STRIPE_PUBLISHABLE_KEY'));
+$paymentMethod->setSetting('secret_key', env('STRIPE_SECRET_KEY'), true); // encrypted
+```
+
+### Available Payment Methods
+
+The system will automatically list all enabled payment methods from the database. The configuration ensures that:
+
+- **Plugin callbacks** are routed correctly based on the config
+- **Default currency** is loaded from config settings
+- **Route configuration** (prefix, middleware) is respected
+- **Multiple plugins** can coexist and be managed independently
+
+See the [Creating Plugins](docs/creating-plugins.md) guide for detailed plugin development instructions.

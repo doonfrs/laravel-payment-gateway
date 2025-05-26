@@ -1,0 +1,163 @@
+<?php
+
+namespace App\PaymentPlugins;
+
+use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
+use Trinavo\PaymentGateway\Models\PaymentMethod;
+use Trinavo\PaymentGateway\Models\PaymentOrder;
+
+/**
+ * Example Stripe Payment Plugin
+ *
+ * This is an example implementation showing how to create a custom payment plugin.
+ * To use this plugin:
+ *
+ * 1. Add it to your config/payment-gateway.php:
+ *    'stripe' => \App\PaymentPlugins\ExampleStripePlugin::class,
+ *
+ * 2. Create a payment method record:
+ *    PaymentMethod::create([
+ *        'name' => 'stripe',
+ *        'plugin_class' => \App\PaymentPlugins\ExampleStripePlugin::class,
+ *        'display_name' => 'Credit Card (Stripe)',
+ *        'enabled' => true,
+ *        'sort_order' => 1,
+ *    ]);
+ *
+ * 3. Configure the plugin settings:
+ *    $paymentMethod->setSetting('publishable_key', env('STRIPE_PUBLISHABLE_KEY'));
+ *    $paymentMethod->setSetting('secret_key', env('STRIPE_SECRET_KEY'), true);
+ */
+class ExampleStripePlugin implements PaymentPluginInterface
+{
+    protected PaymentMethod $paymentMethod;
+
+    public function __construct(PaymentMethod $paymentMethod)
+    {
+        $this->paymentMethod = $paymentMethod;
+    }
+
+    public function getName(): string
+    {
+        return 'Stripe Payment Gateway';
+    }
+
+    public function getDescription(): string
+    {
+        return 'Accept credit card payments via Stripe';
+    }
+
+    public function getVersion(): string
+    {
+        return '1.0.0';
+    }
+
+    public function getConfigurationFields(): array
+    {
+        return [
+            [
+                'name' => 'publishable_key',
+                'label' => 'Publishable Key',
+                'type' => 'text',
+                'required' => true,
+                'encrypted' => false,
+                'description' => 'Your Stripe publishable key',
+            ],
+            [
+                'name' => 'secret_key',
+                'label' => 'Secret Key',
+                'type' => 'password',
+                'required' => true,
+                'encrypted' => true,
+                'description' => 'Your Stripe secret key (will be encrypted)',
+            ],
+            [
+                'name' => 'webhook_secret',
+                'label' => 'Webhook Secret',
+                'type' => 'password',
+                'required' => false,
+                'encrypted' => true,
+                'description' => 'Stripe webhook endpoint secret (optional)',
+            ],
+        ];
+    }
+
+    public function validateConfiguration(): bool
+    {
+        $publishableKey = $this->paymentMethod->getSetting('publishable_key');
+        $secretKey = $this->paymentMethod->getSetting('secret_key');
+
+        return ! empty($publishableKey) && ! empty($secretKey);
+    }
+
+    public function processPayment(PaymentOrder $paymentOrder)
+    {
+        // In a real implementation, you would:
+        // 1. Create a Stripe Payment Intent
+        // 2. Return a view with Stripe Elements
+        // 3. Handle the payment confirmation
+
+        // For this example, we'll just redirect to a dummy success
+        return redirect()->route('payment-gateway.dummy-action', [
+            'order' => $paymentOrder->order_code,
+            'action' => 'success',
+        ]);
+    }
+
+    public function handleCallback(array $callbackData): array
+    {
+        // In a real implementation, you would:
+        // 1. Verify the webhook signature
+        // 2. Parse the Stripe event
+        // 3. Update the payment status accordingly
+
+        return [
+            'success' => true,
+            'order_code' => $callbackData['order_code'] ?? '',
+            'transaction_id' => 'stripe_'.uniqid(),
+            'payment_data' => $callbackData,
+        ];
+    }
+
+    public function getCallbackUrl(): string
+    {
+        return route('payment-gateway.callback', ['plugin' => 'stripe']);
+    }
+
+    public function getSuccessUrl(PaymentOrder $paymentOrder): string
+    {
+        return route('payment-gateway.success', ['order' => $paymentOrder->order_code]);
+    }
+
+    public function getFailureUrl(PaymentOrder $paymentOrder): string
+    {
+        return route('payment-gateway.failure', ['order' => $paymentOrder->order_code]);
+    }
+
+    public function supportsRefunds(): bool
+    {
+        return true;
+    }
+
+    public function processRefund(PaymentOrder $paymentOrder, ?float $amount = null): array
+    {
+        // In a real implementation, you would call Stripe's refund API
+        return [
+            'success' => false,
+            'error' => 'Refund functionality not implemented in this example',
+        ];
+    }
+
+    public function getPaymentStatus(PaymentOrder $paymentOrder): string
+    {
+        // In a real implementation, you would query Stripe's API
+        return 'unknown';
+    }
+
+    public function getPaymentView(): ?string
+    {
+        // Return null to use default redirect behavior
+        // Or return a view name for custom payment forms
+        return null;
+    }
+}

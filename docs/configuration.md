@@ -29,17 +29,33 @@ return [
 ];
 ```
 
-## Important Note
+## Configuration Usage
 
-**The configuration values are not actually used by the source code.** The package works with hardcoded values:
+The configuration values are now properly used throughout the package:
 
-- Routes are hardcoded in `src/Http/routes.php` with prefix 'payment-gateway'
-- Plugin mapping is hardcoded in `PaymentController::getPluginClass()`
-- Default currency is hardcoded as 'USD' in `PaymentGatewayService`
+- **Routes**: Route prefix and middleware are loaded from `config('payment-gateway.routes')`
+- **Plugins**: Plugin mapping is loaded from `config('payment-gateway.plugins')`
+- **Default Currency**: Default currency is loaded from `config('payment-gateway.default_currency')`
 
 ## Adding Payment Methods
 
-Use the database models directly:
+To add a new payment method, follow these steps:
+
+### 1. Register the Plugin in Configuration
+
+Add your plugin to the `config/payment-gateway.php` file:
+
+```php
+'plugins' => [
+    'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
+    'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
+    'paypal' => \App\PaymentPlugins\PayPalPaymentPlugin::class,
+],
+```
+
+### 2. Create the Payment Method Record
+
+Use the database models to create the payment method:
 
 ```php
 use Trinavo\PaymentGateway\Models\PaymentMethod;
@@ -52,6 +68,18 @@ PaymentMethod::create([
     'sort_order' => 1,
 ]);
 ```
+
+### 3. Configure Plugin Settings
+
+Set up the plugin configuration:
+
+```php
+$paymentMethod = PaymentMethod::where('name', 'stripe')->first();
+$paymentMethod->setSetting('publishable_key', env('STRIPE_PUBLISHABLE_KEY'));
+$paymentMethod->setSetting('secret_key', env('STRIPE_SECRET_KEY'), true); // encrypted
+```
+
+See the [Creating Plugins](creating-plugins.md) guide for detailed plugin development instructions.
 
 ---
 

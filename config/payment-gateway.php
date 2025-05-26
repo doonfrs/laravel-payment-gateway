@@ -10,9 +10,14 @@ return [
     | registered as payment methods. Each plugin must implement the
     | PaymentPluginInterface.
     |
+    | Example:
+    | 'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
+    | 'paypal' => \App\PaymentPlugins\PayPalPaymentPlugin::class,
+    |
     */
     'plugins' => [
         'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
+        // Add your custom payment plugins here
     ],
 
     /*

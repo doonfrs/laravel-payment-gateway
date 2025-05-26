@@ -53,6 +53,10 @@ class PaymentOrder extends Model
             if (empty($model->order_code)) {
                 $model->order_code = 'PO-'.strtoupper(Str::random(10));
             }
+
+            if (empty($model->currency)) {
+                $model->currency = config('payment-gateway.default_currency', 'USD');
+            }
         });
     }
 

@@ -3,7 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use Trinavo\PaymentGateway\Http\Controllers\PaymentController;
 
-Route::group(['prefix' => 'payment-gateway', 'as' => 'payment-gateway.'], function () {
+Route::group([
+    'prefix' => config('payment-gateway.routes.prefix', 'payment-gateway'),
+    'middleware' => config('payment-gateway.routes.middleware', ['web']),
+    'as' => 'payment-gateway.',
+], function () {
     // Checkout page - shows available payment methods
     Route::get('checkout/{order}', [PaymentController::class, 'checkout'])
         ->name('checkout');

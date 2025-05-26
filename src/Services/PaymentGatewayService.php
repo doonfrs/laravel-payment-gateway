@@ -13,7 +13,7 @@ class PaymentGatewayService
      * Create a new payment order
      */
     public function createPaymentOrder(
-        float $amount, string $currency = 'USD',
+        float $amount, ?string $currency = null,
         ?string $customerName = null, ?string $customerEmail = null,
         ?string $customerPhone = null, ?array $customerData = null,
         ?string $description = null, ?string $successCallback = null,

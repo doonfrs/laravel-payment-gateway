@@ -203,9 +203,7 @@ class PaymentController extends Controller
      */
     protected function getPluginClass(string $plugin): string
     {
-        $pluginMap = [
-            'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-        ];
+        $pluginMap = config('payment-gateway.plugins', []);
 
         if (! isset($pluginMap[$plugin])) {
             throw new \Exception("Unknown plugin: {$plugin}");

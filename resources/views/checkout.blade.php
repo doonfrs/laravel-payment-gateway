@@ -70,7 +70,7 @@
                         <h2 class="text-lg font-semibold text-gray-900 mb-6">
                             {{ __('select_payment_method') }}</h2>
 
-                        @if ($errors ?? false && $errors->any())
+                        @if (($errors ?? false) && $errors->any())
                             <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                                 <div class="flex">
                                     <div class="flex-shrink-0">
