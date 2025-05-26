@@ -124,16 +124,11 @@ namespace App\PaymentPlugins;
 
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
-use Trinavo\PaymentGateway\Models\PaymentMethod;
+use Trinavo\PaymentGateway\Configuration\TextField;
+use Trinavo\PaymentGateway\Configuration\PasswordField;
 
-class StripePaymentPlugin implements PaymentPluginInterface
+class StripePaymentPlugin extends PaymentPluginInterface
 {
-    protected PaymentMethod $paymentMethod;
-
-    public function __construct(PaymentMethod $paymentMethod)
-    {
-        $this->paymentMethod = $paymentMethod;
-    }
 
     public function getName(): string
     {
@@ -148,19 +143,21 @@ class StripePaymentPlugin implements PaymentPluginInterface
     public function getConfigurationFields(): array
     {
         return [
-            [
-                'name' => 'secret_key',
-                'label' => 'Secret Key',
-                'type' => 'text',
-                'required' => true,
-                'encrypted' => true,
-            ],
-            [
-                'name' => 'publishable_key',
-                'label' => 'Publishable Key',
-                'type' => 'text',
-                'required' => true,
-            ],
+            new PasswordField(
+                name: 'secret_key',
+                label: 'Secret Key',
+                required: true,
+                description: 'Your Stripe secret key (will be encrypted)',
+                placeholder: 'sk_test_...'
+            ),
+            
+            new TextField(
+                name: 'publishable_key',
+                label: 'Publishable Key',
+                required: true,
+                description: 'Your Stripe publishable key',
+                placeholder: 'pk_test_...'
+            ),
         ];
     }
 

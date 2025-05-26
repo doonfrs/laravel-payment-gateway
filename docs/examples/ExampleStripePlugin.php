@@ -2,8 +2,11 @@
 
 namespace App\PaymentPlugins;
 
+use Trinavo\PaymentGateway\Configuration\CheckboxField;
+use Trinavo\PaymentGateway\Configuration\PasswordField;
+use Trinavo\PaymentGateway\Configuration\SelectField;
+use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
-use Trinavo\PaymentGateway\Models\PaymentMethod;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 
 /**
@@ -28,15 +31,8 @@ use Trinavo\PaymentGateway\Models\PaymentOrder;
  *    $paymentMethod->setSetting('publishable_key', env('STRIPE_PUBLISHABLE_KEY'));
  *    $paymentMethod->setSetting('secret_key', env('STRIPE_SECRET_KEY'), true);
  */
-class ExampleStripePlugin implements PaymentPluginInterface
+class ExampleStripePlugin extends PaymentPluginInterface
 {
-    protected PaymentMethod $paymentMethod;
-
-    public function __construct(PaymentMethod $paymentMethod)
-    {
-        $this->paymentMethod = $paymentMethod;
-    }
-
     public function getName(): string
     {
         return 'Stripe Payment Gateway';
@@ -55,30 +51,48 @@ class ExampleStripePlugin implements PaymentPluginInterface
     public function getConfigurationFields(): array
     {
         return [
-            [
-                'name' => 'publishable_key',
-                'label' => 'Publishable Key',
-                'type' => 'text',
-                'required' => true,
-                'encrypted' => false,
-                'description' => 'Your Stripe publishable key',
-            ],
-            [
-                'name' => 'secret_key',
-                'label' => 'Secret Key',
-                'type' => 'password',
-                'required' => true,
-                'encrypted' => true,
-                'description' => 'Your Stripe secret key (will be encrypted)',
-            ],
-            [
-                'name' => 'webhook_secret',
-                'label' => 'Webhook Secret',
-                'type' => 'password',
-                'required' => false,
-                'encrypted' => true,
-                'description' => 'Stripe webhook endpoint secret (optional)',
-            ],
+            new TextField(
+                name: 'publishable_key',
+                label: 'Publishable Key',
+                required: true,
+                description: 'Your Stripe publishable key',
+                placeholder: 'pk_test_...'
+            ),
+
+            new PasswordField(
+                name: 'secret_key',
+                label: 'Secret Key',
+                required: true,
+                description: 'Your Stripe secret key (will be encrypted)',
+                placeholder: 'sk_test_...'
+            ),
+
+            new PasswordField(
+                name: 'webhook_secret',
+                label: 'Webhook Secret',
+                required: false,
+                description: 'Stripe webhook endpoint secret (optional)',
+                placeholder: 'whsec_...'
+            ),
+
+            new SelectField(
+                name: 'environment',
+                label: 'Environment',
+                options: [
+                    'sandbox' => 'Sandbox (Testing)',
+                    'live' => 'Live (Production)',
+                ],
+                required: true,
+                default: 'sandbox',
+                description: 'Select the environment for this gateway'
+            ),
+
+            new CheckboxField(
+                name: 'capture_immediately',
+                label: 'Capture Immediately',
+                default: true,
+                description: 'Capture payments immediately or authorize only'
+            ),
         ];
     }
 

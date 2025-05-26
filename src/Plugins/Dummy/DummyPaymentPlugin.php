@@ -3,19 +3,13 @@
 namespace Trinavo\PaymentGateway\Plugins\Dummy;
 
 use Illuminate\Support\Facades\URL;
+use Trinavo\PaymentGateway\Configuration\CheckboxField;
+use Trinavo\PaymentGateway\Configuration\NumberField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
-use Trinavo\PaymentGateway\Models\PaymentMethod;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 
-class DummyPaymentPlugin implements PaymentPluginInterface
+class DummyPaymentPlugin extends PaymentPluginInterface
 {
-    protected PaymentMethod $paymentMethod;
-
-    public function __construct(PaymentMethod $paymentMethod)
-    {
-        $this->paymentMethod = $paymentMethod;
-    }
-
     public function getName(): string
     {
         return 'Dummy Payment Plugin';
@@ -29,22 +23,23 @@ class DummyPaymentPlugin implements PaymentPluginInterface
     public function getConfigurationFields(): array
     {
         return [
-            [
-                'name' => 'test_mode',
-                'label' => 'Test Mode',
-                'type' => 'boolean',
-                'required' => false,
-                'default' => true,
-                'description' => 'Enable test mode for dummy payments',
-            ],
-            [
-                'name' => 'delay_seconds',
-                'label' => 'Delay Seconds',
-                'type' => 'number',
-                'required' => false,
-                'default' => 0,
-                'description' => 'Simulate processing delay in seconds',
-            ],
+            new CheckboxField(
+                name: 'test_mode',
+                label: 'Test Mode',
+                default: true,
+                description: 'Enable test mode for dummy payments'
+            ),
+
+            new NumberField(
+                name: 'delay_seconds',
+                label: 'Delay Seconds',
+                required: false,
+                default: 0,
+                description: 'Simulate processing delay in seconds',
+                min: 0,
+                max: 60,
+                placeholder: '0'
+            ),
         ];
     }
 
