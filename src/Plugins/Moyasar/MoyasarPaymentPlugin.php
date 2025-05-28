@@ -2,9 +2,10 @@
 
 namespace Trinavo\PaymentGateway\Plugins\Moyasar;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
-use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Configuration\CheckboxField;
+use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 
@@ -52,10 +53,12 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
 
     public function processPayment(PaymentOrder $paymentOrder)
     {
-        // Return a view for the Moyasar payment form (to be implemented)
+        $amount = round($paymentOrder->amount, 2) * 100;
+
         return view('payment-gateway::plugins.moyasar-payment', [
-            'publishable_api_key' => $this->paymentMethod->configuration['publishable_api_key'],
-            'secret_api_key' => $this->paymentMethod->configuration['secret_api_key'],
+            'publishable_api_key' => $this->paymentMethod->getSetting('publishable_api_key'),
+            'secret_api_key' => $this->paymentMethod->getSetting('secret_api_key'),
+            'amount' => $amount,
             'paymentOrder' => $paymentOrder,
             'paymentMethod' => $this->paymentMethod,
             'callbackUrl' => $this->getCallbackUrl(),
@@ -64,27 +67,36 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
         ]);
     }
 
-    public function handleCallback(array $callbackData): array
+    public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse
     {
+
+        Log::info('handle callback', $callbackData);
         // Handle callback from Moyasar (to be implemented)
         $status = $callbackData['status'] ?? 'failed';
         $orderCode = $callbackData['order_code'] ?? null;
         $paymentId = $callbackData['id'] ?? null;
 
         if (! $orderCode) {
-            return [
-                'success' => false,
-                'message' => 'Order code is required',
-            ];
+            return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
+                orderCode: 'unknown',
+                message: 'Order code is required'
+            );
         }
 
-        return [
-            'success' => $status === 'paid',
-            'status' => $status,
-            'order_code' => $orderCode,
-            'transaction_id' => $paymentId,
-            'message' => $status === 'paid' ? 'Payment completed successfully' : 'Payment failed',
-        ];
+        if ($status === 'paid') {
+            return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
+                orderCode: $orderCode,
+                transactionId: $paymentId,
+                message: 'Payment completed successfully'
+            );
+        }
+
+        return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
+            orderCode: $orderCode,
+            message: 'Payment failed',
+            status: $status,
+            additionalData: ['moyasar_payment_id' => $paymentId]
+        );
     }
 
     public function getCallbackUrl(): string
@@ -113,7 +125,7 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
         // Not implemented
         return [
             'success' => false,
-            'message' => 'Refunds are not supported in this plugin.'
+            'message' => 'Refunds are not supported in this plugin.',
         ];
     }
 
@@ -122,4 +134,4 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
         // Not implemented: would require API call to Moyasar
         return $paymentOrder->status;
     }
-} 
+}
