@@ -234,8 +234,8 @@ class StripePaymentPlugin extends PaymentPluginInterface
 ```php
 // config/payment-gateway.php
 'plugins' => [
-    'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-    'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
+    \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
+    \App\PaymentPlugins\StripePaymentPlugin::class,
 ],
 ```
 
@@ -338,6 +338,7 @@ For detailed documentation, see the [docs](docs/) directory:
 - [Installation Guide](docs/installation.md)
 - [Quick Start](docs/quick-start.md)
 - [Configuration](docs/configuration.md)
+- [Plugin Configuration](docs/plugin-configuration.md)
 - [Configuration Fields](docs/configuration-fields.md)
 - [CallbackResponse Class](docs/callback-response.md)
 - [Payment Orders](docs/payment-orders.md)
@@ -356,15 +357,17 @@ The Laravel Payment Gateway uses a flexible plugin system that allows you to int
 
 ### Adding New Payment Plugins
 
-1. **Configure the plugin** in `config/payment-gateway.php`:
+1. **Configure the plugin** in `config/payment-gateway.php` (simply add the class name):
 
 ```php
 'plugins' => [
-    'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-    'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
-    'paypal' => \App\PaymentPlugins\PayPalPaymentPlugin::class,
+    \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
+    \App\PaymentPlugins\StripePaymentPlugin::class,
+    \App\PaymentPlugins\PayPalPaymentPlugin::class,
 ],
 ```
+
+Plugin keys are automatically generated from class names (e.g., `StripePaymentPlugin` → `stripe`).
 
 2. **Create a payment method record**:
 

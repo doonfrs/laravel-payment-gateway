@@ -31,11 +31,6 @@ interface PaymentPluginInterface
     public function processPayment(PaymentOrder $paymentOrder);
     public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse;
     
-    // Optional features
-    public function supportsRefunds(): bool;
-    public function processRefund(PaymentOrder $paymentOrder, float $amount): array;
-    public function getPaymentStatus(PaymentOrder $paymentOrder): string;
-    
     // UI customization
     public function getPaymentView(): ?string;
     public function getCallbackUrl(): string;
@@ -130,20 +125,6 @@ class ExamplePaymentPlugin implements PaymentPluginInterface
         );
     }
 
-    public function supportsRefunds(): bool
-    {
-        return false;
-    }
-
-    public function processRefund(PaymentOrder $paymentOrder, float $amount): array
-    {
-        return ['success' => false, 'error' => 'Refunds not supported'];
-    }
-
-    public function getPaymentStatus(PaymentOrder $paymentOrder): string
-    {
-        return 'unknown';
-    }
 
     public function getPaymentView(): ?string
     {
@@ -198,8 +179,8 @@ public function handleCallback(array $callbackData): CallbackResponse
 ```php
 // config/payment-gateway.php
 'plugins' => [
-    'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-    'example' => \App\PaymentPlugins\ExamplePaymentPlugin::class,
+    \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
+    \App\PaymentPlugins\ExamplePaymentPlugin::class,
 ],
 ```
 

@@ -20,6 +20,11 @@ class PaymentGatewayServiceProvider extends ServiceProvider
             return new PaymentGatewayService;
         });
 
+        // Register the plugin registry service
+        $this->app->singleton(\Trinavo\PaymentGateway\Services\PluginRegistryService::class, function ($app) {
+            return new \Trinavo\PaymentGateway\Services\PluginRegistryService;
+        });
+
         // Register commands
         if ($this->app->runningInConsole()) {
             $this->commands([

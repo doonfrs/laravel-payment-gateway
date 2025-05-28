@@ -11,9 +11,12 @@ class PaymentController extends Controller
 {
     protected PaymentGatewayService $paymentGateway;
 
-    public function __construct(PaymentGatewayService $paymentGateway)
+    protected \Trinavo\PaymentGateway\Services\PluginRegistryService $pluginRegistry;
+
+    public function __construct(PaymentGatewayService $paymentGateway, \Trinavo\PaymentGateway\Services\PluginRegistryService $pluginRegistry)
     {
         $this->paymentGateway = $paymentGateway;
+        $this->pluginRegistry = $pluginRegistry;
     }
 
     /**
@@ -196,12 +199,12 @@ class PaymentController extends Controller
      */
     protected function getPluginClass(string $plugin): string
     {
-        $pluginMap = config('payment-gateway.plugins', []);
+        $pluginClass = $this->pluginRegistry->getPluginClass($plugin);
 
-        if (! isset($pluginMap[$plugin])) {
+        if (! $pluginClass) {
             throw new \Exception("Unknown plugin: {$plugin}");
         }
 
-        return $pluginMap[$plugin];
+        return $pluginClass;
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Trinavo\PaymentGateway\Plugins\Moyasar;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\URL;
 use Trinavo\PaymentGateway\Configuration\CheckboxField;
 use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
@@ -13,34 +11,52 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
 {
     public function getName(): string
     {
-        return 'Moyasar Payment Plugin';
+        return __('Moyasar Payment Plugin');
     }
 
     public function getDescription(): string
     {
-        return 'Integrate Moyasar card payments using their hosted payment form.';
+        return __('Integrate Moyasar card payments using their hosted payment form.');
     }
 
     public function getConfigurationFields(): array
     {
         return [
             new TextField(
+                name: 'publishable_api_key_demo',
+                label: 'Publishable API Key (Demo)',
+                required: true,
+                encrypted: true,
+                description: 'Your Moyasar publishable API key (Demo).'
+            ),
+            new TextField(
+                name: 'secret_api_key_demo',
+                label: 'Secret API Key (Demo)',
+                required: true,
+                encrypted: true,
+                description: 'Your Moyasar secret API key (Demo).'
+            ),
+
+            new TextField(
                 name: 'publishable_api_key',
                 label: 'Publishable API Key',
                 required: true,
+                encrypted: true,
                 description: 'Your Moyasar publishable API key.'
             ),
             new TextField(
                 name: 'secret_api_key',
                 label: 'Secret API Key',
                 required: true,
+                encrypted: true,
                 description: 'Your Moyasar secret API key.'
             ),
+
             new CheckboxField(
-                name: 'test_mode',
-                label: 'Test Mode',
+                name: 'demo_mode',
+                label: 'Demo Mode',
                 default: true,
-                description: 'Enable test mode for Moyasar payments.'
+                description: 'Enable demo mode for Moyasar payments.'
             ),
         ];
     }
@@ -55,13 +71,26 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
     {
         $amount = round($paymentOrder->amount, 2) * 100;
 
+        $callbackUrl = $this->getCallbackUrl();
+        $callbackUrl .= '?order_code='.$paymentOrder->order_code;
+
+        $demo = $this->paymentMethod->getSetting('demo_mode');
+
+        if ($demo) {
+            $publishableApiKey = $this->paymentMethod->getSetting('publishable_api_key_demo');
+            $secretApiKey = $this->paymentMethod->getSetting('secret_api_key_demo');
+        } else {
+            $publishableApiKey = $this->paymentMethod->getSetting('publishable_api_key');
+            $secretApiKey = $this->paymentMethod->getSetting('secret_api_key');
+        }
+
         return view('payment-gateway::plugins.moyasar-payment', [
-            'publishable_api_key' => $this->paymentMethod->getSetting('publishable_api_key'),
-            'secret_api_key' => $this->paymentMethod->getSetting('secret_api_key'),
+            'publishable_api_key' => $publishableApiKey,
+            'secret_api_key' => $secretApiKey,
             'amount' => $amount,
             'paymentOrder' => $paymentOrder,
             'paymentMethod' => $this->paymentMethod,
-            'callbackUrl' => $this->getCallbackUrl(),
+            'callbackUrl' => $callbackUrl,
             'successUrl' => $this->getSuccessUrl($paymentOrder),
             'failureUrl' => $this->getFailureUrl($paymentOrder),
         ]);
@@ -70,11 +99,11 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
     public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse
     {
 
-        Log::info('handle callback', $callbackData);
         // Handle callback from Moyasar (to be implemented)
         $status = $callbackData['status'] ?? 'failed';
         $orderCode = $callbackData['order_code'] ?? null;
         $paymentId = $callbackData['id'] ?? null;
+        $message = $callbackData['message'] ?? null;
 
         if (! $orderCode) {
             return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
@@ -87,7 +116,7 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
             return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
                 orderCode: $orderCode,
                 transactionId: $paymentId,
-                message: 'Payment completed successfully'
+                message: $message
             );
         }
 
@@ -97,41 +126,5 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
             status: $status,
             additionalData: ['moyasar_payment_id' => $paymentId]
         );
-    }
-
-    public function getCallbackUrl(): string
-    {
-        return URL::route('payment-gateway.callback', ['plugin' => 'moyasar']);
-    }
-
-    public function getSuccessUrl(PaymentOrder $paymentOrder): string
-    {
-        return $paymentOrder->success_url ?? URL::route('payment-gateway.success', ['order' => $paymentOrder->order_code]);
-    }
-
-    public function getFailureUrl(PaymentOrder $paymentOrder): string
-    {
-        return $paymentOrder->failure_url ?? URL::route('payment-gateway.failure', ['order' => $paymentOrder->order_code]);
-    }
-
-    public function supportsRefunds(): bool
-    {
-        // Moyasar supports refunds via API, but not implemented here
-        return false;
-    }
-
-    public function processRefund(PaymentOrder $paymentOrder, ?float $amount = null): array
-    {
-        // Not implemented
-        return [
-            'success' => false,
-            'message' => 'Refunds are not supported in this plugin.',
-        ];
-    }
-
-    public function getPaymentStatus(PaymentOrder $paymentOrder): string
-    {
-        // Not implemented: would require API call to Moyasar
-        return $paymentOrder->status;
     }
 }

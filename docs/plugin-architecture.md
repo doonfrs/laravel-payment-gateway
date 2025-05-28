@@ -52,13 +52,7 @@ interface PaymentPluginInterface
     public function processPayment(PaymentOrder $paymentOrder);
     public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse;
     
-    /**
-     * Optional advanced features
-     */
-    public function supportsRefunds(): bool;
-    public function processRefund(PaymentOrder $paymentOrder, float $amount): array;
-    public function getPaymentStatus(PaymentOrder $paymentOrder): string;
-    
+   
     /**
      * UI customization
      */
@@ -74,10 +68,10 @@ Plugins are registered in the configuration file:
 ```php
 // config/payment-gateway.php
 'plugins' => [
-    'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-    'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
-    'paypal' => \App\PaymentPlugins\PayPalPaymentPlugin::class,
-    'razorpay' => \App\PaymentPlugins\RazorpayPaymentPlugin::class,
+    \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
+    \App\PaymentPlugins\StripePaymentPlugin::class,
+    \App\PaymentPlugins\PayPalPaymentPlugin::class,
+    \App\PaymentPlugins\RazorpayPaymentPlugin::class,
 ],
 ```
 
@@ -102,7 +96,7 @@ $plugin = $paymentMethod->getPluginInstance();
 ```php
 // 1. Plugin class is registered in config
 'plugins' => [
-    'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
+    \App\PaymentPlugins\StripePaymentPlugin::class,
 ],
 
 // 2. PaymentMethod record is created
@@ -441,79 +435,6 @@ public function getPaymentView(): ?string
 @endsection
 ```
 
-### 2. Refund Support
-
-```php
-public function supportsRefunds(): bool
-{
-    return $this->paymentMethod->getSetting('enable_refunds', true);
-}
-
-public function processRefund(PaymentOrder $paymentOrder, float $amount): array
-{
-    try {
-        // 1. Validate refund request
-        $this->validateRefundRequest($paymentOrder, $amount);
-        
-        // 2. Process refund with gateway
-        $refundResponse = $this->processGatewayRefund($paymentOrder, $amount);
-        
-        // 3. Return standardized response
-        return [
-            'success' => true,
-            'refund_id' => $refundResponse['id'],
-            'amount' => $amount,
-            'status' => $refundResponse['status'],
-            'gateway_response' => $refundResponse,
-        ];
-        
-    } catch (\Exception $e) {
-        return [
-            'success' => false,
-            'error' => $e->getMessage(),
-        ];
-    }
-}
-```
-
-### 3. Status Checking
-
-```php
-public function getPaymentStatus(PaymentOrder $paymentOrder): string
-{
-    try {
-        $transactionId = $paymentOrder->transaction_id;
-        
-        if (!$transactionId) {
-            return 'unknown';
-        }
-        
-        $gatewayStatus = $this->fetchGatewayStatus($transactionId);
-        
-        return $this->mapGatewayStatus($gatewayStatus);
-        
-    } catch (\Exception $e) {
-        Log::error('Failed to fetch payment status', [
-            'order_code' => $paymentOrder->order_code,
-            'error' => $e->getMessage(),
-        ]);
-        
-        return 'unknown';
-    }
-}
-
-protected function mapGatewayStatus(string $gatewayStatus): string
-{
-    return match($gatewayStatus) {
-        'succeeded', 'paid', 'completed' => 'completed',
-        'pending', 'processing' => 'processing',
-        'failed', 'declined', 'error' => 'failed',
-        'cancelled', 'canceled' => 'cancelled',
-        default => 'unknown',
-    };
-}
-```
-
 ## Plugin Testing Strategies
 
 ### 1. Unit Testing
@@ -782,7 +703,7 @@ List of required and optional configuration fields:
 ## Features
 - ✅ Payment processing
 - ✅ Webhook callbacks
-- ✅ Refunds
+- ❌ Refunds
 - ❌ Recurring payments
 - ❌ Multi-party payments
 

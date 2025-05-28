@@ -2,7 +2,6 @@
 
 namespace Trinavo\PaymentGateway\Plugins\Dummy;
 
-use Illuminate\Support\Facades\URL;
 use Trinavo\PaymentGateway\Configuration\CheckboxField;
 use Trinavo\PaymentGateway\Configuration\NumberField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
@@ -86,43 +85,5 @@ class DummyPaymentPlugin extends PaymentPluginInterface
             message: 'Payment failed',
             status: $status
         );
-    }
-
-    public function getCallbackUrl(): string
-    {
-        return URL::route('payment-gateway.callback', ['plugin' => 'dummy']);
-    }
-
-    public function getSuccessUrl(PaymentOrder $paymentOrder): string
-    {
-        return $paymentOrder->success_url ?? URL::route('payment-gateway.success', ['order' => $paymentOrder->order_code]);
-    }
-
-    public function getFailureUrl(PaymentOrder $paymentOrder): string
-    {
-        return $paymentOrder->failure_url ?? URL::route('payment-gateway.failure', ['order' => $paymentOrder->order_code]);
-    }
-
-    public function supportsRefunds(): bool
-    {
-        return true;
-    }
-
-    public function processRefund(PaymentOrder $paymentOrder, ?float $amount = null): array
-    {
-        $refundAmount = $amount ?? $paymentOrder->amount;
-
-        return [
-            'success' => true,
-            'refund_id' => 'dummy_refund_'.uniqid(),
-            'amount' => $refundAmount,
-            'message' => 'Refund processed successfully (dummy)',
-        ];
-    }
-
-    public function getPaymentStatus(PaymentOrder $paymentOrder): string
-    {
-        // For dummy plugin, return the current status
-        return $paymentOrder->status;
     }
 }

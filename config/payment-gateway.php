@@ -10,14 +10,19 @@ return [
     | registered as payment methods. Each plugin must implement the
     | PaymentPluginInterface.
     |
+    | Simply list the plugin class names. Plugin keys will be automatically
+    | generated from the class names (e.g., StripePaymentPlugin -> stripe).
+    |
     | Example:
-    | 'stripe' => \App\PaymentPlugins\StripePaymentPlugin::class,
-    | 'paypal' => \App\PaymentPlugins\PayPalPaymentPlugin::class,
+    | \App\PaymentPlugins\StripePaymentPlugin::class,
+    | \App\PaymentPlugins\PayPalPaymentPlugin::class,
     |
     */
     'plugins' => [
-        'dummy' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
         // Add your custom payment plugins here
+        // \App\PaymentPlugins\StripePaymentPlugin::class,
+        // \App\PaymentPlugins\PayPalPaymentPlugin::class,
     ],
 
     /*

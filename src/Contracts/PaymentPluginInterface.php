@@ -2,6 +2,7 @@
 
 namespace Trinavo\PaymentGateway\Contracts;
 
+use Illuminate\Support\Facades\URL;
 use Trinavo\PaymentGateway\Models\PaymentMethod;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 
@@ -56,32 +57,35 @@ abstract class PaymentPluginInterface
     /**
      * Get the callback URL for this plugin
      */
-    abstract public function getCallbackUrl(): string;
+    public function getCallbackUrl(): string
+    {
+        $pluginKey = app(\Trinavo\PaymentGateway\Services\PluginRegistryService::class)
+            ->getPluginKey(static::class);
+
+        return route('payment-gateway.callback', ['plugin' => $pluginKey]);
+    }
 
     /**
      * Get the success URL for this plugin
      */
-    abstract public function getSuccessUrl(PaymentOrder $paymentOrder): string;
+    public function getSuccessUrl(PaymentOrder $paymentOrder): string
+    {
+        return $paymentOrder->success_url ?? URL::route('payment-gateway.success',
+            [
+                'order' => $paymentOrder->order_code,
+            ]);
+    }
 
     /**
      * Get the failure URL for this plugin
      */
-    abstract public function getFailureUrl(PaymentOrder $paymentOrder): string;
-
-    /**
-     * Check if this plugin supports refunds
-     */
-    abstract public function supportsRefunds(): bool;
-
-    /**
-     * Process a refund for the given payment order
-     */
-    abstract public function processRefund(PaymentOrder $paymentOrder, ?float $amount = null): array;
-
-    /**
-     * Get payment status from external gateway
-     */
-    abstract public function getPaymentStatus(PaymentOrder $paymentOrder): string;
+    public function getFailureUrl(PaymentOrder $paymentOrder): string
+    {
+        return $paymentOrder->failure_url ?? URL::route('payment-gateway.failure',
+            [
+                'order' => $paymentOrder->order_code,
+            ]);
+    }
 
     /**
      * Convert configuration fields to array format
