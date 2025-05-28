@@ -54,10 +54,6 @@ class PaymentController extends Controller
             abort(404, 'Payment order not found');
         }
 
-        if (! $paymentOrder->isPending()) {
-            return redirect()->route('payment-gateway.status', ['order' => $orderCode]);
-        }
-
         $paymentMethod = PaymentMethod::findOrFail($request->payment_method_id);
 
         if (! $paymentMethod->enabled) {
@@ -70,13 +66,10 @@ class PaymentController extends Controller
             return back()->withErrors(['payment_method_id' => 'Selected payment method is not available for this order']);
         }
 
-        try {
-            $response = $this->paymentGateway->processPayment($paymentOrder, $paymentMethod);
+        $response = $this->paymentGateway->processPayment($paymentOrder, $paymentMethod);
 
-            return $response;
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Payment processing failed: '.$e->getMessage()]);
-        }
+        return $response;
+
     }
 
     /**
@@ -84,35 +77,29 @@ class PaymentController extends Controller
      */
     public function callback(Request $request, string $plugin)
     {
-        try {
-            $pluginClass = $this->getPluginClass($plugin);
-            $callbackData = $request->all();
+        $pluginClass = $this->getPluginClass($plugin);
+        $callbackData = $request->all();
 
-            $result = $this->paymentGateway->handlePluginCallback($pluginClass, $callbackData);
+        $result = $this->paymentGateway->handlePluginCallback($pluginClass, $callbackData);
 
-            if ($result['success']) {
-                $paymentOrder = $this->paymentGateway->getPaymentOrderByCode($result['order_code']);
-                if ($paymentOrder) {
-                    $this->paymentGateway->handlePaymentSuccess($paymentOrder, $result);
+        if ($result['success']) {
+            $paymentOrder = $this->paymentGateway->getPaymentOrderByCode($result['order_code']);
+            if ($paymentOrder) {
+                $this->paymentGateway->handlePaymentSuccess($paymentOrder, $result);
 
-                    return redirect()->route('payment-gateway.success', ['order' => $result['order_code']]);
-                }
-            } else {
-                $paymentOrder = $this->paymentGateway->getPaymentOrderByCode($result['order_code']);
-                if ($paymentOrder) {
-                    $this->paymentGateway->handlePaymentFailure($paymentOrder, $result);
-
-                    return redirect()->route('payment-gateway.failure', ['order' => $result['order_code']]);
-                }
+                return redirect()->route('payment-gateway.success', ['order' => $result['order_code']]);
             }
+        } else {
+            $paymentOrder = $this->paymentGateway->getPaymentOrderByCode($result['order_code']);
+            if ($paymentOrder) {
+                $this->paymentGateway->handlePaymentFailure($paymentOrder, $result);
 
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Callback processing failed: '.$e->getMessage(),
-            ], 500);
+                return redirect()->route('payment-gateway.failure', ['order' => $result['order_code']]);
+            }
         }
+
+        return response()->json($result);
+
     }
 
     /**

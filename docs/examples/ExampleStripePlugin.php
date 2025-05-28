@@ -7,6 +7,7 @@ use Trinavo\PaymentGateway\Configuration\PasswordField;
 use Trinavo\PaymentGateway\Configuration\SelectField;
 use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
+use Trinavo\PaymentGateway\Models\CallbackResponse;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 
 /**
@@ -118,19 +119,19 @@ class ExampleStripePlugin extends PaymentPluginInterface
         ]);
     }
 
-    public function handleCallback(array $callbackData): array
+    public function handleCallback(array $callbackData): CallbackResponse
     {
         // In a real implementation, you would:
         // 1. Verify the webhook signature
         // 2. Parse the Stripe event
         // 3. Update the payment status accordingly
 
-        return [
-            'success' => true,
-            'order_code' => $callbackData['order_code'] ?? '',
-            'transaction_id' => 'stripe_'.uniqid(),
-            'payment_data' => $callbackData,
-        ];
+        return CallbackResponse::success(
+            orderCode: $callbackData['order_code'] ?? '',
+            transactionId: 'stripe_'.uniqid(),
+            message: 'Payment completed successfully',
+            additionalData: $callbackData
+        );
     }
 
     public function getCallbackUrl(): string

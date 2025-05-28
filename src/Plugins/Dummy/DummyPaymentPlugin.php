@@ -61,25 +61,31 @@ class DummyPaymentPlugin extends PaymentPluginInterface
         ]);
     }
 
-    public function handleCallback(array $callbackData): array
+    public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse
     {
         $status = $callbackData['status'] ?? 'failed';
         $orderCode = $callbackData['order_code'] ?? null;
 
         if (! $orderCode) {
-            return [
-                'success' => false,
-                'message' => 'Order code is required',
-            ];
+            return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
+                orderCode: 'unknown',
+                message: 'Order code is required'
+            );
         }
 
-        return [
-            'success' => $status === 'success',
-            'status' => $status,
-            'order_code' => $orderCode,
-            'transaction_id' => 'dummy_'.uniqid(),
-            'message' => $status === 'success' ? 'Payment completed successfully' : 'Payment failed',
-        ];
+        if ($status === 'success') {
+            return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
+                orderCode: $orderCode,
+                transactionId: 'dummy_'.uniqid(),
+                message: 'Payment completed successfully'
+            );
+        }
+
+        return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
+            orderCode: $orderCode,
+            message: 'Payment failed',
+            status: $status
+        );
     }
 
     public function getCallbackUrl(): string

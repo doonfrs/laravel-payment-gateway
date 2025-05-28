@@ -4,6 +4,7 @@ namespace Trinavo\PaymentGateway\Services;
 
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Trinavo\PaymentGateway\Models\CallbackResponse;
 use Trinavo\PaymentGateway\Models\PaymentMethod;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 
@@ -152,7 +153,15 @@ class PaymentGatewayService
 
         $plugin = $paymentMethod->getPluginInstance();
 
-        return $plugin->handleCallback($callbackData);
+        $result = $plugin->handleCallback($callbackData);
+
+        // Convert CallbackResponse to array for backward compatibility
+        if ($result instanceof CallbackResponse) {
+            return $result->toArray();
+        }
+
+        // Legacy array format - return as is
+        return $result;
     }
 
     /**

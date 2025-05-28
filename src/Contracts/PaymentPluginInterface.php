@@ -51,7 +51,7 @@ abstract class PaymentPluginInterface
      * Handle payment callback/webhook from the payment gateway
      * This method should validate the callback and return payment status
      */
-    abstract public function handleCallback(array $callbackData): array;
+    abstract public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse;
 
     /**
      * Get the callback URL for this plugin

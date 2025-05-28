@@ -50,7 +50,7 @@ interface PaymentPluginInterface
      * Core payment processing
      */
     public function processPayment(PaymentOrder $paymentOrder);
-    public function handleCallback(array $callbackData): array;
+    public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse;
     
     /**
      * Optional advanced features
@@ -182,6 +182,7 @@ $callbackResult = $plugin->handleCallback($webhookData);
 namespace App\PaymentPlugins;
 
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
+use Trinavo\PaymentGateway\Models\CallbackResponse;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 use Trinavo\PaymentGateway\Models\PaymentMethod;
 
@@ -339,7 +340,7 @@ protected function preparePaymentData(PaymentOrder $paymentOrder): array
 ### 4. Callback Handling Pattern
 
 ```php
-public function handleCallback(array $callbackData): array
+public function handleCallback(array $callbackData): CallbackResponse
 {
     try {
         // 1. Verify callback authenticity
@@ -352,19 +353,34 @@ public function handleCallback(array $callbackData): array
         $status = $this->determinePaymentStatus($callbackData);
         
         // 4. Return standardized response
-        return [
-            'success' => $status === 'completed',
-            'order_code' => $paymentInfo['order_code'],
-            'transaction_id' => $paymentInfo['transaction_id'],
-            'payment_data' => $paymentInfo,
-            'status' => $status,
-        ];
+        if ($status === 'completed') {
+            return CallbackResponse::success(
+                orderCode: $paymentInfo['order_code'],
+                transactionId: $paymentInfo['transaction_id'],
+                message: 'Payment completed successfully',
+                additionalData: $paymentInfo
+            );
+        } elseif ($status === 'pending') {
+            return CallbackResponse::pending(
+                orderCode: $paymentInfo['order_code'],
+                transactionId: $paymentInfo['transaction_id'],
+                message: 'Payment is being processed',
+                additionalData: $paymentInfo
+            );
+        } else {
+            return CallbackResponse::failure(
+                orderCode: $paymentInfo['order_code'],
+                message: 'Payment failed',
+                status: $status,
+                additionalData: $paymentInfo
+            );
+        }
         
     } catch (\Exception $e) {
-        return [
-            'success' => false,
-            'error' => $e->getMessage(),
-        ];
+        return CallbackResponse::failure(
+            orderCode: $callbackData['order_code'] ?? 'unknown',
+            message: 'Callback processing failed: ' . $e->getMessage()
+        );
     }
 }
 

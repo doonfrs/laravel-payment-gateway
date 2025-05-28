@@ -29,7 +29,7 @@ interface PaymentPluginInterface
     
     // Payment processing
     public function processPayment(PaymentOrder $paymentOrder);
-    public function handleCallback(array $callbackData): array;
+    public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse;
     
     // Optional features
     public function supportsRefunds(): bool;
@@ -50,6 +50,7 @@ interface PaymentPluginInterface
 namespace App\PaymentPlugins;
 
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
+use Trinavo\PaymentGateway\Models\CallbackResponse;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 use Trinavo\PaymentGateway\Models\PaymentMethod;
 
@@ -117,16 +118,16 @@ class ExamplePaymentPlugin implements PaymentPluginInterface
         // return redirect()->route('payment-gateway.success', ['order' => $paymentOrder->order_code]);
     }
 
-    public function handleCallback(array $callbackData): array
+    public function handleCallback(array $callbackData): CallbackResponse
     {
         // Process webhook/callback from payment gateway
         
-        return [
-            'success' => true,
-            'order_code' => $callbackData['order_id'],
-            'transaction_id' => $callbackData['transaction_id'],
-            'payment_data' => $callbackData,
-        ];
+        return CallbackResponse::success(
+            orderCode: $callbackData['order_id'],
+            transactionId: $callbackData['transaction_id'],
+            message: 'Payment completed successfully',
+            additionalData: $callbackData
+        );
     }
 
     public function supportsRefunds(): bool
@@ -169,16 +170,24 @@ public function processPayment(PaymentOrder $paymentOrder)
     return view('payment-gateway::dummy-payment', compact('paymentOrder'));
 }
 
-public function handleCallback(array $callbackData): array
+public function handleCallback(array $callbackData): CallbackResponse
 {
     $action = $callbackData['action'] ?? 'success';
     
-    return [
-        'success' => $action === 'success',
-        'order_code' => $callbackData['order_code'],
-        'transaction_id' => $action === 'success' ? 'dummy_' . uniqid() : null,
-        'payment_data' => $callbackData,
-    ];
+    if ($action === 'success') {
+        return CallbackResponse::success(
+            orderCode: $callbackData['order_code'],
+            transactionId: 'dummy_' . uniqid(),
+            message: 'Dummy payment completed successfully',
+            additionalData: $callbackData
+        );
+    }
+    
+    return CallbackResponse::failure(
+        orderCode: $callbackData['order_code'],
+        message: 'Dummy payment failed',
+        additionalData: $callbackData
+    );
 }
 ```
 

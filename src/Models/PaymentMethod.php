@@ -44,11 +44,7 @@ class PaymentMethod extends Model
         $value = $setting->value;
 
         if ($setting->encrypted) {
-            try {
-                $value = Crypt::decryptString($value);
-            } catch (\Exception $e) {
-                return $default;
-            }
+            $value = Crypt::decryptString($value);
         }
 
         return $value;
@@ -77,11 +73,7 @@ class PaymentMethod extends Model
             $value = $setting->value;
 
             if ($setting->encrypted) {
-                try {
-                    $value = Crypt::decryptString($value);
-                } catch (\Exception $e) {
-                    $value = null;
-                }
+                $value = Crypt::decryptString($value);
             }
 
             $settings[$setting->key] = $value;

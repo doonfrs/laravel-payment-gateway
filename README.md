@@ -165,6 +165,7 @@ This is useful for scenarios like:
 namespace App\PaymentPlugins;
 
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
+use Trinavo\PaymentGateway\Models\CallbackResponse;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Configuration\PasswordField;
@@ -214,14 +215,14 @@ class StripePaymentPlugin extends PaymentPluginInterface
         // Return view, redirect, or JSON response
     }
 
-    public function handleCallback(array $callbackData): array
+    public function handleCallback(array $callbackData): CallbackResponse
     {
         // Handle Stripe webhook
-        return [
-            'success' => true,
-            'order_code' => $callbackData['order_code'],
-            'transaction_id' => $callbackData['payment_intent'],
-        ];
+        return CallbackResponse::success(
+            orderCode: $callbackData['order_code'],
+            transactionId: $callbackData['payment_intent'],
+            message: 'Payment completed successfully'
+        );
     }
 
     // ... implement other required methods
@@ -337,6 +338,8 @@ For detailed documentation, see the [docs](docs/) directory:
 - [Installation Guide](docs/installation.md)
 - [Quick Start](docs/quick-start.md)
 - [Configuration](docs/configuration.md)
+- [Configuration Fields](docs/configuration-fields.md)
+- [CallbackResponse Class](docs/callback-response.md)
 - [Payment Orders](docs/payment-orders.md)
 - [Payment Methods](docs/payment-methods.md)
 - [Creating Plugins](docs/creating-plugins.md)
