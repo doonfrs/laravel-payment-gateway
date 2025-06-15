@@ -4,6 +4,7 @@ namespace Trinavo\PaymentGateway\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Trinavo\PaymentGateway\Models\PaymentMethod;
 use Trinavo\PaymentGateway\Services\PaymentGatewayService;
 
@@ -84,6 +85,9 @@ class PaymentController extends Controller
         $callbackData = $request->all();
 
         $result = $this->paymentGateway->handlePluginCallback($pluginClass, $callbackData);
+
+        Log::info('Callback data', $callbackData);
+        Log::info('Callback result', $result);
 
         if ($result['success']) {
             $paymentOrder = $this->paymentGateway->getPaymentOrderByCode($result['order_code']);
