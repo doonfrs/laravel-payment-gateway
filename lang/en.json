@@ -72,5 +72,10 @@
     "processing": "Processing",
     "completed": "Completed",
     "failed": "Failed",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "offline_payment_gateway": "Offline Payment Gateway",
+    "cash_on_delivery": "Cash on Delivery",
+    "cash_on_delivery_payment": "Cash on Delivery Payment",
+    "no_payment_required_now": "No payment required now",
+    "confirm_order": "Confirm Order"
 }

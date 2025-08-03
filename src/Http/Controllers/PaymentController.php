@@ -199,6 +199,26 @@ class PaymentController extends Controller
     }
 
     /**
+     * Handle offline payment confirmation
+     */
+    public function offlineConfirm(Request $request, string $orderCode)
+    {
+        $paymentOrder = $this->paymentGateway->getPaymentOrderByCode($orderCode);
+
+        if (! $paymentOrder) {
+            abort(404, 'Payment order not found');
+        }
+
+        // Handle offline payment success
+        $this->paymentGateway->handlePaymentSuccess($paymentOrder, [
+            'transaction_id' => 'offline_'.uniqid(),
+            'method' => 'offline_cod',
+        ]);
+
+        return redirect()->route('payment-gateway.success', ['order' => $orderCode]);
+    }
+
+    /**
      * Get plugin class name from plugin identifier
      */
     protected function getPluginClass(string $plugin): string

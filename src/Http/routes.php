@@ -34,4 +34,8 @@ Route::group([
     Route::get('dummy/{order}/{action}', [PaymentController::class, 'dummyAction'])
         ->name('dummy-action')
         ->where('action', 'success|failure|callback');
+
+    // Offline payment confirmation
+    Route::post('offline/{order}/confirm', [PaymentController::class, 'offlineConfirm'])
+        ->name('offline-confirm');
 });

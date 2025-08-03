@@ -72,5 +72,10 @@
     "processing": "قيد المعالجة",
     "completed": "مكتمل",
     "failed": "فاشل",
-    "cancelled": "ملغي"
+    "cancelled": "ملغي",
+    "offline_payment_gateway": "بوابة الدفع غير المتصل",
+    "cash_on_delivery": "الدفع عند الاستلام",
+    "cash_on_delivery_payment": "دفع نقداً عند الاستلام",
+    "no_payment_required_now": "لا يلزم الدفع الآن",
+    "confirm_order": "تأكيد الطلب"
 }
