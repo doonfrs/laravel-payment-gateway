@@ -78,18 +78,18 @@
                                     <div class="flex justify-between">
                                         <span class="text-gray-600">{{ __('payment_method') }}:</span>
                                         <span
-                                            class="font-medium text-gray-900">{{ $paymentOrder->paymentMethod->display_name ?: $paymentOrder->paymentMethod->name }}</span>
+                                            class="font-medium text-gray-900">{{ $paymentOrder->paymentMethod->getLocalizedDisplayName() }}</span>
                                     </div>
                                 @endif
                             </div>
                         </div>
                     </div>
 
-                    @if ($paymentOrder->description)
+                    @if ($paymentOrder->getLocalizedDescription())
                         <div class="mb-8">
                             <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ __('description') }}</h3>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <p class="text-blue-800">{{ $paymentOrder->description }}</p>
+                                <p class="text-blue-800">{{ $paymentOrder->getLocalizedDescription() }}</p>
                             </div>
                         </div>
                     @endif

@@ -28,10 +28,11 @@
                                     <span
                                         class="font-bold text-xl text-green-600">{{ $paymentOrder->formatted_amount }}</span>
                                 </div>
-                                @if ($paymentOrder->description)
+                                @if ($paymentOrder->getLocalizedDescription())
                                     <div class="flex justify-between">
                                         <span class="text-gray-600">{{ __('description') }}:</span>
-                                        <span class="font-medium text-gray-900">{{ $paymentOrder->description }}</span>
+                                        <span
+                                            class="font-medium text-gray-900">{{ $paymentOrder->getLocalizedDescription() }}</span>
                                     </div>
                                 @endif
                             </div>
@@ -107,7 +108,8 @@
                                         data-method-id="{{ $method->id }}">
                                         <div class="text-center">
                                             @if ($method->logo_url)
-                                                <img src="{{ $method->logo_url }}" alt="{{ $method->display_name }}"
+                                                <img src="{{ $method->logo_url }}"
+                                                    alt="{{ $method->getLocalizedDisplayName() }}"
                                                     class="h-12 mx-auto mb-4 object-contain">
                                             @else
                                                 <div
@@ -122,9 +124,10 @@
                                                 </div>
                                             @endif
                                             <h3 class="font-semibold text-gray-900 mb-2">
-                                                {{ $method->display_name ?: $method->name }}</h3>
-                                            @if ($method->description)
-                                                <p class="text-sm text-gray-600">{{ $method->description }}</p>
+                                                {{ $method->getLocalizedDisplayName() }}</h3>
+                                            @if ($method->getLocalizedDescription())
+                                                <p class="text-sm text-gray-600">{{ $method->getLocalizedDescription() }}
+                                                </p>
                                             @endif
                                         </div>
                                     </div>

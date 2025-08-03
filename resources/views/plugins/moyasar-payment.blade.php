@@ -7,7 +7,7 @@
         <div class="max-w-2xl mx-auto">
             <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg overflow-hidden">
                 <div class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-4">
-                    <h1 class="text-2xl font-bold">{{ $paymentMethod->display_name ?: $paymentMethod->name }}</h1>
+                    <h1 class="text-2xl font-bold">{{ $paymentMethod->getLocalizedDisplayName() }}</h1>
                     <p class="text-blue-100 mt-1">{{ __('pay_securely_with_moyasar') }}</p>
                 </div>
                 <div class="p-6">
@@ -25,11 +25,11 @@
                                 <span
                                     class="font-bold text-xl text-green-600 dark:text-green-400">{{ $paymentOrder->formatted_amount }}</span>
                             </div>
-                            @if ($paymentOrder->description)
+                            @if ($paymentOrder->getLocalizedDescription())
                                 <div class="flex justify-between">
                                     <span class="text-gray-600 dark:text-gray-300">{{ __('description') }}:</span>
                                     <span
-                                        class="font-medium text-gray-900 dark:text-gray-100">{{ $paymentOrder->description }}</span>
+                                        class="font-medium text-gray-900 dark:text-gray-100">{{ $paymentOrder->getLocalizedDescription() }}</span>
                                 </div>
                             @endif
                         </div>
@@ -72,7 +72,7 @@
             element: '.mysr-form',
             amount: {{ $amount }},
             currency: '{{ $paymentOrder->currency }}',
-            description: '{{ $paymentOrder->description ?? '' }}',
+            description: '{{ $paymentOrder->getLocalizedDescription() ?? '' }}',
             publishable_api_key: '{{ $publishable_api_key }}',
             secret_api_key: '{{ $secret_api_key }}',
             callback_url: '{{ $callbackUrl }}',

@@ -33,6 +33,66 @@ class PaymentMethod extends Model
         return $this->hasMany(PaymentOrder::class);
     }
 
+    /**
+     * Get the localized display name
+     */
+    public function getLocalizedDisplayName(): string
+    {
+        if (! $this->display_name) {
+            return $this->name;
+        }
+
+        // Check if display_name is JSON format
+        $decoded = json_decode($this->display_name, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            // It's JSON, get the current locale
+            $locale = app()->getLocale();
+
+            // Return the localized text if available, otherwise fallback to 'en' or first available
+            if (isset($decoded[$locale])) {
+                return $decoded[$locale];
+            } elseif (isset($decoded['en'])) {
+                return $decoded['en'];
+            } elseif (! empty($decoded)) {
+                return reset($decoded); // Return first available translation
+            }
+        }
+
+        // Not JSON or no valid translations, return as plain text
+        return $this->display_name;
+    }
+
+    /**
+     * Get the localized description
+     */
+    public function getLocalizedDescription(): ?string
+    {
+        if (! $this->description) {
+            return null;
+        }
+
+        // Check if description is JSON format
+        $decoded = json_decode($this->description, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            // It's JSON, get the current locale
+            $locale = app()->getLocale();
+
+            // Return the localized text if available, otherwise fallback to 'en' or first available
+            if (isset($decoded[$locale])) {
+                return $decoded[$locale];
+            } elseif (isset($decoded['en'])) {
+                return $decoded['en'];
+            } elseif (! empty($decoded)) {
+                return reset($decoded); // Return first available translation
+            }
+        }
+
+        // Not JSON or no valid translations, return as plain text
+        return $this->description;
+    }
+
     public function getSetting(string $key, $default = null)
     {
         $setting = $this->settings()->where('key', $key)->first();

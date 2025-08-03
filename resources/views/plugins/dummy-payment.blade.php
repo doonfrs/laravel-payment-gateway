@@ -10,7 +10,7 @@
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4">
-                    <h1 class="text-2xl font-bold">{{ $paymentMethod->display_name ?: $paymentMethod->name }}</h1>
+                    <h1 class="text-2xl font-bold">{{ $paymentMethod->getLocalizedDisplayName() }}</h1>
                     <p class="text-purple-100 mt-1">{{ __('test_payment_gateway') }}</p>
                 </div>
 
@@ -30,10 +30,11 @@
                                     <span
                                         class="font-bold text-xl text-green-600">{{ $paymentOrder->formatted_amount }}</span>
                                 </div>
-                                @if ($paymentOrder->description)
+                                @if ($paymentOrder->getLocalizedDescription())
                                     <div class="flex justify-between">
                                         <span class="text-gray-600">{{ __('description') }}:</span>
-                                        <span class="font-medium text-gray-900">{{ $paymentOrder->description }}</span>
+                                        <span
+                                            class="font-medium text-gray-900">{{ $paymentOrder->getLocalizedDescription() }}</span>
                                     </div>
                                 @endif
                             </div>

@@ -80,7 +80,7 @@
                                     <div class="flex justify-between">
                                         <span class="text-gray-600">{{ __('payment_method') }}:</span>
                                         <span
-                                            class="font-medium text-gray-900">{{ $paymentOrder->paymentMethod->display_name ?: $paymentOrder->paymentMethod->name }}</span>
+                                            class="font-medium text-gray-900">{{ $paymentOrder->paymentMethod->getLocalizedDisplayName() }}</span>
                                     </div>
                                 @endif
                             </div>
