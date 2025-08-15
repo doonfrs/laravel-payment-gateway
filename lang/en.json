@@ -77,5 +77,15 @@
     "cash_on_delivery": "Cash on Delivery",
     "cash_on_delivery_payment": "Cash on Delivery Payment",
     "no_payment_required_now": "No payment required now",
-    "confirm_order": "Confirm Order"
+    "confirm_order": "Confirm Order",
+    "tabby_payment_gateway": "Tabby Payment Gateway",
+    "pay_now_or_split_into_installments": "Pay now or split into 4 interest-free installments",
+    "pay_in_4_installments": "Pay in 4 Installments",
+    "split_your_payment_into_4_interest_free_installments": "Split your payment of :amount into 4 interest-free installments of :amount each",
+    "initializing_payment": "Initializing payment",
+    "payment_initialization_failed": "Payment Initialization Failed",
+    "unable_to_load_payment_form": "Unable to load payment form. Please try again.",
+    "go_back": "Go Back",
+    "tabby_sdk_not_loaded": "Tabby SDK not loaded properly",
+    "failed_to_initialize_tabby_payment": "Failed to initialize Tabby payment"
 }

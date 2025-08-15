@@ -77,5 +77,17 @@
     "cash_on_delivery": "الدفع عند الاستلام",
     "cash_on_delivery_payment": "دفع نقداً عند الاستلام",
     "no_payment_required_now": "لا يلزم الدفع الآن",
-    "confirm_order": "تأكيد الطلب"
+    "confirm_order": "تأكيد الطلب",
+    "tabby_payment_gateway": "بوابة دفع تابي",
+    "pay_now_or_split_into_installments": "ادفع الآن أو قسط على 4 دفعات بدون فوائد",
+    "pay_in_4_installments": "ادفع على 4 أقساط",
+    "split_your_payment_into_4_interest_free_installments": "قسم دفعتك البالغة :amount إلى 4 أقساط بدون فوائد بقيمة :amount لكل قسط",
+    "initializing_payment": "جاري تهيئة الدفع",
+    "payment_initialization_failed": "فشل في تهيئة الدفع",
+    "unable_to_load_payment_form": "غير قادر على تحميل نموذج الدفع. يرجى المحاولة مرة أخرى.",
+    "go_back": "العودة",
+    "tabby_sdk_not_loaded": "لم يتم تحميل Tabby SDK بشكل صحيح",
+    "failed_to_initialize_tabby_payment": "فشل في تهيئة دفع تابي",
+    "order_summary": "ملخص الطلب",
+    "customer_details": "تفاصيل العميل"
 }

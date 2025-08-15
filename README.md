@@ -157,7 +157,7 @@ This is useful for scenarios like:
 
 ## Creating a Custom Payment Plugin
 
-1. Create a class that implements `PaymentPluginInterface`:
+- Create a class that implements `PaymentPluginInterface`:
 
 ```php
 <?php
@@ -229,7 +229,7 @@ class StripePaymentPlugin extends PaymentPluginInterface
 }
 ```
 
-2. Register the plugin in your configuration:
+- Register the plugin in your configuration:
 
 ```php
 // config/payment-gateway.php
@@ -239,7 +239,7 @@ class StripePaymentPlugin extends PaymentPluginInterface
 ],
 ```
 
-3. Add the payment method to your database:
+- Add the payment method to your database:
 
 ```php
 use Trinavo\PaymentGateway\Models\PaymentMethod;
@@ -357,7 +357,7 @@ The Laravel Payment Gateway uses a flexible plugin system that allows you to int
 
 ### Adding New Payment Plugins
 
-1. **Configure the plugin** in `config/payment-gateway.php` (simply add the class name):
+- **Configure the plugin** in `config/payment-gateway.php` (simply add the class name):
 
 ```php
 'plugins' => [
@@ -369,7 +369,7 @@ The Laravel Payment Gateway uses a flexible plugin system that allows you to int
 
 Plugin keys are automatically generated from class names (e.g., `StripePaymentPlugin` → `stripe`).
 
-2. **Create a payment method record**:
+- **Create a payment method record**:
 
 ```php
 use Trinavo\PaymentGateway\Models\PaymentMethod;
@@ -383,7 +383,7 @@ PaymentMethod::create([
 ]);
 ```
 
-3. **Configure plugin settings**:
+- **Configure plugin settings**:
 
 ```php
 $paymentMethod = PaymentMethod::where('name', 'stripe')->first();

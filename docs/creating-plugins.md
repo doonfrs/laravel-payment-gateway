@@ -184,7 +184,7 @@ public function handleCallback(array $callbackData): CallbackResponse
 ],
 ```
 
-2. **Create payment method record**:
+1. **Create payment method record**:
 
 ```php
 PaymentMethod::create([
@@ -196,7 +196,7 @@ PaymentMethod::create([
 ]);
 ```
 
-3. **Configure settings**:
+1. **Configure settings**:
 
 ```php
 $paymentMethod->setSetting('api_key', 'your_api_key', false);
