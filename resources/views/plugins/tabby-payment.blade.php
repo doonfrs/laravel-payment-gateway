@@ -125,6 +125,17 @@
                         <div id="tabby-checkout" class="hidden">
                             <!-- Tabby will inject its payment form here -->
                         </div>
+
+                        <!-- Debug Info (temporary) -->
+                        <div id="tabby-debug" class="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm">
+                            <h4 class="font-semibold mb-2">Debug Information:</h4>
+                            <div id="debug-content">
+                                <p>Widget Status: <span id="widget-status">Initializing...</span></p>
+                                <p>Element Count: <span id="element-count">0</span></p>
+                                <p>Iframe Count: <span id="iframe-count">0</span></p>
+                                <p>Button Count: <span id="button-count">0</span></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -134,24 +145,139 @@
 
 @push('scripts')
     <!-- Tabby Web SDK -->
-    <script src="https://checkout.tabby.ai/tabby-card.js"></script>
+    <script>
+        // Track script loading
+        let tabbyScriptLoaded = false;
+        let tabbyScriptError = null;
+
+        // Create script element with error handling
+        const tabbyScript = document.createElement('script');
+        tabbyScript.src = 'https://checkout.tabby.ai/tabby-card.js';
+        tabbyScript.async = true;
+
+        tabbyScript.onload = function() {
+            console.log('Tabby SDK script loaded successfully');
+            tabbyScriptLoaded = true;
+        };
+
+        tabbyScript.onerror = function() {
+            console.error('Tabby SDK script failed to load');
+            tabbyScriptError = 'Script loading failed';
+            tabbyScriptLoaded = false;
+
+            // Try to diagnose the issue
+            console.error('Script loading failed. Possible causes:');
+            console.error('1. Network connectivity issues');
+            console.error('2. Content Security Policy (CSP) blocking');
+            console.error('3. Firewall or proxy blocking');
+            console.error('4. Tabby service down');
+
+            // Check if we can reach the domain
+            fetch('https://checkout.tabby.ai/', {
+                    mode: 'no-cors'
+                })
+                .then(() => console.log('Tabby domain is reachable'))
+                .catch(() => console.error('Tabby domain is not reachable'));
+        };
+
+        // Add script to head
+        document.head.appendChild(tabbyScript);
+
+        // Set a timeout for script loading
+        setTimeout(function() {
+            if (!tabbyScriptLoaded) {
+                console.error('Tabby SDK script loading timeout');
+                if (document.getElementById('tabby-loading')) {
+                    showError('Tabby SDK failed to load within timeout period');
+                }
+            }
+        }, 10000); // 10 second timeout
+
+        // Check for CSP issues
+        try {
+            const metaCSP = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+            if (metaCSP) {
+                console.log('Content Security Policy found:', metaCSP.content);
+                if (!metaCSP.content.includes('checkout.tabby.ai')) {
+                    console.warn('CSP might be blocking Tabby SDK. Add checkout.tabby.ai to script-src');
+                }
+            }
+        } catch (e) {
+            console.log('No CSP meta tag found');
+        }
+    </script>
 
     <script>
+        // Debug logging
+        console.log('Tabby Payment View Loaded');
+        console.log('Payment Order:', @json($paymentOrder));
+        console.log('Payment Method:', @json($paymentMethod));
+        console.log('Public Key:', '{{ $publicKey }}');
+        console.log('API URL:', '{{ $apiUrl }}');
+        console.log('Sandbox Mode:', {{ $sandboxMode ? 'true' : 'false' }});
+        console.log('Currency:', '{{ $currency }}');
+        console.log('Payment Product:', '{{ $paymentProduct }}');
+
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded');
+            console.log('Tabby script loaded status:', tabbyScriptLoaded);
+            console.log('Tabby script error:', tabbyScriptError);
+
             const loadingEl = document.getElementById('tabby-loading');
             const errorEl = document.getElementById('tabby-error');
             const checkoutEl = document.getElementById('tabby-checkout');
             const errorMessageEl = document.getElementById('tabby-error-message');
 
+            if (!loadingEl || !errorEl || !checkoutEl || !errorMessageEl) {
+                console.error('Required DOM elements not found:', {
+                    loadingEl: !!loadingEl,
+                    errorEl: !!errorEl,
+                    checkoutEl: !!checkoutEl,
+                    errorMessageEl: !!errorMessageEl
+                });
+                return;
+            }
+
             function showError(message) {
+                console.error('Showing error:', message);
                 loadingEl.classList.add('hidden');
                 errorMessageEl.textContent = message;
                 errorEl.classList.remove('hidden');
             }
 
             function showCheckout() {
+                console.log('Showing checkout form');
                 loadingEl.classList.add('hidden');
                 checkoutEl.classList.remove('hidden');
+            }
+
+            // Wait for Tabby script to load
+            function waitForTabbyScript() {
+                return new Promise((resolve, reject) => {
+                    if (tabbyScriptLoaded) {
+                        resolve();
+                    } else if (tabbyScriptError) {
+                        reject(new Error('Tabby script failed to load: ' + tabbyScriptError));
+                    } else {
+                        // Check every 100ms
+                        const checkInterval = setInterval(() => {
+                            if (tabbyScriptLoaded) {
+                                clearInterval(checkInterval);
+                                resolve();
+                            } else if (tabbyScriptError) {
+                                clearInterval(checkInterval);
+                                reject(new Error('Tabby script failed to load: ' +
+                                    tabbyScriptError));
+                            }
+                        }, 100);
+
+                        // Timeout after 10 seconds
+                        setTimeout(() => {
+                            clearInterval(checkInterval);
+                            reject(new Error('Tabby script loading timeout'));
+                        }, 10000);
+                    }
+                });
             }
 
             // Tabby configuration
@@ -223,6 +349,8 @@
                             message: 'Payment processed successfully'
                         };
 
+                        console.log('Sending callback data:', callbackData);
+
                         // Send callback data to our server
                         fetch('{{ $callbackUrl }}', {
                             method: 'POST',
@@ -233,6 +361,7 @@
                             },
                             body: JSON.stringify(callbackData)
                         }).then(response => {
+                            console.log('Callback response:', response);
                             if (response.ok) {
                                 window.location.href = '{{ $successUrl }}';
                             } else {
@@ -244,6 +373,7 @@
                         });
                     } else {
                         // Payment failed or cancelled
+                        console.log('Payment failed or cancelled, redirecting to failure URL');
                         window.location.href = '{{ $failureUrl }}';
                     }
                 },
@@ -254,17 +384,231 @@
                 }
             };
 
-            try {
-                // Initialize Tabby
-                if (window.TabbyCard) {
-                    window.TabbyCard.init(config);
-                    showCheckout();
-                } else {
-                    showError('{{ __('tabby_sdk_not_loaded') }}');
+            console.log('Tabby config prepared:', config);
+
+            // Initialize Tabby after script is loaded
+            async function initializeTabby() {
+                try {
+                    console.log('Waiting for Tabby script to load...');
+                    await waitForTabbyScript();
+
+                    console.log('Tabby script loaded, checking if TabbyCard is available...');
+                    console.log('window.TabbyCard:', window.TabbyCard);
+
+                    // Initialize Tabby
+                    if (window.TabbyCard) {
+                        console.log('TabbyCard found, initializing...');
+                        console.log('TabbyCard object:', window.TabbyCard);
+                        console.log('TabbyCard prototype:', Object.getPrototypeOf(window.TabbyCard));
+                        console.log('TabbyCard methods:', Object.getOwnPropertyNames(window.TabbyCard));
+                        console.log('TabbyCard descriptor:', Object.getOwnPropertyDescriptor(window,
+                            'TabbyCard'));
+
+                        // Validate configuration before initialization
+                        console.log('Validating Tabby configuration...');
+                        if (!config.merchant_code) {
+                            throw new Error('Merchant code is missing');
+                        }
+                        if (!config.payment.amount) {
+                            throw new Error('Payment amount is missing');
+                        }
+                        if (!config.payment.currency) {
+                            throw new Error('Payment currency is missing');
+                        }
+                        console.log('Configuration validation passed');
+
+                        // Try to initialize with error handling
+                        try {
+                            console.log('Calling window.TabbyCard with config...');
+                            console.log('TabbyCard type:', typeof window.TabbyCard);
+                            console.log('TabbyCard constructor:', window.TabbyCard.constructor.name);
+
+                            // Try different initialization methods
+                            if (typeof window.TabbyCard === 'function') {
+                                // If TabbyCard is a function, call it directly
+                                window.TabbyCard(config);
+                                console.log('TabbyCard called successfully');
+
+                                // Wait a bit for the widget to render, then check if it's visible
+                                setTimeout(() => {
+                                    console.log('Checking Tabby widget after initialization...');
+                                    const tabbyCheckout = document.getElementById('tabby-checkout');
+                                    console.log('Tabby checkout element:', tabbyCheckout);
+                                    console.log('Tabby checkout innerHTML length:', tabbyCheckout
+                                        ?.innerHTML?.length || 0);
+                                    console.log('Tabby checkout children count:', tabbyCheckout
+                                        ?.children?.length || 0);
+
+                                    // Check if there are any iframes or forms
+                                    const iframes = tabbyCheckout?.querySelectorAll('iframe');
+                                    const forms = tabbyCheckout?.querySelectorAll('form');
+                                    const buttons = tabbyCheckout?.querySelectorAll('button');
+
+                                    console.log('Found iframes:', iframes?.length || 0);
+                                    console.log('Found forms:', forms?.length || 0);
+                                    console.log('Found buttons:', buttons?.length || 0);
+
+                                    if (iframes?.length > 0) {
+                                        console.log('Tabby iframe found:', iframes[0]);
+                                    }
+                                    if (forms?.length > 0) {
+                                        console.log('Tabby form found:', forms[0]);
+                                    }
+                                    if (buttons?.length > 0) {
+                                        console.log('Tabby buttons found:', Array.from(buttons).map(b =>
+                                            ({
+                                                text: b.textContent,
+                                                type: b.type,
+                                                class: b.className
+                                            })));
+                                    }
+
+                                    // Check if the widget is actually visible
+                                    const computedStyle = window.getComputedStyle(tabbyCheckout);
+                                    console.log('Tabby checkout computed style:', {
+                                        display: computedStyle.display,
+                                        visibility: computedStyle.visibility,
+                                        opacity: computedStyle.opacity,
+                                        height: computedStyle.height,
+                                        width: computedStyle.width
+                                    });
+
+                                    // Update debug info
+                                    updateDebugInfo(tabbyCheckout, iframes, forms, buttons);
+
+                                    // If no content found, try to re-initialize
+                                    if (tabbyCheckout?.children?.length === 0) {
+                                        console.warn(
+                                            'Tabby widget appears empty, attempting re-initialization...'
+                                        );
+                                        setTimeout(() => {
+                                            window.TabbyCard(config);
+                                            console.log('Re-initialization attempted');
+                                        }, 1000);
+                                    }
+
+                                }, 2000); // Wait 2 seconds for widget to render
+
+                            } else if (window.TabbyCard && typeof window.TabbyCard.init === 'function') {
+                                // If it has an init method, use that
+                                window.TabbyCard.init(config);
+                                console.log('TabbyCard.init called successfully');
+                            } else if (window.TabbyCard && typeof window.TabbyCard.create === 'function') {
+                                // If it has a create method, use that
+                                window.TabbyCard.create(config);
+                                console.log('TabbyCard.create called successfully');
+                            } else {
+                                throw new Error('Unknown TabbyCard initialization method');
+                            }
+
+                            console.log('TabbyCard initialized successfully');
+                            showCheckout();
+                        } catch (initError) {
+                            console.error('TabbyCard initialization failed:', initError);
+                            throw new Error('TabbyCard initialization failed: ' + initError.message);
+                        }
+                    } else {
+                        console.error('TabbyCard not found in window object');
+                        console.error('Available window properties:', Object.keys(window).filter(key => key
+                            .toLowerCase().includes('tabby')));
+                        showError('{{ __('tabby_sdk_not_loaded') }}');
+                    }
+                } catch (error) {
+                    console.error('Tabby initialization error:', error);
+                    console.error('Error details:', {
+                        message: error.message,
+                        stack: error.stack,
+                        name: error.name,
+                        config: config
+                    });
+
+                    // Show more specific error messages
+                    let errorMessage = '{{ __('failed_to_initialize_tabby_payment') }}';
+                    if (error.message.includes('Merchant code is missing')) {
+                        errorMessage = 'Merchant code is missing. Please check configuration.';
+                    } else if (error.message.includes('Payment amount is missing')) {
+                        errorMessage = 'Payment amount is missing. Please check configuration.';
+                    } else if (error.message.includes('Payment currency is missing')) {
+                        errorMessage = 'Payment currency is missing. Please check configuration.';
+                    } else if (error.message.includes('TabbyCard initialization failed')) {
+                        errorMessage = 'Tabby SDK initialization failed. Please try again.';
+                    } else if (error.message.includes('script failed to load')) {
+                        errorMessage =
+                            'Tabby SDK failed to load. Please check your internet connection and try again.';
+                    } else if (error.message.includes('timeout')) {
+                        errorMessage = 'Tabby SDK loading timeout. Please try again.';
+                    }
+
+                    showError(errorMessage);
                 }
-            } catch (error) {
-                console.error('Tabby initialization error:', error);
-                showError('{{ __('failed_to_initialize_tabby_payment') }}');
+            }
+
+            // Start initialization
+            initializeTabby();
+
+            // Function to update debug information
+            function updateDebugInfo(tabbyCheckout, iframes, forms, buttons) {
+                const widgetStatus = document.getElementById('widget-status');
+                const elementCount = document.getElementById('element-count');
+                const iframeCount = document.getElementById('iframe-count');
+                const buttonCount = document.getElementById('button-count');
+
+                if (widgetStatus) widgetStatus.textContent = 'Widget Rendered';
+                if (elementCount) elementCount.textContent = tabbyCheckout?.children?.length || 0;
+                if (iframeCount) iframeCount.textContent = iframes?.length || 0;
+                if (buttonCount) buttonCount.textContent = buttons?.length || 0;
+            }
+
+            // Continuous monitoring of widget state
+            function startWidgetMonitoring() {
+                const checkInterval = setInterval(() => {
+                    const tabbyCheckout = document.getElementById('tabby-checkout');
+                    if (tabbyCheckout && tabbyCheckout.children.length > 0) {
+                        console.log('Tabby widget content detected!');
+                        clearInterval(checkInterval);
+
+                        // Final check after content is found
+                        setTimeout(() => {
+                            const finalCheck = document.getElementById('tabby-checkout');
+                            console.log('Final widget check:', {
+                                children: finalCheck?.children?.length || 0,
+                                innerHTML: finalCheck?.innerHTML?.substring(0, 200) + '...',
+                                computedStyle: window.getComputedStyle(finalCheck)
+                            });
+                        }, 500);
+                    }
+                }, 500); // Check every 500ms
+
+                // Stop monitoring after 10 seconds
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    console.log('Widget monitoring stopped');
+                }, 10000);
+            }
+
+            // Start monitoring
+            startWidgetMonitoring();
+        });
+
+        // Additional error handling for script loading
+        window.addEventListener('error', function(e) {
+            console.error('Global error caught:', e);
+            console.error('Error details:', {
+                message: e.message,
+                filename: e.filename,
+                lineno: e.lineno,
+                colno: e.colno,
+                error: e.error
+            });
+        });
+
+        // Check if Tabby SDK loaded
+        window.addEventListener('load', function() {
+            console.log('Window loaded, checking Tabby SDK...');
+            if (window.TabbyCard) {
+                console.log('Tabby SDK loaded successfully');
+            } else {
+                console.error('Tabby SDK failed to load');
             }
         });
     </script>
