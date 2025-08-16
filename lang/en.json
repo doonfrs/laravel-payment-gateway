@@ -87,5 +87,10 @@
     "unable_to_load_payment_form": "Unable to load payment form. Please try again.",
     "go_back": "Go Back",
     "tabby_sdk_not_loaded": "Tabby SDK not loaded properly",
-    "failed_to_initialize_tabby_payment": "Failed to initialize Tabby payment"
+    "failed_to_initialize_tabby_payment": "Failed to initialize Tabby payment",
+    "payment_error_general": "Sorry, an error occurred while initializing the payment system. Please try again or contact customer service.",
+    "payment_error_configuration": "System configuration error. Please contact customer service.",
+    "payment_error_network": "Connection issue. Please check your internet connection and try again.",
+    "payment_error_rejected": "Request was rejected. Please check your data and try again.",
+    "payment_error_support_message": "If the problem persists, please contact our technical support team."
 }

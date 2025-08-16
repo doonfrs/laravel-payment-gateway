@@ -89,6 +89,14 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                 default: 'AED',
                 description: 'Select the currency for Tabby payments.'
             ),
+
+            new TextField(
+                name: 'merchant_code',
+                label: 'Merchant Code',
+                required: false,
+                encrypted: false,
+                description: 'Your Tabby merchant code (if different from public key).'
+            ),
         ];
     }
 
@@ -115,257 +123,74 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'payment_method_id' => $this->paymentMethod->id ?? 'unknown'
         ]);
 
-        // Ensure settings relationship is loaded
-        if (!$this->paymentMethod->relationLoaded('settings')) {
-            Log::info('Loading settings relationship for payment method', [
-                'payment_method_id' => $this->paymentMethod->id ?? 'unknown'
-            ]);
-            $this->paymentMethod->load('settings');
+        // Handle return from Tabby
+        if (request()->has('success')) {
+            return $this->handleSuccessReturn($paymentOrder);
+        } elseif (request()->has('canceled')) {
+            return $this->handleCancelReturn($paymentOrder);
+        } elseif (request()->has('failure')) {
+            return $this->handleFailureReturn($paymentOrder);
         }
 
-        // Log all plugin configuration fields and their values
-        $allSettings = $this->paymentMethod->settings ?? [];
-        Log::info('Tabby Plugin Configuration Details', [
-            'payment_method_id' => $this->paymentMethod->id ?? 'unknown',
-            'plugin_class' => $this->paymentMethod->plugin_class ?? 'unknown',
-            'all_settings' => $allSettings,
-            'configuration_fields' => array_map(function($field) {
-                return [
-                    'name' => $field->getName(),
-                    'type' => get_class($field),
-                    'required' => $field->isRequired(),
-                    'default' => $field->getDefault()
-                ];
-            }, $this->getConfigurationFields())
-        ]);
-
-        // Log payment method object details
-        Log::info('Tabby Payment Method Object Details', [
-            'payment_method_id' => $this->paymentMethod->id ?? 'unknown',
-            'payment_method_class' => get_class($this->paymentMethod),
-            'payment_method_attributes' => $this->paymentMethod->getAttributes(),
-            'payment_method_relations' => array_keys($this->paymentMethod->getRelations()),
-            'has_settings_property' => property_exists($this->paymentMethod, 'settings'),
-            'has_getSetting_method' => method_exists($this->paymentMethod, 'getSetting'),
-            'settings_type' => gettype($this->paymentMethod->settings),
-            'settings_count' => is_array($this->paymentMethod->settings) ? count($this->paymentMethod->settings) : 'not_array',
-            'settings_loaded' => $this->paymentMethod->relationLoaded('settings'),
-            'settings_collection' => $this->paymentMethod->settings instanceof \Illuminate\Database\Eloquent\Collection ? $this->paymentMethod->settings->count() : 'not_collection'
-        ]);
+        // Ensure settings relationship is loaded
+        if (!$this->paymentMethod->relationLoaded('settings')) {
+            $this->paymentMethod->load('settings');
+        }
 
         $sandboxMode = $this->paymentMethod->getSetting('sandbox_mode', true);
         
         if ($sandboxMode) {
             $publicKey = $this->paymentMethod->getSetting('public_key_sandbox');
             $secretKey = $this->paymentMethod->getSetting('secret_key_sandbox');
-            $apiUrl = 'https://api-sandbox.tabby.ai';
+            $baseUrl = 'https://api.tabby.ai/api/v2';
         } else {
             $publicKey = $this->paymentMethod->getSetting('public_key_production');
             $secretKey = $this->paymentMethod->getSetting('secret_key_production');
-            $apiUrl = 'https://api.tabby.ai';
+            $baseUrl = 'https://api.tabby.ai/api/v2';
         }
 
-        // If settings are empty, try fallback method
-        if (empty($publicKey) || empty($secretKey)) {
-            Log::warning('Tabby Settings Empty, Trying Fallback Method', [
-                'order_code' => $paymentOrder->order_code,
-                'public_key_sandbox' => $publicKey,
-                'secret_key_sandbox' => $secretKey ? '***' . substr($secretKey, -4) : null,
-                'public_key_production' => $this->paymentMethod->getSetting('public_key_production'),
-                'secret_key_production' => $this->paymentMethod->getSetting('secret_key_production') ? '***' . substr($this->paymentMethod->getSetting('secret_key_production'), -4) : null
-            ]);
-
-            if ($sandboxMode) {
-                $publicKey = $this->getSettingFallback('public_key_sandbox');
-                $secretKey = $this->getSettingFallback('secret_key_sandbox');
-            } else {
-                $publicKey = $this->getSettingFallback('public_key_production');
-                $secretKey = $this->getSettingFallback('secret_key_production');
-            }
-
-            Log::info('Tabby Settings After Fallback', [
-                'order_code' => $paymentOrder->order_code,
-                'public_key_sandbox' => $publicKey,
-                'secret_key_sandbox' => $secretKey ? '***' . substr($secretKey, -4) : null,
-                'fallback_used' => true
-            ]);
-        }
-
-        // Log individual setting values for debugging
-        Log::info('Tabby Individual Settings Retrieved', [
-            'order_code' => $paymentOrder->order_code,
-            'sandbox_mode' => $sandboxMode,
-            'public_key_sandbox' => $this->paymentMethod->getSetting('public_key_sandbox'),
-            'secret_key_sandbox' => $this->paymentMethod->getSetting('secret_key_sandbox') ? '***' . substr($this->paymentMethod->getSetting('secret_key_sandbox'), -4) : null,
-            'public_key_production' => $this->paymentMethod->getSetting('public_key_production'),
-            'secret_key_production' => $this->paymentMethod->getSetting('secret_key_production') ? '***' . substr($this->paymentMethod->getSetting('secret_key_production'), -4) : null,
-            'supported_currency' => $this->paymentMethod->getSetting('supported_currency'),
-            'payment_product' => $this->paymentMethod->getSetting('payment_product')
-        ]);
+        $currency = $this->paymentMethod->getSetting('supported_currency', 'AED');
+        $paymentProduct = $this->paymentMethod->getSetting('payment_product', 'installments');
+        $merchantCode = $this->paymentMethod->getSetting('merchant_code', $publicKey);
 
         // Log configuration details
         Log::info('Tabby Configuration Loaded', [
             'sandbox_mode' => $sandboxMode,
-            'api_url' => $apiUrl,
+            'base_url' => $baseUrl,
             'public_key_length' => strlen($publicKey),
             'secret_key_length' => strlen($secretKey),
             'has_public_key' => !empty($publicKey),
-            'has_secret_key' => !empty($secretKey)
-        ]);
-
-        $currency = $this->paymentMethod->getSetting('supported_currency', 'AED');
-        $paymentProduct = $this->paymentMethod->getSetting('payment_product', 'installments');
-        
-        // If other settings are empty, try fallback method
-        if (empty($currency) || empty($paymentProduct)) {
-            Log::warning('Tabby Additional Settings Empty, Trying Fallback Method', [
-                'order_code' => $paymentOrder->order_code,
-                'supported_currency' => $currency,
-                'payment_product' => $paymentProduct
-            ]);
-
-            if (empty($currency)) {
-                $currency = $this->getSettingFallback('supported_currency', 'AED');
-            }
-            if (empty($paymentProduct)) {
-                $paymentProduct = $this->getSettingFallback('payment_product', 'installments');
-            }
-
-            Log::info('Tabby Additional Settings After Fallback', [
-                'order_code' => $paymentOrder->order_code,
-                'supported_currency' => $currency,
-                'payment_product' => $paymentProduct,
-                'fallback_used' => true
-            ]);
-        }
-
-        // Prepare the checkout session data
-        $checkoutData = [
-            'payment' => [
-                'amount' => (string) round($paymentOrder->amount, 2),
-                'currency' => $currency,
-                'description' => $paymentOrder->description ?: 'Order #' . $paymentOrder->order_code,
-                'buyer' => [
-                    'phone' => $paymentOrder->customer_phone ?: '',
-                    'email' => $paymentOrder->customer_email ?: '',
-                    'name' => $paymentOrder->customer_name ?: '',
-                ],
-                'buyer_history' => [
-                    'registered_since' => now()->subYear()->toISOString(),
-                    'loyalty_level' => 0,
-                ],
-                'order' => [
-                    'tax_amount' => '0.00',
-                    'shipping_amount' => '0.00',
-                    'discount_amount' => '0.00',
-                    'updated_at' => now()->toISOString(),
-                    'reference_id' => $paymentOrder->order_code,
-                    'items' => [
-                        [
-                            'title' => $paymentOrder->description ?: 'Payment',
-                            'description' => 'Payment for order #' . $paymentOrder->order_code,
-                            'quantity' => 1,
-                            'unit_price' => (string) round($paymentOrder->amount, 2),
-                            'discount_amount' => '0.00',
-                            'reference_id' => $paymentOrder->order_code,
-                            'image_url' => '',
-                            'product_url' => '',
-                            'category' => 'general'
-                        ]
-                    ]
-                ],
-                'order_history' => [
-                    [
-                        'purchased_at' => now()->subMonth()->toISOString(),
-                        'amount' => (string) round($paymentOrder->amount, 2),
-                        'payment_method' => 'card',
-                        'status' => 'new'
-                    ]
-                ],
-                'meta' => [
-                    'order_id' => $paymentOrder->order_code,
-                    'customer' => $paymentOrder->customer_data ?? []
-                ]
-            ],
-            'lang' => app()->getLocale(),
-            'merchant_code' => $publicKey,
-            'merchant_urls' => [
-                'success' => $this->getSuccessUrl($paymentOrder),
-                'cancel' => $this->getFailureUrl($paymentOrder),
-                'failure' => $this->getFailureUrl($paymentOrder)
-            ]
-        ];
-
-        // Log checkout data being sent
-        Log::info('Tabby Checkout Data Prepared', [
-            'order_code' => $paymentOrder->order_code,
-            'amount' => $checkoutData['payment']['amount'],
+            'has_secret_key' => !empty($secretKey),
             'currency' => $currency,
-            'payment_product' => $paymentProduct,
-            'merchant_urls' => $checkoutData['merchant_urls'],
-            'locale' => app()->getLocale()
+            'payment_product' => $paymentProduct
         ]);
 
-        // Log URLs being generated
-        Log::info('Tabby URLs Generated', [
-            'order_code' => $paymentOrder->order_code,
-            'success_url' => $this->getSuccessUrl($paymentOrder),
-            'failure_url' => $this->getFailureUrl($paymentOrder),
-            'callback_url' => $this->getCallbackUrl()
-        ]);
-
-        // Log view data being passed
-        $viewData = [
-            'paymentOrder' => $paymentOrder,
-            'paymentMethod' => $this->paymentMethod,
-            'publicKey' => $publicKey,
-            'secretKey' => $secretKey,
-            'apiUrl' => $apiUrl,
-            'checkoutData' => $checkoutData,
-            'callbackUrl' => $this->getCallbackUrl(),
-            'successUrl' => $this->getSuccessUrl($paymentOrder),
-            'failureUrl' => $this->getFailureUrl($paymentOrder),
-            'sandboxMode' => $sandboxMode,
-            'currency' => $currency,
-            'paymentProduct' => $paymentProduct,
-        ];
-
-        Log::info('Tabby View Data Prepared', [
-            'order_code' => $paymentOrder->order_code,
-            'view_name' => 'payment-gateway::plugins.tabby-payment',
-            'view_data_keys' => array_keys($viewData),
-            'has_payment_order' => isset($viewData['paymentOrder']),
-            'has_payment_method' => isset($viewData['paymentMethod']),
-            'has_public_key' => !empty($viewData['publicKey']),
-            'has_secret_key' => !empty($viewData['secretKey'])
-        ]);
-
+        // Create checkout session with Tabby API
         try {
-            Log::info('Tabby View Rendering Started', [
+            $checkoutUrl = $this->createTabbyCheckoutSession($paymentOrder, $publicKey, $baseUrl, $currency, $merchantCode);
+            
+            Log::info('Tabby Checkout Session Created', [
                 'order_code' => $paymentOrder->order_code,
-                'view_name' => 'payment-gateway::plugins.tabby-payment'
+                'checkout_url' => $checkoutUrl
             ]);
+
+            // Redirect to Tabby payment page
+            return redirect($checkoutUrl);
             
-            $view = view('payment-gateway::plugins.tabby-payment', $viewData);
-            
-            Log::info('Tabby View Rendered Successfully', [
-                'order_code' => $paymentOrder->order_code,
-                'view_type' => get_class($view)
-            ]);
-            
-            return $view;
         } catch (\Exception $e) {
-            Log::error('Tabby View Rendering Failed', [
+            Log::error('Tabby Checkout Session Creation Failed', [
                 'order_code' => $paymentOrder->order_code,
                 'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-                'error_file' => $e->getFile(),
-                'error_line' => $e->getLine(),
-                'view_name' => 'payment-gateway::plugins.tabby-payment'
+                'error_code' => $e->getCode()
             ]);
             
-            // Re-throw the exception so the payment gateway can handle it
-            throw $e;
+            // Return error view
+            return view('payment-gateway::plugins.tabby-payment-error', [
+                'paymentOrder' => $paymentOrder,
+                'paymentMethod' => $this->paymentMethod,
+                'errorMessage' => $e->getMessage(),
+                'failureUrl' => $this->getFailureUrl($paymentOrder)
+            ]);
         }
     }
 
@@ -540,33 +365,212 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
     }
 
     /**
-     * Fallback method to get settings directly from database
+     * Create Tabby checkout session
      */
-    private function getSettingFallback(string $key, $default = null)
+    private function createTabbyCheckoutSession(PaymentOrder $paymentOrder, string $publicKey, string $baseUrl, string $currency, string $merchantCode): string
     {
+        $data = [
+            'payment' => [
+                'amount' => (string) round($paymentOrder->amount, 2),
+                'currency' => $currency,
+                'description' => $paymentOrder->description ?: 'Order #' . $paymentOrder->order_code,
+                'buyer' => [
+                    'phone' => $paymentOrder->customer_phone ?: '',
+                    'email' => $paymentOrder->customer_email ?: '',
+                    'name' => $paymentOrder->customer_name ?: '',
+                ],
+                'shipping_address' => [
+                    'city' => $paymentOrder->customer_data['city'] ?? '',
+                    'address' => $paymentOrder->customer_data['address'] ?? '',
+                    'zip' => $paymentOrder->customer_data['postal_code'] ?? ''
+                ],
+                'order' => [
+                    'reference_id' => $paymentOrder->order_code,
+                    'items' => [
+                        [
+                            'title' => $paymentOrder->description ?: 'Payment',
+                            'quantity' => 1,
+                            'unit_price' => (string) round($paymentOrder->amount, 2),
+                            'category' => 'service',
+                        ]
+                    ]
+                ],
+                'buyer_history' => [
+                    'registered_since' => now()->subYear()->toISOString(),
+                    'loyalty_level' => 0,
+                ],
+                'order_history' => [],
+            ],
+            'lang' => app()->getLocale() === 'ar' ? 'ar' : 'en',
+            'merchant_code' => $merchantCode,
+            'merchant_urls' => [
+                'success' => $this->getSuccessUrl($paymentOrder) . '?success=1',
+                'cancel' => $this->getFailureUrl($paymentOrder) . '?canceled=1',
+                'failure' => $this->getFailureUrl($paymentOrder) . '?failure=1',
+            ]
+        ];
+
+        Log::info('Tabby API Request Data', [
+            'order_code' => $paymentOrder->order_code,
+            'url' => $baseUrl . '/checkout',
+            'data' => $data,
+            'public_key' => $publicKey,
+            'public_key_prefix' => substr($publicKey, 0, 10) . '...',
+            'merchant_code' => $merchantCode,
+            'merchant_code_prefix' => substr($merchantCode, 0, 10) . '...',
+            'authorization_header' => 'Bearer ' . substr($publicKey, 0, 10) . '...',
+            'has_merchant_code_in_data' => isset($data['merchant_code'])
+        ]);
+
+        // Make API request to create checkout session
+        // Note: For checkout creation, we need to use the public key as Authorization header
+        $response = \Illuminate\Support\Facades\Http::withHeaders([
+            'Authorization' => 'Bearer ' . $publicKey,
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+        ])->post($baseUrl . '/checkout', $data);
+
+        Log::info('Tabby API Response', [
+            'order_code' => $paymentOrder->order_code,
+            'status_code' => $response->status(),
+            'response_body' => $response->body(),
+            'response_headers' => $response->headers(),
+            'request_headers' => [
+                'Authorization' => 'Bearer ' . substr($publicKey, 0, 10) . '...',
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ]
+        ]);
+
+        if (!$response->successful()) {
+            throw new \Exception('Tabby API request failed: ' . $response->body());
+        }
+
+        $responseData = $response->json();
+
+        // Check for rejection
+        if (isset($responseData['status']) && $responseData['status'] === 'rejected') {
+            $errorMessage = $responseData['rejection_reason_code'] ?? 'Payment rejected';
+            throw new \Exception($errorMessage);
+        }
+
+        // Check for successful creation
+        if (isset($responseData['status']) && $responseData['status'] === 'created') {
+            // Store the remote transaction ID
+            $paymentOrder->update(['remote_transaction_id' => $responseData['id']]);
+            
+            // Get the payment URL
+            $paymentUrl = $responseData['configuration']['available_products']['installments'][0]['web_url'] ?? null;
+            
+            if (!$paymentUrl) {
+                throw new \Exception('No payment URL returned from Tabby');
+            }
+            
+            return $paymentUrl;
+        }
+
+        throw new \Exception('Unexpected response from Tabby API');
+    }
+
+    /**
+     * Handle successful return from Tabby
+     */
+    private function handleSuccessReturn(PaymentOrder $paymentOrder)
+    {
+        $paymentId = request()->get('payment_id');
+        
+        if (!$paymentId) {
+            Log::error('Tabby Success Return Missing Payment ID', [
+                'order_code' => $paymentOrder->order_code,
+                'request_params' => request()->all()
+            ]);
+            return $this->handleFailureReturn($paymentOrder);
+        }
+
+        Log::info('Tabby Success Return Received', [
+            'order_code' => $paymentOrder->order_code,
+            'payment_id' => $paymentId
+        ]);
+
+        // Verify payment with Tabby API
         try {
-            $setting = \Trinavo\PaymentGateway\Models\PaymentMethodSetting::where('payment_method_id', $this->paymentMethod->id)
-                ->where('key', $key)
-                ->first();
+            $sandboxMode = $this->paymentMethod->getSetting('sandbox_mode', true);
+            $secretKey = $sandboxMode 
+                ? $this->paymentMethod->getSetting('secret_key_sandbox')
+                : $this->paymentMethod->getSetting('secret_key_production');
+            
+            $baseUrl = 'https://api.tabby.ai/api/v2';
+            
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Bearer ' . $secretKey,
+            ])->get($baseUrl . '/payments/' . $paymentId);
 
-            if (!$setting) {
-                return $default;
+            if (!$response->successful()) {
+                throw new \Exception('Failed to verify payment with Tabby');
             }
 
-            $value = $setting->value;
+            $paymentData = $response->json();
+            $status = $paymentData['status'] ?? null;
 
-            if ($setting->encrypted) {
-                $value = \Illuminate\Support\Facades\Crypt::decryptString($value);
+            Log::info('Tabby Payment Verification', [
+                'order_code' => $paymentOrder->order_code,
+                'payment_id' => $paymentId,
+                'status' => $status,
+                'amount' => $paymentData['amount'] ?? null
+            ]);
+
+            if (in_array($status, ['CLOSED', 'AUTHORIZED'])) {
+                // Payment successful
+                return redirect($this->getSuccessUrl($paymentOrder));
+            } else {
+                Log::warning('Tabby Payment Not Successful', [
+                    'order_code' => $paymentOrder->order_code,
+                    'status' => $status
+                ]);
+                return $this->handleFailureReturn($paymentOrder);
             }
 
-            return $value;
         } catch (\Exception $e) {
-            Log::error('Tabby Setting Fallback Failed', [
-                'key' => $key,
-                'payment_method_id' => $this->paymentMethod->id ?? 'unknown',
+            Log::error('Tabby Payment Verification Failed', [
+                'order_code' => $paymentOrder->order_code,
+                'payment_id' => $paymentId,
                 'error' => $e->getMessage()
             ]);
-            return $default;
+            return $this->handleFailureReturn($paymentOrder);
         }
+    }
+
+    /**
+     * Handle canceled return from Tabby
+     */
+    private function handleCancelReturn(PaymentOrder $paymentOrder)
+    {
+        Log::info('Tabby Payment Canceled', [
+            'order_code' => $paymentOrder->order_code
+        ]);
+        
+        return view('payment-gateway::plugins.tabby-payment-error', [
+            'paymentOrder' => $paymentOrder,
+            'paymentMethod' => $this->paymentMethod,
+            'errorMessage' => __('Payment was canceled'),
+            'failureUrl' => $this->getFailureUrl($paymentOrder)
+        ]);
+    }
+
+    /**
+     * Handle failed return from Tabby
+     */
+    private function handleFailureReturn(PaymentOrder $paymentOrder)
+    {
+        Log::info('Tabby Payment Failed', [
+            'order_code' => $paymentOrder->order_code
+        ]);
+        
+        return view('payment-gateway::plugins.tabby-payment-error', [
+            'paymentOrder' => $paymentOrder,
+            'paymentMethod' => $this->paymentMethod,
+            'errorMessage' => __('Payment failed'),
+            'failureUrl' => $this->getFailureUrl($paymentOrder)
+        ]);
     }
 }

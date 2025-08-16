@@ -88,6 +88,11 @@
     "go_back": "العودة",
     "tabby_sdk_not_loaded": "لم يتم تحميل Tabby SDK بشكل صحيح",
     "failed_to_initialize_tabby_payment": "فشل في تهيئة دفع تابي",
+    "payment_error_general": "عذراً، حدث خطأ أثناء تهيئة نظام الدفع. يرجى المحاولة مرة أخرى أو التواصل مع خدمة العملاء.",
+    "payment_error_configuration": "خطأ في إعدادات النظام. يرجى التواصل مع خدمة العملاء.",
+    "payment_error_network": "مشكلة في الاتصال. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.",
+    "payment_error_rejected": "تم رفض الطلب. يرجى التحقق من البيانات والمحاولة مرة أخرى.",
+    "payment_error_support_message": "إذا استمرت المشكلة، يرجى التواصل مع فريق الدعم الفني.",
     "order_summary": "ملخص الطلب",
     "customer_details": "تفاصيل العميل"
 }
