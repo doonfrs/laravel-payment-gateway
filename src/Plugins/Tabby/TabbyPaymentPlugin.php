@@ -123,15 +123,6 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'payment_method_id' => $this->paymentMethod->id ?? 'unknown'
         ]);
 
-        // Handle return from Tabby
-        if (request()->has('success')) {
-            return $this->handleSuccessReturn($paymentOrder);
-        } elseif (request()->has('canceled')) {
-            return $this->handleCancelReturn($paymentOrder);
-        } elseif (request()->has('failure')) {
-            return $this->handleFailureReturn($paymentOrder);
-        }
-
         // Ensure settings relationship is loaded
         if (!$this->paymentMethod->relationLoaded('settings')) {
             $this->paymentMethod->load('settings');
@@ -202,7 +193,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'callback_keys' => array_keys($callbackData)
         ]);
 
-        $status = $callbackData['status'] ?? 'failed';
+        $status = $callbackData['status'] ?? null;
         $orderCode = $callbackData['order_code'] ?? null;
         $paymentId = $callbackData['payment_id'] ?? null;
         $tabbyId = $callbackData['tabby_id'] ?? null;
@@ -229,19 +220,57 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             );
         }
 
-        // Tabby payment statuses: AUTHORIZED, CLOSED, EXPIRED, REJECTED, CREATED
+        // For success status, verify payment with Tabby API if payment_id is provided
+        if (in_array($status, ['AUTHORIZED', 'CLOSED']) && $paymentId) {
+            Log::info('Verifying Tabby Payment', [
+                'order_code' => $orderCode,
+                'payment_id' => $paymentId,
+                'status' => $status
+            ]);
+
+            try {
+                $verificationResult = $this->verifyPaymentWithTabby($paymentId);
+                
+                if ($verificationResult['success']) {
+                    Log::info('Tabby Payment Verification Successful', [
+                        'order_code' => $orderCode,
+                        'verified_status' => $verificationResult['status'],
+                        'payment_id' => $paymentId
+                    ]);
+
+                    return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
+                        orderCode: $orderCode,
+                        transactionId: $verificationResult['tabby_id'] ?: $paymentId,
+                        message: $message ?: 'Payment completed successfully via Tabby'
+                    );
+                } else {
+                    Log::warning('Tabby Payment Verification Failed', [
+                        'order_code' => $orderCode,
+                        'payment_id' => $paymentId,
+                        'verification_error' => $verificationResult['error']
+                    ]);
+                }
+            } catch (\Exception $e) {
+                report($e);
+                Log::error('Tabby Payment Verification Exception', [
+                    'order_code' => $orderCode,
+                    'payment_id' => $paymentId,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        // Success without verification or for backward compatibility
         if (in_array($status, ['AUTHORIZED', 'CLOSED'])) {
-            Log::info('Tabby Payment Success', [
+            Log::info('Tabby Payment Success (No Verification)', [
                 'order_code' => $orderCode,
                 'status' => $status,
-                'tabby_id' => $tabbyId,
-                'payment_id' => $paymentId,
-                'message' => $message
+                'payment_id' => $paymentId
             ]);
             
             return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
                 orderCode: $orderCode,
-                transactionId: $tabbyId ?: $paymentId,
+                transactionId: $tabbyId ?: $paymentId ?: 'tabby_' . uniqid(),
                 message: $message ?: 'Payment completed successfully via Tabby'
             );
         }
@@ -250,10 +279,9 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
         Log::warning('Tabby Payment Failed', [
             'order_code' => $orderCode,
             'status' => $status,
-            'tabby_id' => $tabbyId,
             'payment_id' => $paymentId,
             'message' => $message,
-            'failure_reason' => 'Payment status not in success list'
+            'failure_reason' => 'Payment status indicates failure or cancellation'
         ]);
 
         return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
@@ -404,9 +432,9 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'lang' => app()->getLocale() === 'ar' ? 'ar' : 'en',
             'merchant_code' => $merchantCode,
             'merchant_urls' => [
-                'success' => $this->getSuccessUrl($paymentOrder) . '?success=1',
-                'cancel' => $this->getFailureUrl($paymentOrder) . '?canceled=1',
-                'failure' => $this->getFailureUrl($paymentOrder) . '?failure=1',
+                'success' => route('payment-gateway.callback', ['plugin' => 'tabby']) . '?status=CLOSED&order_code=' . $paymentOrder->order_code,
+                'cancel' => route('payment-gateway.callback', ['plugin' => 'tabby']) . '?status=CANCELLED&order_code=' . $paymentOrder->order_code,
+                'failure' => route('payment-gateway.callback', ['plugin' => 'tabby']) . '?status=FAILED&order_code=' . $paymentOrder->order_code,
             ]
         ];
 
@@ -419,7 +447,12 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'merchant_code' => $merchantCode,
             'merchant_code_prefix' => substr($merchantCode, 0, 10) . '...',
             'authorization_header' => 'Bearer ' . substr($publicKey, 0, 10) . '...',
-            'has_merchant_code_in_data' => isset($data['merchant_code'])
+            'has_merchant_code_in_data' => isset($data['merchant_code']),
+            'callback_urls' => [
+                'success' => $data['merchant_urls']['success'],
+                'cancel' => $data['merchant_urls']['cancel'], 
+                'failure' => $data['merchant_urls']['failure']
+            ]
         ]);
 
         // Make API request to create checkout session
@@ -473,26 +506,10 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
     }
 
     /**
-     * Handle successful return from Tabby
+     * Verify payment with Tabby API
      */
-    private function handleSuccessReturn(PaymentOrder $paymentOrder)
+    private function verifyPaymentWithTabby(string $paymentId): array
     {
-        $paymentId = request()->get('payment_id');
-        
-        if (!$paymentId) {
-            Log::error('Tabby Success Return Missing Payment ID', [
-                'order_code' => $paymentOrder->order_code,
-                'request_params' => request()->all()
-            ]);
-            return $this->handleFailureReturn($paymentOrder);
-        }
-
-        Log::info('Tabby Success Return Received', [
-            'order_code' => $paymentOrder->order_code,
-            'payment_id' => $paymentId
-        ]);
-
-        // Verify payment with Tabby API
         try {
             $sandboxMode = $this->paymentMethod->getSetting('sandbox_mode', true);
             $secretKey = $sandboxMode 
@@ -506,71 +523,43 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             ])->get($baseUrl . '/payments/' . $paymentId);
 
             if (!$response->successful()) {
-                throw new \Exception('Failed to verify payment with Tabby');
+                return [
+                    'success' => false,
+                    'error' => 'API request failed: ' . $response->body()
+                ];
             }
 
             $paymentData = $response->json();
             $status = $paymentData['status'] ?? null;
 
-            Log::info('Tabby Payment Verification', [
-                'order_code' => $paymentOrder->order_code,
+            Log::info('Tabby Payment API Verification', [
                 'payment_id' => $paymentId,
                 'status' => $status,
-                'amount' => $paymentData['amount'] ?? null
+                'amount' => $paymentData['amount'] ?? null,
+                'response' => $paymentData
             ]);
 
             if (in_array($status, ['CLOSED', 'AUTHORIZED'])) {
-                // Payment successful
-                return redirect($this->getSuccessUrl($paymentOrder));
+                return [
+                    'success' => true,
+                    'status' => $status,
+                    'tabby_id' => $paymentData['id'] ?? $paymentId,
+                    'data' => $paymentData
+                ];
             } else {
-                Log::warning('Tabby Payment Not Successful', [
-                    'order_code' => $paymentOrder->order_code,
-                    'status' => $status
-                ]);
-                return $this->handleFailureReturn($paymentOrder);
+                return [
+                    'success' => false,
+                    'error' => 'Payment status not successful: ' . $status
+                ];
             }
 
         } catch (\Exception $e) {
-            Log::error('Tabby Payment Verification Failed', [
-                'order_code' => $paymentOrder->order_code,
-                'payment_id' => $paymentId,
-                'error' => $e->getMessage()
-            ]);
-            return $this->handleFailureReturn($paymentOrder);
+            return [
+                'success' => false,
+                'error' => 'Verification exception: ' . $e->getMessage()
+            ];
         }
     }
 
-    /**
-     * Handle canceled return from Tabby
-     */
-    private function handleCancelReturn(PaymentOrder $paymentOrder)
-    {
-        Log::info('Tabby Payment Canceled', [
-            'order_code' => $paymentOrder->order_code
-        ]);
-        
-        return view('payment-gateway::plugins.tabby-payment-error', [
-            'paymentOrder' => $paymentOrder,
-            'paymentMethod' => $this->paymentMethod,
-            'errorMessage' => __('Payment was canceled'),
-            'failureUrl' => $this->getFailureUrl($paymentOrder)
-        ]);
-    }
 
-    /**
-     * Handle failed return from Tabby
-     */
-    private function handleFailureReturn(PaymentOrder $paymentOrder)
-    {
-        Log::info('Tabby Payment Failed', [
-            'order_code' => $paymentOrder->order_code
-        ]);
-        
-        return view('payment-gateway::plugins.tabby-payment-error', [
-            'paymentOrder' => $paymentOrder,
-            'paymentMethod' => $this->paymentMethod,
-            'errorMessage' => __('Payment failed'),
-            'failureUrl' => $this->getFailureUrl($paymentOrder)
-        ]);
-    }
 }

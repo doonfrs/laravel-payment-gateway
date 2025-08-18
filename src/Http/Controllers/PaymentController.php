@@ -82,12 +82,24 @@ class PaymentController extends Controller
     public function callback(Request $request, string $plugin)
     {
         $pluginClass = $this->getPluginClass($plugin);
-        $callbackData = $request->all();
+        
+        // Get data from both request and session (for redirect-based flows)
+        $callbackData = array_merge($request->all(), session()->all());
+
+        Log::info('Payment Gateway Callback Received', [
+            'plugin' => $plugin,
+            'plugin_class' => $pluginClass,
+            'request_data' => $request->all(),
+            'session_data' => session()->all(),
+            'merged_data' => $callbackData
+        ]);
 
         $result = $this->paymentGateway->handlePluginCallback($pluginClass, $callbackData);
 
-        Log::info('Callback data', $callbackData);
-        Log::info('Callback result', $result);
+        Log::info('Payment Gateway Callback Result', [
+            'plugin' => $plugin,
+            'result' => $result
+        ]);
 
         if ($result['success']) {
             $paymentOrder = $this->paymentGateway->getPaymentOrderByCode($result['order_code']);
