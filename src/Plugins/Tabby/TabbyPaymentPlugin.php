@@ -61,18 +61,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                 description: 'Enable sandbox mode for Tabby payments.'
             ),
 
-            new SelectField(
-                name: 'payment_product',
-                label: 'Payment Product',
-                required: true,
-                options: [
-                    'installments' => 'Pay in 4 Installments',
-                    'monthly' => 'Monthly Payments',
-                    'credit' => 'Credit Card Payments'
-                ],
-                default: 'installments',
-                description: 'Select the Tabby payment product to offer to customers.'
-            ),
+
 
             new SelectField(
                 name: 'supported_currency',
@@ -141,7 +130,6 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
         }
 
         $currency = $this->paymentMethod->getSetting('supported_currency', 'AED');
-        $paymentProduct = $this->paymentMethod->getSetting('payment_product', 'installments');
         $merchantCode = $this->paymentMethod->getSetting('merchant_code', $publicKey);
 
         // Log configuration details
@@ -152,8 +140,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'secret_key_length' => strlen($secretKey),
             'has_public_key' => !empty($publicKey),
             'has_secret_key' => !empty($secretKey),
-            'currency' => $currency,
-            'payment_product' => $paymentProduct
+            'currency' => $currency
         ]);
 
         // Create checkout session with Tabby API
@@ -251,7 +238,6 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                     ]);
                 }
             } catch (\Exception $e) {
-                report($e);
                 Log::error('Tabby Payment Verification Exception', [
                     'order_code' => $orderCode,
                     'payment_id' => $paymentId,
