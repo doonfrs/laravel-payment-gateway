@@ -104,6 +104,10 @@ class PaymentMethod extends Model
         $value = $setting->value;
 
         if ($setting->encrypted) {
+            // Handle NULL or empty values gracefully
+            if ($value === null || $value === '') {
+                return $default;
+            }
             $value = Crypt::decryptString($value);
         }
 
