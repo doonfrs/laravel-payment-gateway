@@ -22,6 +22,7 @@ return [
         \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Offline\OfflinePaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Tabby\TabbyPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\Tamara\TamaraPaymentPlugin::class,
         // Add your custom payment plugins here
         // \App\PaymentPlugins\StripePaymentPlugin::class,
         // \App\PaymentPlugins\PayPalPaymentPlugin::class,

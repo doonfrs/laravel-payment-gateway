@@ -92,7 +92,15 @@
     "payment_error_configuration": "خطأ في إعدادات النظام. يرجى التواصل مع خدمة العملاء.",
     "payment_error_network": "مشكلة في الاتصال. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.",
     "payment_error_rejected": "تم رفض الطلب. يرجى التحقق من البيانات والمحاولة مرة أخرى.",
+    "payment_error_invalid_request": "طلب غير صحيح. يرجى التحقق من تفاصيل طلبك والمحاولة مرة أخرى.",
     "payment_error_support_message": "إذا استمرت المشكلة، يرجى التواصل مع فريق الدعم الفني.",
-    "order_summary": "ملخص الطلب",
-    "customer_details": "تفاصيل العميل"
+    "tamara_payment_gateway": "بوابة دفع تمارا",
+    "failed_to_initialize_tamara_payment": "فشل في تهيئة دفع تمارا",
+    "pay_later_or_split_installments": "ادفع لاحقاً أو قسط على دفعات",
+    "pay_in_installments": "ادفع على أقساط",
+    "pay_later": "ادفع لاحقاً",
+    "pay_by_month": "ادفع شهرياً",
+    "pay_now": "ادفع الآن",
+    "split_payment_installments": "قسم دفعتك إلى أقساط سهلة",
+    "tamara_bnpl_description": "تسوق الآن وادفع لاحقاً مع تمارا - بدون فوائد، بدون رسوم"
 }

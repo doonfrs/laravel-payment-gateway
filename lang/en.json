@@ -92,5 +92,15 @@
     "payment_error_configuration": "System configuration error. Please contact customer service.",
     "payment_error_network": "Connection issue. Please check your internet connection and try again.",
     "payment_error_rejected": "Request was rejected. Please check your data and try again.",
-    "payment_error_support_message": "If the problem persists, please contact our technical support team."
+    "payment_error_invalid_request": "Invalid request. Please check your order details and try again.",
+    "payment_error_support_message": "If the problem persists, please contact our technical support team.",
+    "tamara_payment_gateway": "Tamara Payment Gateway",
+    "failed_to_initialize_tamara_payment": "Failed to initialize Tamara payment",
+    "pay_later_or_split_installments": "Pay later or split into installments",
+    "pay_in_installments": "Pay in Installments",
+    "pay_later": "Pay Later",
+    "pay_by_month": "Pay by Month",
+    "pay_now": "Pay Now",
+    "split_payment_installments": "Split your payment into easy installments",
+    "tamara_bnpl_description": "Shop now and pay later with Tamara - No interest, no fees"
 }
