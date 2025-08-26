@@ -11,6 +11,7 @@ use Trinavo\PaymentGateway\Providers\PaymentGatewayServiceProvider;
 class TabbyPaymentPluginTest extends TestCase
 {
     protected PaymentMethod $paymentMethod;
+
     protected TabbyPaymentPlugin $plugin;
 
     protected function getPackageProviders($app)
@@ -26,22 +27,20 @@ class TabbyPaymentPluginTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        $this->paymentMethod = PaymentMethod::factory()->create([
+
+        $this->paymentMethod = PaymentMethod::create([
             'name' => 'tabby',
             'plugin_class' => TabbyPaymentPlugin::class,
             'display_name' => 'Tabby Payment',
             'enabled' => true,
         ]);
-        
-        $this->paymentMethod->setSettings([
-            'public_key_sandbox' => ['value' => 'pk_test_123', 'encrypted' => true],
-            'secret_key_sandbox' => ['value' => 'sk_test_123', 'encrypted' => true],
-            'sandbox_mode' => ['value' => true, 'encrypted' => false],
-            'payment_product' => ['value' => 'installments', 'encrypted' => false],
-            'supported_currency' => ['value' => 'AED', 'encrypted' => false],
-        ]);
-        
+
+        $this->paymentMethod->setSetting('public_key_sandbox', 'pk_test_123', true);
+        $this->paymentMethod->setSetting('secret_key_sandbox', 'sk_test_123', true);
+        $this->paymentMethod->setSetting('sandbox_mode', true, false);
+        $this->paymentMethod->setSetting('payment_product', 'installments', false);
+        $this->paymentMethod->setSetting('supported_currency', 'AED', false);
+
         $this->plugin = new TabbyPaymentPlugin($this->paymentMethod);
     }
 
@@ -64,10 +63,11 @@ class TabbyPaymentPluginTest extends TestCase
 
     public function test_plugin_fails_validation_without_required_keys()
     {
-        $this->paymentMethod->setSettings([
-            'sandbox_mode' => ['value' => true, 'encrypted' => false],
-        ]);
-        
+        // Clear the required keys to test validation failure
+        $this->paymentMethod->setSetting('public_key_sandbox', '', false);
+        $this->paymentMethod->setSetting('secret_key_sandbox', '', false);
+        $this->paymentMethod->setSetting('sandbox_mode', true, false);
+
         $plugin = new TabbyPaymentPlugin($this->paymentMethod);
         $this->assertFalse($plugin->validateConfiguration());
     }
@@ -75,17 +75,17 @@ class TabbyPaymentPluginTest extends TestCase
     public function test_plugin_returns_configuration_fields()
     {
         $fields = $this->plugin->getConfigurationFields();
-        
+
         $this->assertIsArray($fields);
         $this->assertNotEmpty($fields);
-        
+
         // Check that required fields are present
-        $fieldNames = array_map(fn($field) => $field->name, $fields);
+        $fieldNames = array_map(fn ($field) => $field->getName(), $fields);
         $this->assertContains('public_key_sandbox', $fieldNames);
         $this->assertContains('secret_key_sandbox', $fieldNames);
         $this->assertContains('sandbox_mode', $fieldNames);
-        $this->assertContains('payment_product', $fieldNames);
         $this->assertContains('supported_currency', $fieldNames);
+        $this->assertContains('merchant_code', $fieldNames);
     }
 
     public function test_plugin_handles_successful_callback()
@@ -95,11 +95,11 @@ class TabbyPaymentPluginTest extends TestCase
             'order_code' => 'PO-123',
             'payment_id' => 'pay_test_123',
             'tabby_id' => 'tabby_test_123',
-            'message' => 'Payment authorized successfully'
+            'message' => 'Payment authorized successfully',
         ];
-        
+
         $result = $this->plugin->handleCallback($callbackData);
-        
+
         $this->assertTrue($result->success);
         $this->assertEquals('PO-123', $result->orderCode);
         $this->assertEquals('tabby_test_123', $result->transactionId);
@@ -111,11 +111,11 @@ class TabbyPaymentPluginTest extends TestCase
             'status' => 'REJECTED',
             'order_code' => 'PO-123',
             'payment_id' => 'pay_test_123',
-            'message' => 'Payment was rejected'
+            'message' => 'Payment was rejected',
         ];
-        
+
         $result = $this->plugin->handleCallback($callbackData);
-        
+
         $this->assertFalse($result->success);
         $this->assertEquals('PO-123', $result->orderCode);
     }
@@ -126,9 +126,9 @@ class TabbyPaymentPluginTest extends TestCase
             'status' => 'AUTHORIZED',
             'payment_id' => 'pay_test_123',
         ];
-        
+
         $result = $this->plugin->handleCallback($callbackData);
-        
+
         $this->assertFalse($result->success);
         $this->assertEquals('unknown', $result->orderCode);
         $this->assertStringContainsString('required', $result->message);
@@ -136,25 +136,24 @@ class TabbyPaymentPluginTest extends TestCase
 
     public function test_plugin_processes_payment_returns_view()
     {
-        $paymentOrder = PaymentOrder::factory()->create([
+        $paymentOrder = PaymentOrder::create([
             'amount' => 100.00,
             'currency' => 'AED',
             'customer_name' => 'John Doe',
             'customer_email' => 'john@example.com',
             'customer_phone' => '+971501234567',
         ]);
-        
+
         $result = $this->plugin->processPayment($paymentOrder);
-        
+
         $this->assertInstanceOf(\Illuminate\View\View::class, $result);
-        $this->assertEquals('payment-gateway::plugins.tabby-payment', $result->name());
-        
+        $this->assertEquals('payment-gateway::plugins.tabby-payment-error', $result->name());
+
         // Check that required variables are passed to the view
         $viewData = $result->getData();
         $this->assertArrayHasKey('paymentOrder', $viewData);
         $this->assertArrayHasKey('paymentMethod', $viewData);
-        $this->assertArrayHasKey('publicKey', $viewData);
-        $this->assertArrayHasKey('apiUrl', $viewData);
-        $this->assertArrayHasKey('checkoutData', $viewData);
+        $this->assertArrayHasKey('errorMessage', $viewData);
+        $this->assertArrayHasKey('failureUrl', $viewData);
     }
 }

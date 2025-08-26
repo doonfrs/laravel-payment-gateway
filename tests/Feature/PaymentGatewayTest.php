@@ -29,13 +29,15 @@ class PaymentGatewayTest extends TestCase
 
     public function test_can_create_payment_order()
     {
-        $paymentOrder = PaymentGateway::createPaymentOrder([
-            'amount' => 100.00,
-            'currency' => 'USD',
-            'customer_name' => 'John Doe',
-            'customer_email' => 'john@example.com',
-            'description' => 'Test payment',
-        ]);
+        $paymentOrder = PaymentGateway::createPaymentOrder(
+            100.00,
+            'USD',
+            'John Doe',
+            'john@example.com',
+            null,
+            null,
+            'Test payment'
+        );
 
         $this->assertInstanceOf(PaymentOrder::class, $paymentOrder);
         $this->assertEquals(100.00, $paymentOrder->amount);
@@ -47,10 +49,7 @@ class PaymentGatewayTest extends TestCase
 
     public function test_can_get_payment_url()
     {
-        $paymentOrder = PaymentGateway::createPaymentOrder([
-            'amount' => 50.00,
-            'currency' => 'USD',
-        ]);
+        $paymentOrder = PaymentGateway::createPaymentOrder(50.00, 'USD');
 
         $paymentUrl = PaymentGateway::getPaymentUrl($paymentOrder);
 
@@ -74,10 +73,7 @@ class PaymentGatewayTest extends TestCase
 
     public function test_payment_order_status_methods()
     {
-        $paymentOrder = PaymentGateway::createPaymentOrder([
-            'amount' => 25.00,
-            'currency' => 'USD',
-        ]);
+        $paymentOrder = PaymentGateway::createPaymentOrder(25.00, 'USD');
 
         $this->assertTrue($paymentOrder->isPending());
         $this->assertFalse($paymentOrder->isCompleted());

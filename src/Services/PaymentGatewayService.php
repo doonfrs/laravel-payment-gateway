@@ -24,6 +24,7 @@ class PaymentGatewayService
         $paymentOrder = PaymentOrder::create([
             'amount' => $amount,
             'currency' => $currency,
+            'status' => PaymentOrder::STATUS_PENDING,
             'customer_name' => $customerName,
             'customer_email' => $customerEmail,
             'customer_phone' => $customerPhone,

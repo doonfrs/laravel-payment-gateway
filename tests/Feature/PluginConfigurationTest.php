@@ -85,7 +85,7 @@ class PluginConfigurationTest extends TestCase
         $service = app(PaymentGatewayService::class);
 
         // Create payment order without currency
-        $paymentOrder = $service->createPaymentOrder(50.00);
+        $paymentOrder = $service->createPaymentOrder(50.00, null);
 
         // Should use the configured default currency
         $this->assertEquals('GBP', $paymentOrder->currency);
