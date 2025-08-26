@@ -122,9 +122,9 @@ class PluginRegistryServiceTest extends TestCase
     public function test_removes_common_suffixes()
     {
         $testCases = [
-            'StripePaymentPlugin' => 'stripe',
+            'StripePaymentPlugin' => 'stripe_payment',
             'PayPalPlugin' => 'pay_pal',
-            'MoyasarPaymentGateway' => 'moyasar',
+            'MoyasarPaymentGateway' => 'moyasar_payment',
             'SimpleGateway' => 'simple',
             'TestPayment' => 'test_payment', // Should not remove 'Payment' if not at end
         ];

@@ -32,8 +32,8 @@ class PluginRegistryService
         // Extract the plugin name from the class name
         $className = class_basename($pluginClass);
 
-        // Remove common suffixes
-        $pluginName = preg_replace('/Plugin$|PaymentPlugin$|Gateway$|PaymentGateway$/', '', $className);
+        // Remove common suffixes but preserve 'Payment' for better naming
+        $pluginName = preg_replace('/Plugin$|Gateway$/', '', $className);
 
         // Convert to snake_case
         return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $pluginName));
