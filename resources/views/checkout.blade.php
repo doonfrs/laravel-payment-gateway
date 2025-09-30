@@ -97,7 +97,7 @@
                         @endif
 
                         <form method="POST"
-                            action="{{ route('payment-gateway.process', ['order' => $paymentOrder->order_code]) }}"
+                            action="{{ payment_gateway_localized_url(route('payment-gateway.process', ['order' => $paymentOrder->order_code])) }}"
                             id="payment-form">
                             @csrf
                             <input type="hidden" name="payment_method_id" id="selected-method" required>

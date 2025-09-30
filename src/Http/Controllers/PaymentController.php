@@ -82,7 +82,7 @@ class PaymentController extends Controller
     public function callback(Request $request, string $plugin)
     {
         $pluginClass = $this->getPluginClass($plugin);
-        
+
         // Get data from both request and session (for redirect-based flows)
         $callbackData = array_merge($request->all(), session()->all());
 
@@ -91,14 +91,14 @@ class PaymentController extends Controller
             'plugin_class' => $pluginClass,
             'request_data' => $request->all(),
             'session_data' => session()->all(),
-            'merged_data' => $callbackData
+            'merged_data' => $callbackData,
         ]);
 
         $result = $this->paymentGateway->handlePluginCallback($pluginClass, $callbackData);
 
         Log::info('Payment Gateway Callback Result', [
             'plugin' => $plugin,
-            'result' => $result
+            'result' => $result,
         ]);
 
         if ($result['success']) {

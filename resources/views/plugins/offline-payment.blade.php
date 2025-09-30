@@ -94,7 +94,7 @@
                     <div class="text-center space-y-4">
                         <!-- Confirm Order Button -->
                         <form method="POST"
-                            action="{{ route('payment-gateway.offline-confirm', ['order' => $paymentOrder->order_code]) }}"
+                            action="{{ payment_gateway_localized_url(route('payment-gateway.offline-confirm', ['order' => $paymentOrder->order_code])) }}"
                             class="inline-block">
                             @csrf
                             <button type="submit"
@@ -109,7 +109,7 @@
 
                         <!-- Back to checkout -->
                         <div class="pt-4">
-                            <a href="{{ route('payment-gateway.checkout', ['order' => $paymentOrder->order_code]) }}"
+                            <a href="{{ payment_gateway_localized_url(route('payment-gateway.checkout', ['order' => $paymentOrder->order_code])) }}"
                                 class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

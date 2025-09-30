@@ -87,7 +87,7 @@
                                         {{ __('direct_success') }}</h3>
                                     <p class="text-sm text-green-600 mb-4">
                                         {{ __('simulate_immediate_success') }}</p>
-                                    <a href="{{ route('payment-gateway.dummy-action', ['order' => $paymentOrder->order_code, 'action' => 'success']) }}"
+                                    <a href="{{ payment_gateway_localized_url(route('payment-gateway.dummy-action', ['order' => $paymentOrder->order_code, 'action' => 'success'])) }}"
                                         class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -114,7 +114,7 @@
                                         {{ __('direct_failure') }}</h3>
                                     <p class="text-sm text-red-600 mb-4">
                                         {{ __('simulate_immediate_failure') }}</p>
-                                    <a href="{{ route('payment-gateway.dummy-action', ['order' => $paymentOrder->order_code, 'action' => 'failure']) }}"
+                                    <a href="{{ payment_gateway_localized_url(route('payment-gateway.dummy-action', ['order' => $paymentOrder->order_code, 'action' => 'failure'])) }}"
                                         class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -142,7 +142,7 @@
                                         {{ __('external_callback') }}</h3>
                                     <p class="text-sm text-blue-600 mb-4">
                                         {{ __('simulate_external_callback') }}</p>
-                                    <a href="{{ route('payment-gateway.dummy-action', ['order' => $paymentOrder->order_code, 'action' => 'callback']) }}"
+                                    <a href="{{ payment_gateway_localized_url(route('payment-gateway.dummy-action', ['order' => $paymentOrder->order_code, 'action' => 'callback'])) }}"
                                         class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -199,7 +199,7 @@
                         </div>
 
                         <!-- Back to checkout -->
-                        <a href="{{ route('payment-gateway.checkout', ['order' => $paymentOrder->order_code]) }}"
+                        <a href="{{ payment_gateway_localized_url(route('payment-gateway.checkout', ['order' => $paymentOrder->order_code])) }}"
                             class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

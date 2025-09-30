@@ -56,6 +56,7 @@ class PaymentMethod extends Model
                 return $decoded['en'];
             } elseif (! empty($decoded)) {
                 $firstValue = reset($decoded);
+
                 return $firstValue ?: $this->name; // Return first available translation or fallback to name
             }
         }

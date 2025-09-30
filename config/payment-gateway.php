@@ -63,4 +63,21 @@ return [
         'namespace' => 'payment-gateway',
         'theme' => 'default',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Locale Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure locale handling for payment gateway routes.
+    | - default_locale: The default locale code (e.g., 'en')
+    | - available_locales: Array of available locale codes (e.g., ['en', 'ar'])
+    | - detect_from_url: Automatically detect locale from URL path
+    |
+    */
+    'locale' => [
+        'default_locale' => 'en',
+        'available_locales' => ['en', 'ar'],
+        'detect_from_url' => true,
+    ],
 ];

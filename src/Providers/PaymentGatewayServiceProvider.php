@@ -9,6 +9,9 @@ class PaymentGatewayServiceProvider extends ServiceProvider
 {
     public function register()
     {
+        // Load helper functions
+        require_once __DIR__.'/../helpers.php';
+
         // Merge package configuration
         $this->mergeConfigFrom(
             __DIR__.'/../../config/payment-gateway.php',
@@ -23,6 +26,11 @@ class PaymentGatewayServiceProvider extends ServiceProvider
         // Register the plugin registry service
         $this->app->singleton(\Trinavo\PaymentGateway\Services\PluginRegistryService::class, function ($app) {
             return new \Trinavo\PaymentGateway\Services\PluginRegistryService;
+        });
+
+        // Register the locale service
+        $this->app->singleton(\Trinavo\PaymentGateway\Services\LocaleService::class, function ($app) {
+            return new \Trinavo\PaymentGateway\Services\LocaleService;
         });
 
         // Register commands

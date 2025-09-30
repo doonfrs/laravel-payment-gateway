@@ -2,12 +2,12 @@
 
 namespace Trinavo\PaymentGateway\Plugins\Tabby;
 
+use Illuminate\Support\Facades\Log;
 use Trinavo\PaymentGateway\Configuration\CheckboxField;
-use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Configuration\SelectField;
+use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
-use Illuminate\Support\Facades\Log;
 
 class TabbyPaymentPlugin extends PaymentPluginInterface
 {
@@ -61,8 +61,6 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                 description: 'Enable sandbox mode for Tabby payments.'
             ),
 
-
-
             new SelectField(
                 name: 'supported_currency',
                 label: 'Supported Currency',
@@ -73,7 +71,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                     'KWD' => 'Kuwaiti Dinar (KWD)',
                     'BHD' => 'Bahraini Dinar (BHD)',
                     'QAR' => 'Qatari Riyal (QAR)',
-                    'EGP' => 'Egyptian Pound (EGP)'
+                    'EGP' => 'Egyptian Pound (EGP)',
                 ],
                 default: 'AED',
                 description: 'Select the currency for Tabby payments.'
@@ -92,14 +90,14 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
     public function validateConfiguration(): bool
     {
         $sandboxMode = $this->paymentMethod->getSetting('sandbox_mode', true);
-        
+
         if ($sandboxMode) {
-            return !empty($this->paymentMethod->getSetting('public_key_sandbox')) && 
-                   !empty($this->paymentMethod->getSetting('secret_key_sandbox'));
+            return ! empty($this->paymentMethod->getSetting('public_key_sandbox')) &&
+                   ! empty($this->paymentMethod->getSetting('secret_key_sandbox'));
         }
-        
-        return !empty($this->paymentMethod->getSetting('public_key_production')) && 
-               !empty($this->paymentMethod->getSetting('secret_key_production'));
+
+        return ! empty($this->paymentMethod->getSetting('public_key_production')) &&
+               ! empty($this->paymentMethod->getSetting('secret_key_production'));
     }
 
     public function processPayment(PaymentOrder $paymentOrder)
@@ -109,16 +107,16 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'order_code' => $paymentOrder->order_code,
             'amount' => $paymentOrder->amount,
             'customer_email' => $paymentOrder->customer_email,
-            'payment_method_id' => $this->paymentMethod->id ?? 'unknown'
+            'payment_method_id' => $this->paymentMethod->id ?? 'unknown',
         ]);
 
         // Ensure settings relationship is loaded
-        if (!$this->paymentMethod->relationLoaded('settings')) {
+        if (! $this->paymentMethod->relationLoaded('settings')) {
             $this->paymentMethod->load('settings');
         }
 
         $sandboxMode = $this->paymentMethod->getSetting('sandbox_mode', true);
-        
+
         if ($sandboxMode) {
             $publicKey = $this->paymentMethod->getSetting('public_key_sandbox');
             $secretKey = $this->paymentMethod->getSetting('secret_key_sandbox');
@@ -138,36 +136,36 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'base_url' => $baseUrl,
             'public_key_length' => strlen($publicKey),
             'secret_key_length' => strlen($secretKey),
-            'has_public_key' => !empty($publicKey),
-            'has_secret_key' => !empty($secretKey),
-            'currency' => $currency
+            'has_public_key' => ! empty($publicKey),
+            'has_secret_key' => ! empty($secretKey),
+            'currency' => $currency,
         ]);
 
         // Create checkout session with Tabby API
         try {
             $checkoutUrl = $this->createTabbyCheckoutSession($paymentOrder, $publicKey, $baseUrl, $currency, $merchantCode);
-            
+
             Log::info('Tabby Checkout Session Created', [
                 'order_code' => $paymentOrder->order_code,
-                'checkout_url' => $checkoutUrl
+                'checkout_url' => $checkoutUrl,
             ]);
 
             // Redirect to Tabby payment page
             return redirect($checkoutUrl);
-            
+
         } catch (\Exception $e) {
             Log::error('Tabby Checkout Session Creation Failed', [
                 'order_code' => $paymentOrder->order_code,
                 'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode()
+                'error_code' => $e->getCode(),
             ]);
-            
+
             // Return error view
             return view('payment-gateway::plugins.tabby-payment-error', [
                 'paymentOrder' => $paymentOrder,
                 'paymentMethod' => $this->paymentMethod,
                 'errorMessage' => $e->getMessage(),
-                'failureUrl' => $this->getFailureUrl($paymentOrder)
+                'failureUrl' => $this->getFailureUrl($paymentOrder),
             ]);
         }
     }
@@ -177,7 +175,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
         // Log incoming callback data
         Log::info('Tabby Callback Received', [
             'raw_callback_data' => $callbackData,
-            'callback_keys' => array_keys($callbackData)
+            'callback_keys' => array_keys($callbackData),
         ]);
 
         $status = $callbackData['status'] ?? null;
@@ -192,15 +190,15 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'order_code' => $orderCode,
             'payment_id' => $paymentId,
             'tabby_id' => $tabbyId,
-            'message' => $message
+            'message' => $message,
         ]);
 
-        if (!$orderCode) {
+        if (! $orderCode) {
             Log::error('Tabby Callback Missing Order Code', [
                 'callback_data' => $callbackData,
-                'parsed_order_code' => $orderCode
+                'parsed_order_code' => $orderCode,
             ]);
-            
+
             return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
                 orderCode: 'unknown',
                 message: 'Order code is required'
@@ -212,17 +210,17 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             Log::info('Verifying Tabby Payment', [
                 'order_code' => $orderCode,
                 'payment_id' => $paymentId,
-                'status' => $status
+                'status' => $status,
             ]);
 
             try {
                 $verificationResult = $this->verifyPaymentWithTabby($paymentId);
-                
+
                 if ($verificationResult['success']) {
                     Log::info('Tabby Payment Verification Successful', [
                         'order_code' => $orderCode,
                         'verified_status' => $verificationResult['status'],
-                        'payment_id' => $paymentId
+                        'payment_id' => $paymentId,
                     ]);
 
                     return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
@@ -234,14 +232,14 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                     Log::warning('Tabby Payment Verification Failed', [
                         'order_code' => $orderCode,
                         'payment_id' => $paymentId,
-                        'verification_error' => $verificationResult['error']
+                        'verification_error' => $verificationResult['error'],
                     ]);
                 }
             } catch (\Exception $e) {
                 Log::error('Tabby Payment Verification Exception', [
                     'order_code' => $orderCode,
                     'payment_id' => $paymentId,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -251,12 +249,12 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             Log::info('Tabby Payment Success (No Verification)', [
                 'order_code' => $orderCode,
                 'status' => $status,
-                'payment_id' => $paymentId
+                'payment_id' => $paymentId,
             ]);
-            
+
             return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
                 orderCode: $orderCode,
-                transactionId: $tabbyId ?: $paymentId ?: 'tabby_' . uniqid(),
+                transactionId: $tabbyId ?: $paymentId ?: 'tabby_'.uniqid(),
                 message: $message ?: 'Payment completed successfully via Tabby'
             );
         }
@@ -267,7 +265,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'status' => $status,
             'payment_id' => $paymentId,
             'message' => $message,
-            'failure_reason' => 'Payment status indicates failure or cancellation'
+            'failure_reason' => 'Payment status indicates failure or cancellation',
         ]);
 
         return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
@@ -277,7 +275,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             additionalData: [
                 'tabby_payment_id' => $paymentId,
                 'tabby_id' => $tabbyId,
-                'tabby_status' => $status
+                'tabby_status' => $status,
             ]
         );
     }
@@ -289,12 +287,12 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
     {
         $sandboxMode = $this->paymentMethod->getSetting('sandbox_mode', true);
         $apiUrl = $sandboxMode ? 'https://api-sandbox.tabby.ai' : 'https://api.tabby.ai';
-        
+
         Log::debug('Tabby API URL Generated', [
             'sandbox_mode' => $sandboxMode,
-            'api_url' => $apiUrl
+            'api_url' => $apiUrl,
         ]);
-        
+
         return $apiUrl;
     }
 
@@ -304,12 +302,12 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
     private function getApiHeaders(): array
     {
         $sandboxMode = $this->paymentMethod->getSetting('sandbox_mode', true);
-        $secretKey = $sandboxMode 
+        $secretKey = $sandboxMode
             ? $this->paymentMethod->getSetting('secret_key_sandbox')
             : $this->paymentMethod->getSetting('secret_key_production');
 
         $headers = [
-            'Authorization' => 'Bearer ' . $secretKey,
+            'Authorization' => 'Bearer '.$secretKey,
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
@@ -317,10 +315,10 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
         // Log API headers (without exposing the actual secret key)
         Log::debug('Tabby API Headers Generated', [
             'sandbox_mode' => $sandboxMode,
-            'has_authorization' => !empty($headers['Authorization']),
+            'has_authorization' => ! empty($headers['Authorization']),
             'authorization_length' => strlen($headers['Authorization']),
             'content_type' => $headers['Content-Type'],
-            'accept' => $headers['Accept']
+            'accept' => $headers['Accept'],
         ]);
 
         return $headers;
@@ -335,21 +333,22 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'method' => $method,
             'endpoint' => $endpoint,
             'data' => $data,
-            'headers' => array_map(function($value) {
+            'headers' => array_map(function ($value) {
                 // Mask sensitive header values
                 if (str_contains(strtolower($value), 'bearer')) {
-                    return 'Bearer ***' . substr($value, -4);
+                    return 'Bearer ***'.substr($value, -4);
                 }
+
                 return $value;
             }, $headers),
-            'timestamp' => now()->toISOString()
+            'timestamp' => now()->toISOString(),
         ]);
     }
 
     /**
      * Log API response details
      */
-    private function logApiResponse(string $method, string $endpoint, $response, int $statusCode = null, array $headers = []): void
+    private function logApiResponse(string $method, string $endpoint, $response, ?int $statusCode = null, array $headers = []): void
     {
         Log::info('Tabby API Response', [
             'method' => $method,
@@ -357,7 +356,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'status_code' => $statusCode,
             'response' => $response,
             'response_headers' => $headers,
-            'timestamp' => now()->toISOString()
+            'timestamp' => now()->toISOString(),
         ]);
     }
 
@@ -374,7 +373,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'error_file' => $exception->getFile(),
             'error_line' => $exception->getLine(),
             'request_data' => $requestData,
-            'timestamp' => now()->toISOString()
+            'timestamp' => now()->toISOString(),
         ]);
     }
 
@@ -387,7 +386,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'payment' => [
                 'amount' => (string) round($paymentOrder->amount, 2),
                 'currency' => $currency,
-                'description' => $paymentOrder->description ?: 'Order #' . $paymentOrder->order_code,
+                'description' => $paymentOrder->description ?: 'Order #'.$paymentOrder->order_code,
                 'buyer' => [
                     'phone' => $paymentOrder->customer_phone ?: '',
                     'email' => $paymentOrder->customer_email ?: '',
@@ -396,7 +395,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                 'shipping_address' => [
                     'city' => $paymentOrder->customer_data['city'] ?? '',
                     'address' => $paymentOrder->customer_data['address'] ?? '',
-                    'zip' => $paymentOrder->customer_data['postal_code'] ?? ''
+                    'zip' => $paymentOrder->customer_data['postal_code'] ?? '',
                 ],
                 'order' => [
                     'reference_id' => $paymentOrder->order_code,
@@ -406,8 +405,8 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                             'quantity' => 1,
                             'unit_price' => (string) round($paymentOrder->amount, 2),
                             'category' => 'service',
-                        ]
-                    ]
+                        ],
+                    ],
                 ],
                 'buyer_history' => [
                     'registered_since' => now()->subYear()->toISOString(),
@@ -418,36 +417,36 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'lang' => app()->getLocale() === 'ar' ? 'ar' : 'en',
             'merchant_code' => $merchantCode,
             'merchant_urls' => [
-                'success' => route('payment-gateway.callback', ['plugin' => 'tabby']) . '?status=CLOSED&order_code=' . $paymentOrder->order_code,
-                'cancel' => route('payment-gateway.callback', ['plugin' => 'tabby']) . '?status=CANCELLED&order_code=' . $paymentOrder->order_code,
-                'failure' => route('payment-gateway.callback', ['plugin' => 'tabby']) . '?status=FAILED&order_code=' . $paymentOrder->order_code,
-            ]
+                'success' => route('payment-gateway.callback', ['plugin' => 'tabby']).'?status=CLOSED&order_code='.$paymentOrder->order_code,
+                'cancel' => route('payment-gateway.callback', ['plugin' => 'tabby']).'?status=CANCELLED&order_code='.$paymentOrder->order_code,
+                'failure' => route('payment-gateway.callback', ['plugin' => 'tabby']).'?status=FAILED&order_code='.$paymentOrder->order_code,
+            ],
         ];
 
         Log::info('Tabby API Request Data', [
             'order_code' => $paymentOrder->order_code,
-            'url' => $baseUrl . '/checkout',
+            'url' => $baseUrl.'/checkout',
             'data' => $data,
             'public_key' => $publicKey,
-            'public_key_prefix' => substr($publicKey, 0, 10) . '...',
+            'public_key_prefix' => substr($publicKey, 0, 10).'...',
             'merchant_code' => $merchantCode,
-            'merchant_code_prefix' => substr($merchantCode, 0, 10) . '...',
-            'authorization_header' => 'Bearer ' . substr($publicKey, 0, 10) . '...',
+            'merchant_code_prefix' => substr($merchantCode, 0, 10).'...',
+            'authorization_header' => 'Bearer '.substr($publicKey, 0, 10).'...',
             'has_merchant_code_in_data' => isset($data['merchant_code']),
             'callback_urls' => [
                 'success' => $data['merchant_urls']['success'],
-                'cancel' => $data['merchant_urls']['cancel'], 
-                'failure' => $data['merchant_urls']['failure']
-            ]
+                'cancel' => $data['merchant_urls']['cancel'],
+                'failure' => $data['merchant_urls']['failure'],
+            ],
         ]);
 
         // Make API request to create checkout session
         // Note: For checkout creation, we need to use the public key as Authorization header
         $response = \Illuminate\Support\Facades\Http::withHeaders([
-            'Authorization' => 'Bearer ' . $publicKey,
+            'Authorization' => 'Bearer '.$publicKey,
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-        ])->post($baseUrl . '/checkout', $data);
+        ])->post($baseUrl.'/checkout', $data);
 
         Log::info('Tabby API Response', [
             'order_code' => $paymentOrder->order_code,
@@ -455,14 +454,14 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'response_body' => $response->body(),
             'response_headers' => $response->headers(),
             'request_headers' => [
-                'Authorization' => 'Bearer ' . substr($publicKey, 0, 10) . '...',
+                'Authorization' => 'Bearer '.substr($publicKey, 0, 10).'...',
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
-            ]
+            ],
         ]);
 
-        if (!$response->successful()) {
-            throw new \Exception('Tabby API request failed: ' . $response->body());
+        if (! $response->successful()) {
+            throw new \Exception('Tabby API request failed: '.$response->body());
         }
 
         $responseData = $response->json();
@@ -477,14 +476,14 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
         if (isset($responseData['status']) && $responseData['status'] === 'created') {
             // Store the remote transaction ID
             $paymentOrder->update(['remote_transaction_id' => $responseData['id']]);
-            
+
             // Get the payment URL
             $paymentUrl = $responseData['configuration']['available_products']['installments'][0]['web_url'] ?? null;
-            
-            if (!$paymentUrl) {
+
+            if (! $paymentUrl) {
                 throw new \Exception('No payment URL returned from Tabby');
             }
-            
+
             return $paymentUrl;
         }
 
@@ -498,20 +497,20 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
     {
         try {
             $sandboxMode = $this->paymentMethod->getSetting('sandbox_mode', true);
-            $secretKey = $sandboxMode 
+            $secretKey = $sandboxMode
                 ? $this->paymentMethod->getSetting('secret_key_sandbox')
                 : $this->paymentMethod->getSetting('secret_key_production');
-            
-            $baseUrl = 'https://api.tabby.ai/api/v2';
-            
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'Authorization' => 'Bearer ' . $secretKey,
-            ])->get($baseUrl . '/payments/' . $paymentId);
 
-            if (!$response->successful()) {
+            $baseUrl = 'https://api.tabby.ai/api/v2';
+
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Bearer '.$secretKey,
+            ])->get($baseUrl.'/payments/'.$paymentId);
+
+            if (! $response->successful()) {
                 return [
                     'success' => false,
-                    'error' => 'API request failed: ' . $response->body()
+                    'error' => 'API request failed: '.$response->body(),
                 ];
             }
 
@@ -522,7 +521,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                 'payment_id' => $paymentId,
                 'status' => $status,
                 'amount' => $paymentData['amount'] ?? null,
-                'response' => $paymentData
+                'response' => $paymentData,
             ]);
 
             if (in_array($status, ['CLOSED', 'AUTHORIZED'])) {
@@ -530,22 +529,20 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                     'success' => true,
                     'status' => $status,
                     'tabby_id' => $paymentData['id'] ?? $paymentId,
-                    'data' => $paymentData
+                    'data' => $paymentData,
                 ];
             } else {
                 return [
                     'success' => false,
-                    'error' => 'Payment status not successful: ' . $status
+                    'error' => 'Payment status not successful: '.$status,
                 ];
             }
 
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'error' => 'Verification exception: ' . $e->getMessage()
+                'error' => 'Verification exception: '.$e->getMessage(),
             ];
         }
     }
-
-
 }

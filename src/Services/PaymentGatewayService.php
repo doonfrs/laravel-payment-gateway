@@ -11,6 +11,30 @@ use Trinavo\PaymentGateway\Models\PaymentOrder;
 class PaymentGatewayService
 {
     /**
+     * Set the default locale for payment gateway routes
+     *
+     * @return $this
+     */
+    public function setDefaultLocale(string $locale): self
+    {
+        app(LocaleService::class)->setDefaultLocale($locale);
+
+        return $this;
+    }
+
+    /**
+     * Set the available locales for payment gateway routes
+     *
+     * @return $this
+     */
+    public function setAvailableLocales(array $locales): self
+    {
+        app(LocaleService::class)->setAvailableLocales($locales);
+
+        return $this;
+    }
+
+    /**
      * Create a new payment order
      */
     public function createPaymentOrder(
@@ -45,6 +69,20 @@ class PaymentGatewayService
      */
     public function getPaymentUrl(PaymentOrder $paymentOrder): string
     {
+        $localeService = app(LocaleService::class);
+        $currentLocale = app()->getLocale();
+        $defaultLocale = $localeService->getDefaultLocale();
+
+        // If we're in a non-default locale, use the localized route
+        if ($currentLocale !== $defaultLocale && in_array($currentLocale, $localeService->getAvailableLocales())) {
+            return URL::route('localized.payment-gateway.checkout',
+                [
+                    'locale' => $currentLocale,
+                    'order' => $paymentOrder->order_code,
+                ]);
+        }
+
+        // Otherwise, use the non-localized route
         return URL::route('payment-gateway.checkout',
             [
                 'order' => $paymentOrder->order_code,
