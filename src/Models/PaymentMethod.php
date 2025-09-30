@@ -55,12 +55,13 @@ class PaymentMethod extends Model
             } elseif (isset($decoded['en'])) {
                 return $decoded['en'];
             } elseif (! empty($decoded)) {
-                return reset($decoded); // Return first available translation
+                $firstValue = reset($decoded);
+                return $firstValue ?: $this->name; // Return first available translation or fallback to name
             }
         }
 
         // Not JSON or no valid translations, return as plain text
-        return $this->display_name;
+        return is_string($this->display_name) ? $this->display_name : $this->name;
     }
 
     /**
