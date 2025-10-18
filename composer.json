@@ -38,6 +38,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require-dev": {
+        "larastan/larastan": "^3.7",
         "orchestra/testbench": "^10.1",
         "phpunit/phpunit": "^11.5",
         "laravel/framework": "^12.6",
