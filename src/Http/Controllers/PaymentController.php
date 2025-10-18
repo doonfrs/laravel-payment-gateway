@@ -37,6 +37,19 @@ class PaymentController extends Controller
 
         $paymentMethods = $this->paymentGateway->getAvailablePaymentMethodsForOrder($paymentOrder);
 
+        // Auto-select and process if only one payment method is available
+        if ($paymentMethods->count() === 1) {
+            $paymentMethod = $paymentMethods->first();
+
+            // Verify the payment method is enabled
+            if ($paymentMethod->enabled) {
+                // Process payment directly with the only available method
+                $response = $this->paymentGateway->processPayment(paymentOrder: $paymentOrder, paymentMethod: $paymentMethod);
+
+                return $response;
+            }
+        }
+
         return view('payment-gateway::checkout', [
             'paymentOrder' => $paymentOrder,
             'paymentMethods' => $paymentMethods,
