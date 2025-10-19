@@ -6,6 +6,7 @@ use Trinavo\PaymentGateway\Configuration\CheckboxField;
 use Trinavo\PaymentGateway\Configuration\NumberField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
+use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class DummyPaymentPlugin extends PaymentPluginInterface
 {
@@ -84,6 +85,14 @@ class DummyPaymentPlugin extends PaymentPluginInterface
             orderCode: $orderCode,
             message: 'Payment failed',
             status: $status
+        );
+    }
+
+    public function refund(PaymentOrder $paymentOrder): RefundResponse
+    {
+        return RefundResponse::failure(
+            orderCode: $paymentOrder->order_code,
+            message: 'Refunds are not supported for this payment method'
         );
     }
 }

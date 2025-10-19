@@ -6,6 +6,7 @@ use Trinavo\PaymentGateway\Configuration\CheckboxField;
 use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
+use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class MoyasarPaymentPlugin extends PaymentPluginInterface
 {
@@ -125,6 +126,14 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
             message: 'Payment failed',
             status: $status,
             additionalData: ['moyasar_payment_id' => $paymentId]
+        );
+    }
+
+    public function refund(PaymentOrder $paymentOrder): RefundResponse
+    {
+        return RefundResponse::failure(
+            orderCode: $paymentOrder->order_code,
+            message: 'Refunds are not supported for this payment method'
         );
     }
 }

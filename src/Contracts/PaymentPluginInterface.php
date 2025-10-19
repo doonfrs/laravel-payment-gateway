@@ -55,6 +55,12 @@ abstract class PaymentPluginInterface
     abstract public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse;
 
     /**
+     * Process a refund for the given payment order
+     * This method should process a full refund and return refund status
+     */
+    abstract public function refund(PaymentOrder $paymentOrder): \Trinavo\PaymentGateway\Models\RefundResponse;
+
+    /**
      * Get the callback URL for this plugin
      */
     public function getCallbackUrl(): string

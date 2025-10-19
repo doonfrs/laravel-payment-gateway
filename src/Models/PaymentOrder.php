@@ -27,6 +27,8 @@ class PaymentOrder extends Model
         'payment_data',
         'ignored_plugins',
         'paid_at',
+        'refunded',
+        'refund_data',
     ];
 
     protected $casts = [
@@ -35,6 +37,8 @@ class PaymentOrder extends Model
         'payment_data' => 'array',
         'ignored_plugins' => 'array',
         'paid_at' => 'datetime',
+        'refunded' => 'boolean',
+        'refund_data' => 'array',
     ];
 
     public const STATUS_PENDING = 'pending';
@@ -171,5 +175,24 @@ class PaymentOrder extends Model
 
         // Not JSON or no valid translations, return as plain text
         return $this->description;
+    }
+
+    /**
+     * Mark the payment order as refunded
+     */
+    public function markAsRefunded(array $refundData = []): void
+    {
+        $this->update([
+            'refunded' => true,
+            'refund_data' => array_merge($this->refund_data ?? [], $refundData),
+        ]);
+    }
+
+    /**
+     * Check if the payment order is refunded
+     */
+    public function isRefunded(): bool
+    {
+        return $this->refunded === true;
     }
 }

@@ -8,6 +8,7 @@ use Trinavo\PaymentGateway\Configuration\SelectField;
 use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
+use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class TamaraPaymentPlugin extends PaymentPluginInterface
 {
@@ -599,5 +600,13 @@ class TamaraPaymentPlugin extends PaymentPluginInterface
         $parts = explode(' ', trim($fullName), 2);
 
         return isset($parts[1]) ? $parts[1] : 'User';
+    }
+
+    public function refund(PaymentOrder $paymentOrder): RefundResponse
+    {
+        return RefundResponse::failure(
+            orderCode: $paymentOrder->order_code,
+            message: 'Refunds are not supported for this payment method'
+        );
     }
 }

@@ -8,6 +8,7 @@ use Trinavo\PaymentGateway\Configuration\SelectField;
 use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
+use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class TabbyPaymentPlugin extends PaymentPluginInterface
 {
@@ -544,5 +545,13 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
                 'error' => 'Verification exception: '.$e->getMessage(),
             ];
         }
+    }
+
+    public function refund(PaymentOrder $paymentOrder): RefundResponse
+    {
+        return RefundResponse::failure(
+            orderCode: $paymentOrder->order_code,
+            message: 'Refunds are not supported for this payment method'
+        );
     }
 }
