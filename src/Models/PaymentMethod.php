@@ -2,10 +2,15 @@
 
 namespace Trinavo\PaymentGateway\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Crypt;
 
+/**
+ * @method static Builder|PaymentMethod enabled()
+ * @method static Builder|PaymentMethod ordered()
+ */
 class PaymentMethod extends Model
 {
     protected $fillable = [

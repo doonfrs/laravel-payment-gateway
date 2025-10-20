@@ -6,6 +6,33 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
+/**
+ * @property int $id
+ * @property string $order_code
+ * @property float $amount
+ * @property string $currency
+ * @property string $status
+ * @property string|null $customer_name
+ * @property string|null $customer_email
+ * @property string|null $customer_phone
+ * @property array|null $customer_data
+ * @property string|null $description
+ * @property string|null $success_callback
+ * @property string|null $failure_callback
+ * @property string|null $success_url
+ * @property string|null $failure_url
+ * @property int|null $payment_method_id
+ * @property string|null $external_transaction_id
+ * @property array|null $payment_data
+ * @property array|null $ignored_plugins
+ * @property \Illuminate\Support\Carbon|null $paid_at
+ * @property bool $refunded
+ * @property array|null $refund_data
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Trinavo\PaymentGateway\Models\PaymentMethod|null $paymentMethod
+ * @property-read string $formatted_amount
+ */
 class PaymentOrder extends Model
 {
     protected $fillable = [

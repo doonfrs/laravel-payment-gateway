@@ -14,43 +14,40 @@ class ExampleController extends Controller
     public function createPayment(Request $request)
     {
         // Create a payment order
-        $paymentOrder = PaymentGateway::createPaymentOrder([
-            'amount' => 99.99,
-            'currency' => 'USD',
-            'customer_name' => 'John Doe',
-            'customer_email' => 'john@example.com',
-            'customer_phone' => '+1234567890',
-            'description' => 'Premium subscription - 1 month',
-
+        $paymentOrder = PaymentGateway::createPaymentOrder(
+            amount: 99.99,
+            currency: 'USD',
+            customerName: 'John Doe',
+            customerEmail: 'john@example.com',
+            customerPhone: '+1234567890',
+            description: 'Premium subscription - 1 month',
             // PHP code to execute when payment succeeds
-            'success_callback' => '
+            successCallback: '
                 // Update user subscription
                 $user = \App\Models\User::where("email", $order->customer_email)->first();
                 if ($user) {
                     $user->subscription_expires_at = now()->addMonth();
                     $user->save();
                 }
-                
+
                 // Send confirmation email
                 \Mail::to($order->customer_email)->send(new \App\Mail\PaymentConfirmation($order));
             ',
-
             // PHP code to execute when payment fails
-            'failure_callback' => '
+            failureCallback: '
                 // Log the failure
                 \Log::warning("Payment failed for order: " . $order->order_code);
-                
+
                 // Notify admin
                 \Mail::to("admin@example.com")->send(new \App\Mail\PaymentFailed($order));
             ',
-
             // URLs to redirect after payment
-            'success_url' => route('subscription.success'),
-            'failure_url' => route('subscription.failed'),
-        ]);
+            successUrl: route('subscription.success'),
+            failureUrl: route('subscription.failed'),
+        );
 
         // Get the payment URL and redirect user
-        $paymentUrl = PaymentGateway::getPaymentUrl($paymentOrder);
+        $paymentUrl = PaymentGateway::getPaymentUrl(paymentOrder: $paymentOrder);
 
         return redirect($paymentUrl);
     }
