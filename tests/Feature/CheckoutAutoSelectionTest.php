@@ -226,7 +226,7 @@ class CheckoutAutoSelectionTest extends TestCase
     }
 
     /** @test */
-    public function payment_order_is_marked_as_processing_when_auto_selected()
+    public function payment_order_remains_pending_when_auto_selected()
     {
         // Create a payment order
         $order = PaymentOrder::create([
@@ -250,8 +250,8 @@ class CheckoutAutoSelectionTest extends TestCase
         // Refresh the order
         $order->refresh();
 
-        // Should be marked as processing
-        $this->assertEquals('processing', $order->status);
+        // Should remain pending (not marked as processing until payment is actually submitted)
+        $this->assertEquals('pending', $order->status);
         $this->assertEquals($paymentMethod->id, $order->payment_method_id);
     }
 }

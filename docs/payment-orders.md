@@ -12,7 +12,7 @@ CREATE TABLE payment_orders (
     order_code VARCHAR(255) UNIQUE NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
-    status ENUM('pending', 'processing', 'completed', 'failed', 'cancelled') DEFAULT 'pending',
+    status ENUM('pending', 'completed', 'failed', 'cancelled') DEFAULT 'pending',
     
     customer_name VARCHAR(255) NOT NULL,
     customer_email VARCHAR(255) NOT NULL,
@@ -58,7 +58,6 @@ $order = PaymentOrder::create([
 ### Available Statuses
 
 - **pending** - Order created, waiting for payment
-- **processing** - Payment is being processed  
 - **completed** - Payment successful
 - **failed** - Payment failed
 - **cancelled** - Payment cancelled
@@ -70,10 +69,6 @@ $order = PaymentOrder::find(1);
 
 if ($order->isPending()) {
     echo "Waiting for payment";
-}
-
-if ($order->isProcessing()) {
-    echo "Payment in progress";
 }
 
 if ($order->isCompleted()) {

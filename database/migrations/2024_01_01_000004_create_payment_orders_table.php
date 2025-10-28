@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('order_code')->unique();
             $table->decimal('amount', 10, 2);
             $table->string('currency', 3)->default('USD');
-            $table->string('status')->default('pending'); // pending, processing, completed, failed, cancelled
+            $table->string('status')->default('pending'); // pending, completed, failed, cancelled
             $table->string('customer_name')->nullable();
             $table->string('customer_email')->nullable();
             $table->string('customer_phone')->nullable();

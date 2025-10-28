@@ -130,7 +130,10 @@ class PaymentGatewayService
     {
         // Update payment order with selected method
         $paymentOrder->update(['payment_method_id' => $paymentMethod->id]);
-        $paymentOrder->markAsProcessing();
+
+        // Note: We don't mark as processing here to allow users to refresh the payment page
+        // The status will be updated by the plugin or callback when payment is actually submitted
+        // This prevents users from being locked out while still viewing the payment form
 
         // Get plugin instance and process payment
         $plugin = $paymentMethod->getPluginInstance();

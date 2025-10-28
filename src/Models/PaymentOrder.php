@@ -70,8 +70,6 @@ class PaymentOrder extends Model
 
     public const STATUS_PENDING = 'pending';
 
-    public const STATUS_PROCESSING = 'processing';
-
     public const STATUS_COMPLETED = 'completed';
 
     public const STATUS_FAILED = 'failed';
@@ -103,11 +101,6 @@ class PaymentOrder extends Model
         return $this->status === self::STATUS_PENDING;
     }
 
-    public function isProcessing(): bool
-    {
-        return $this->status === self::STATUS_PROCESSING;
-    }
-
     public function isCompleted(): bool
     {
         return $this->status === self::STATUS_COMPLETED;
@@ -121,11 +114,6 @@ class PaymentOrder extends Model
     public function isCancelled(): bool
     {
         return $this->status === self::STATUS_CANCELLED;
-    }
-
-    public function markAsProcessing(): void
-    {
-        $this->update(['status' => self::STATUS_PROCESSING]);
     }
 
     public function markAsCompleted(array $paymentData = []): void

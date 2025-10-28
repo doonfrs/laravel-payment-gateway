@@ -28,19 +28,6 @@
                             <h2 class="text-2xl font-bold text-yellow-800 mb-2">
                                 {{ __('pending') }}</h2>
                             <p class="text-gray-600">{{ __('status_pending_message') }}</p>
-                        @elseif($paymentOrder->status === 'processing')
-                            <div
-                                class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                                <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                    </path>
-                                </svg>
-                            </div>
-                            <h2 class="text-2xl font-bold text-blue-800 mb-2">
-                                {{ __('processing') }}</h2>
-                            <p class="text-gray-600">{{ __('status_processing_message') }}</p>
                         @elseif($paymentOrder->status === 'completed')
                             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor"
@@ -108,10 +95,9 @@
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">{{ __('status') }}:</span>
                                     <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     @if ($paymentOrder->status === 'completed') bg-green-100 text-green-800
                                     @elseif($paymentOrder->status === 'failed') bg-red-100 text-red-800
-                                    @elseif($paymentOrder->status === 'processing') bg-blue-100 text-blue-800
                                     @elseif($paymentOrder->status === 'pending') bg-yellow-100 text-yellow-800
                                     @else bg-gray-100 text-gray-800 @endif">
                                         {{ __('' . $paymentOrder->status) }}
@@ -194,7 +180,7 @@
 
                     <div class="text-center">
                         <div class="flex flex-wrap justify-center gap-4">
-                            @if ($paymentOrder->status === 'pending' || $paymentOrder->status === 'processing')
+                            @if ($paymentOrder->status === 'pending')
                                 <button onclick="location.reload()"
                                     class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,15 +215,14 @@
                                 </a>
                             @endif
 
-                            @if ($paymentOrder->status === 'failed')
-                                <a href="{{ payment_gateway_localized_url(route('payment-gateway.checkout', ['order' => $paymentOrder->order_code])) }}"
-                                    class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                            @if ($paymentOrder->status === 'failed' && $paymentOrder->failure_url)
+                                <a href="{{ $paymentOrder->failure_url }}"
+                                    class="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                        </path>
+                                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                                     </svg>
-                                    {{ __('try_again') }}
+                                    {{ __('go_back') }}
                                 </a>
                             @endif
                         </div>
@@ -250,8 +235,8 @@
 
 @push('scripts')
     <script>
-        // Auto-refresh for pending/processing orders
-        @if (in_array($paymentOrder->status, ['pending', 'processing']))
+        // Auto-refresh for pending orders
+        @if ($paymentOrder->status === 'pending')
             setTimeout(function() {
                 location.reload();
             }, 10000); // Refresh every 10 seconds

@@ -31,7 +31,9 @@ class PaymentController extends Controller
             abort(404, 'Payment order not found');
         }
 
-        if (! $paymentOrder->isPending()) {
+        // Only block access if payment is already completed or failed
+        // Allow: pending, processing (backwards compat), cancelled (retry allowed)
+        if ($paymentOrder->isCompleted() || $paymentOrder->isFailed()) {
             return redirect()->route('payment-gateway.status', ['order' => $orderCode]);
         }
 
@@ -69,6 +71,12 @@ class PaymentController extends Controller
 
         if (! $paymentOrder) {
             abort(404, 'Payment order not found');
+        }
+
+        // Prevent double payment if already completed
+        if ($paymentOrder->isCompleted()) {
+            return redirect()->route('payment-gateway.success', ['order' => $orderCode])
+                ->with('message', __('This order has already been paid.'));
         }
 
         $paymentMethod = PaymentMethod::findOrFail($request->payment_method_id);
