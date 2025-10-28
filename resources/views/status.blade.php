@@ -77,6 +77,57 @@
                         @endif
                     </div>
 
+                    <!-- Action Buttons -->
+                    <div class="text-center mb-8">
+                        <div class="flex flex-wrap justify-center gap-4">
+                            @if ($paymentOrder->status === 'pending')
+                                <button onclick="location.reload()"
+                                    class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                        </path>
+                                    </svg>
+                                    {{ __('refresh_status') }}
+                                </button>
+                            @endif
+
+                            @if ($paymentOrder->status === 'pending')
+                                <a href="{{ payment_gateway_localized_url(route('payment-gateway.checkout', ['order' => $paymentOrder->order_code])) }}"
+                                    class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                        </path>
+                                    </svg>
+                                    {{ __('continue_payment') }}
+                                </a>
+                            @endif
+
+                            @if ($paymentOrder->status === 'completed' && $paymentOrder->success_url)
+                                <a href="{{ $paymentOrder->success_url }}"
+                                    class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                    </svg>
+                                    {{ __('continue') }}
+                                </a>
+                            @endif
+
+                            @if ($paymentOrder->status === 'failed' && $paymentOrder->failure_url)
+                                <a href="{{ $paymentOrder->failure_url }}"
+                                    class="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                                    </svg>
+                                    {{ __('go_back') }}
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Order Details -->
                     <div class="grid md:grid-cols-2 gap-8 mb-8">
                         <div>
@@ -175,58 +226,6 @@
                             </div>
                         </div>
                     @endif
-
-                    <hr class="border-gray-200 mb-8">
-
-                    <div class="text-center">
-                        <div class="flex flex-wrap justify-center gap-4">
-                            @if ($paymentOrder->status === 'pending')
-                                <button onclick="location.reload()"
-                                    class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                        </path>
-                                    </svg>
-                                    {{ __('refresh_status') }}
-                                </button>
-                            @endif
-
-                            @if ($paymentOrder->status === 'pending')
-                                <a href="{{ payment_gateway_localized_url(route('payment-gateway.checkout', ['order' => $paymentOrder->order_code])) }}"
-                                    class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                                        </path>
-                                    </svg>
-                                    {{ __('continue_payment') }}
-                                </a>
-                            @endif
-
-                            @if ($paymentOrder->status === 'completed' && $paymentOrder->success_url)
-                                <a href="{{ $paymentOrder->success_url }}"
-                                    class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                                    </svg>
-                                    {{ __('continue') }}
-                                </a>
-                            @endif
-
-                            @if ($paymentOrder->status === 'failed' && $paymentOrder->failure_url)
-                                <a href="{{ $paymentOrder->failure_url }}"
-                                    class="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                                    </svg>
-                                    {{ __('go_back') }}
-                                </a>
-                            @endif
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

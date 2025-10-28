@@ -25,6 +25,20 @@
                         <p class="text-gray-600">{{ __('unable_process_payment') }}</p>
                     </div>
 
+                    <!-- Action Button -->
+                    @if ($paymentOrder->failure_url)
+                        <div class="text-center mb-8">
+                            <a href="{{ $paymentOrder->failure_url }}"
+                                class="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                                </svg>
+                                {{ __('return_to_store') }}
+                            </a>
+                        </div>
+                    @endif
+
                     <!-- Order Details -->
                     <div class="grid md:grid-cols-2 gap-8 mb-8">
                         <div>
@@ -109,45 +123,6 @@
                             </div>
                         </div>
                     @endif
-
-                    <hr class="border-gray-200 mb-8">
-
-                    <div class="text-center">
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                            <div class="flex items-center justify-center">
-                                <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p class="text-blue-800">
-                                    {{ __('try_again_different_method') }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-wrap justify-center gap-4">
-                            <a href="{{ payment_gateway_localized_url(route('payment-gateway.checkout', ['order' => $paymentOrder->order_code])) }}"
-                                class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                    </path>
-                                </svg>
-                                {{ __('try_again') }}
-                            </a>
-                            @if ($paymentOrder->failure_url)
-                                <a href="{{ $paymentOrder->failure_url }}"
-                                    class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                                    </svg>
-                                    {{ __('return_to_store') }}
-                                </a>
-                            @endif
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
