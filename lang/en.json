@@ -119,5 +119,10 @@
     "contact_support_if_problem_persists": "Contact support if the problem persists",
     "cancel_payment": "Cancel Payment",
     "moyasar_payment_gateway": "Moyasar Payment Gateway",
-    "pay_securely_with_moyasar": "Pay securely with Moyasar"
+    "pay_securely_with_moyasar": "Pay securely with Moyasar",
+    "hyperpay_payment_gateway": "HyperPay Payment Gateway",
+    "pay_securely_with_hyperpay": "Pay securely with HyperPay",
+    "hyperpay_payment_error": "HyperPay Payment Error",
+    "hyperpay_payment_failed_message": "We were unable to process your payment through HyperPay.",
+    "processing_payment": "Processing payment..."
 }
