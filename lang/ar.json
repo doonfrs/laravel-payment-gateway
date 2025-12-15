@@ -119,5 +119,10 @@
     "contact_support_if_problem_persists": "تواصل مع الدعم إذا استمرت المشكلة",
     "cancel_payment": "إلغاء الدفع",
     "moyasar_payment_gateway": "بوابة دفع ميسر",
-    "pay_securely_with_moyasar": "ادفع بأمان عبر ميسر"
+    "pay_securely_with_moyasar": "ادفع بأمان عبر ميسر",
+    "hyperpay_payment_gateway": "بوابة دفع HyperPay",
+    "pay_securely_with_hyperpay": "ادفع بأمان عبر HyperPay",
+    "hyperpay_payment_error": "خطأ في دفع HyperPay",
+    "hyperpay_payment_failed_message": "لم نتمكن من معالجة دفعتك عبر HyperPay.",
+    "processing_payment": "جاري معالجة الدفع..."
 }
