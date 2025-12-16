@@ -26,6 +26,7 @@ return [
         \Trinavo\PaymentGateway\Plugins\Tamara\TamaraPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\AlawnehPay\AlawnehPayPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\HyperPay\HyperPayPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\Paymob\PaymobPaymentPlugin::class,
         // Add your custom payment plugins here
         // \App\PaymentPlugins\StripePaymentPlugin::class,
         // \App\PaymentPlugins\PayPalPaymentPlugin::class,
