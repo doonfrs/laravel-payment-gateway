@@ -1,6 +1,6 @@
 <?php
 
-namespace Trinavo\PaymentGateway\Plugins\PaymobIntention;
+namespace Trinavo\PaymentGateway\Plugins\Paymob;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -11,16 +11,16 @@ use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 use Trinavo\PaymentGateway\Models\RefundResponse;
 
-class PaymobIntentionPaymentPlugin extends PaymentPluginInterface
+class PaymobPaymentPlugin extends PaymentPluginInterface
 {
     public function getName(): string
     {
-        return __('Paymob Intention Payment Plugin');
+        return __('Paymob Payment Plugin');
     }
 
     public function getDescription(): string
     {
-        return __('Integrate Paymob payment gateway using the new Intention API with redirect-based checkout.');
+        return __('Integrate Paymob payment gateway.');
     }
 
     public function getConfigurationFields(): array
@@ -37,7 +37,7 @@ class PaymobIntentionPaymentPlugin extends PaymentPluginInterface
                     'ae' => 'United Arab Emirates',
                 ],
                 default: 'eg',
-                description: 'Select the country for this Paymob integration. Each country has a different API base URL.'
+                description: 'Select the country for this Paymob. Each country has a different API base URL.'
             ),
 
             new TextField(
@@ -92,7 +92,7 @@ class PaymobIntentionPaymentPlugin extends PaymentPluginInterface
 
     public function processPayment(PaymentOrder $paymentOrder)
     {
-        Log::info('Paymob Intention Payment Processing Started', [
+        Log::info('Paymob Payment Processing Started', [
             'order_code' => $paymentOrder->order_code,
             'amount' => $paymentOrder->amount,
             'currency' => $paymentOrder->currency,
@@ -149,7 +149,7 @@ class PaymobIntentionPaymentPlugin extends PaymentPluginInterface
 
     public function handleCallback(array $callbackData): \Trinavo\PaymentGateway\Models\CallbackResponse
     {
-        Log::info('Paymob Intention Callback Received', [
+        Log::info('Paymob Callback Received', [
             'raw_callback_data' => $callbackData,
             'callback_keys' => array_keys($callbackData),
         ]);
@@ -157,7 +157,7 @@ class PaymobIntentionPaymentPlugin extends PaymentPluginInterface
         $hmac = $callbackData['hmac'] ?? null;
 
         if (! $hmac || ! $this->isValidHmac($callbackData, $hmac)) {
-            Log::warning('Paymob Intention Callback HMAC Invalid', [
+            Log::warning('Paymob Callback HMAC Invalid', [
                 'callback_data' => $callbackData,
             ]);
 
@@ -176,7 +176,7 @@ class PaymobIntentionPaymentPlugin extends PaymentPluginInterface
         $paymobStatus = $callbackData['data']['txn_response_code'] ?? $callbackData['txn_response_code'] ?? null;
 
         if (! $orderCode) {
-            Log::error('Paymob Intention Callback Missing Order Code', [
+            Log::error('Paymob Callback Missing Order Code', [
                 'callback_data' => $callbackData,
             ]);
 
@@ -189,8 +189,8 @@ class PaymobIntentionPaymentPlugin extends PaymentPluginInterface
         if ($success) {
             return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
                 orderCode: (string) $orderCode,
-                transactionId: $transactionId ? (string) $transactionId : 'paymob_intention_'.uniqid(),
-                message: 'Payment completed successfully via Paymob Intention API',
+                transactionId: $transactionId ? (string) $transactionId : 'paymob_'.uniqid(),
+                message: 'Payment completed successfully via Paymob API',
                 additionalData: [
                     'paymob_txn_response_code' => $paymobStatus,
                 ]
@@ -211,7 +211,7 @@ class PaymobIntentionPaymentPlugin extends PaymentPluginInterface
     {
         return RefundResponse::failure(
             orderCode: $paymentOrder->order_code,
-            message: 'Refunds are not yet implemented for Paymob Intention API'
+            message: 'Refunds are not yet implemented for Paymob API'
         );
     }
 

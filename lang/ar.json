@@ -126,9 +126,8 @@
     "hyperpay_payment_failed_message": "لم نتمكن من معالجة دفعتك عبر HyperPay.",
     "processing_payment": "جاري معالجة الدفع...",
     "Paymob Payment Plugin": "إضافة دفع Paymob",
-    "Paymob Intention Payment Plugin": "إضافة دفع Paymob (API الجديد)",
     "Integrate Paymob payment gateway (cards via iframe) with country-specific API endpoints.": "تكامل بوابة دفع Paymob (البطاقات عبر iframe) مع نقاط نهاية API حسب البلد.",
-    "Integrate Paymob payment gateway using the new Intention API with redirect-based checkout.": "تكامل بوابة دفع Paymob باستخدام Intention API الجديد مع الدفع عبر إعادة التوجيه.",
+    "Integrate Paymob payment gateway using the new API with redirect-based checkout.": "تكامل بوابة دفع Paymob باستخدام API الجديد مع الدفع عبر إعادة التوجيه.",
     "Paymob Payment": "دفع Paymob",
     "Complete your secure payment using Paymob": "أكمل دفعتك الآمنة باستخدام Paymob"
 }

@@ -126,9 +126,8 @@
     "hyperpay_payment_failed_message": "We were unable to process your payment through HyperPay.",
     "processing_payment": "Processing payment...",
     "Paymob Payment Plugin": "Paymob Payment Plugin",
-    "Paymob Intention Payment Plugin": "Paymob Intention Payment Plugin",
     "Integrate Paymob payment gateway (cards via iframe) with country-specific API endpoints.": "Integrate Paymob payment gateway (cards via iframe) with country-specific API endpoints.",
-    "Integrate Paymob payment gateway using the new Intention API with redirect-based checkout.": "Integrate Paymob payment gateway using the new Intention API with redirect-based checkout.",
+    "Integrate Paymob payment gateway using the new API with redirect-based checkout.": "Integrate Paymob payment gateway using the new API with redirect-based checkout.",
     "Paymob Payment": "Paymob Payment",
     "Complete your secure payment using Paymob": "Complete your secure payment using Paymob"
 }
