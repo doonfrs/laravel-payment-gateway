@@ -183,9 +183,10 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
                 $paymentStatus = $this->getPaymentStatus($resourcePath);
 
                 if ($paymentStatus['success']) {
-                    $result = $paymentStatus['data']['result'] ?? [];
+                    $paymentData = $paymentStatus['data'];
+                    $result = $paymentData['result'] ?? [];
                     $resultCode = $result['code'] ?? null;
-                    $merchantTransactionId = $result['merchantTransactionId'] ?? null;
+                    $merchantTransactionId = $paymentData['merchantTransactionId'] ?? null;
 
                     // Use merchantTransactionId as order code if available
                     if ($merchantTransactionId) {
@@ -201,7 +202,7 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
                     // Check result code
                     // Success codes: 000.000.000, 000.000.100, 000.100.110, 000.100.111, 000.100.112
                     if (in_array($resultCode, ['000.000.000', '000.000.100', '000.100.110', '000.100.111', '000.100.112'])) {
-                        $transactionId = $result['id'] ?? null;
+                        $transactionId = $paymentData['id'] ?? null;
 
                         return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
                             orderCode: $orderCode ?: 'unknown',
