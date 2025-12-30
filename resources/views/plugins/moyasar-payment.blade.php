@@ -58,6 +58,18 @@
                     <div>
                         <div class="mysr-form"></div>
                     </div>
+
+                    <!-- Cancel Payment -->
+                    <div class="mt-6 text-center">
+                        <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
+                            class="inline-flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200">
+                            <svg class="w-4 h-4 ltr:mr-2 rtl:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            {{ __('cancel_payment') }}
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

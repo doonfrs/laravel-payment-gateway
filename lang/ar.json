@@ -129,5 +129,11 @@
     "Integrate Paymob payment gateway (cards via iframe) with country-specific API endpoints.": "تكامل بوابة دفع Paymob (البطاقات عبر iframe) مع نقاط نهاية API حسب البلد.",
     "Integrate Paymob payment gateway using the new API with redirect-based checkout.": "تكامل بوابة دفع Paymob باستخدام API الجديد مع الدفع عبر إعادة التوجيه.",
     "Paymob Payment": "دفع Paymob",
-    "Complete your secure payment using Paymob": "أكمل دفعتك الآمنة باستخدام Paymob"
+    "Complete your secure payment using Paymob": "أكمل دفعتك الآمنة باستخدام Paymob",
+    "payment_cancelled": "تم إلغاء الدفع",
+    "payment_cancelled_message": "تم إلغاء عملية الدفع. لم يتم خصم أي مبالغ.",
+    "payment_was_cancelled": "تم إلغاء عملية الدفع",
+    "no_charges_made": "لم يتم خصم أي مبلغ من حسابك. يمكنك المحاولة مرة أخرى في أي وقت.",
+    "go_to_home": "الذهاب للرئيسية",
+    "view_order": "عرض الطلب"
 }

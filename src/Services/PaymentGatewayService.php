@@ -168,6 +168,19 @@ class PaymentGatewayService
     }
 
     /**
+     * Handle payment cancellation
+     */
+    public function handlePaymentCancellation(PaymentOrder $paymentOrder, array $paymentData = []): void
+    {
+        $paymentOrder->markAsCancelled($paymentData);
+
+        // Execute failure callback if provided (cancellation uses failure callback)
+        if ($paymentOrder->failure_callback) {
+            $this->executeCallback($paymentOrder->failure_callback, $paymentOrder);
+        }
+    }
+
+    /**
      * Execute PHP callback code
      */
     protected function executeCallback(string $callback, PaymentOrder $paymentOrder): void

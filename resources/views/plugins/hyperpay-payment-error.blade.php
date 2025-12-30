@@ -125,18 +125,16 @@
                         </div>
 
                         <!-- Cancel Payment -->
-                        @if (isset($failureUrl))
-                            <div class="pt-2">
-                                <a href="{{ $failureUrl }}"
-                                    class="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                    {{ __('cancel_payment') }}
-                                </a>
-                            </div>
-                        @endif
+                        <div class="pt-2">
+                            <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
+                                class="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                {{ __('cancel_payment') }}
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

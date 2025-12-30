@@ -71,6 +71,32 @@ class CallbackResponse
     }
 
     /**
+     * Create a cancelled callback response
+     */
+    public static function cancelled(
+        string $orderCode,
+        ?string $message = null,
+        array $additionalData = []
+    ): self {
+        return new self(
+            success: false,
+            orderCode: $orderCode,
+            transactionId: null,
+            status: 'cancelled',
+            message: $message ?? 'Payment was cancelled',
+            additionalData: $additionalData
+        );
+    }
+
+    /**
+     * Check if this response indicates a cancellation
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
+    }
+
+    /**
      * Convert to array for backward compatibility
      */
     public function toArray(): array

@@ -129,5 +129,11 @@
     "Integrate Paymob payment gateway (cards via iframe) with country-specific API endpoints.": "Integrate Paymob payment gateway (cards via iframe) with country-specific API endpoints.",
     "Integrate Paymob payment gateway using the new API with redirect-based checkout.": "Integrate Paymob payment gateway using the new API with redirect-based checkout.",
     "Paymob Payment": "Paymob Payment",
-    "Complete your secure payment using Paymob": "Complete your secure payment using Paymob"
+    "Complete your secure payment using Paymob": "Complete your secure payment using Paymob",
+    "payment_cancelled": "Payment Cancelled",
+    "payment_cancelled_message": "Your payment has been cancelled. No charges were made.",
+    "payment_was_cancelled": "Payment Was Cancelled",
+    "no_charges_made": "No charges were made to your account. You can try again anytime.",
+    "go_to_home": "Go to Home",
+    "view_order": "View Order"
 }

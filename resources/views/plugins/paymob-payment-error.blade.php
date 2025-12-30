@@ -125,13 +125,13 @@
                             {{ __('Try Again') }}
                         </button>
 
-                        <button onclick="window.location.href='{{ $failureUrl }}'"
+                        <button onclick="window.location.href='{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}'"
                             class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-md text-sm flex-1 inline-flex items-center justify-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                            {{ __('Go Back') }}
+                            {{ __('cancel_payment') }}
                         </button>
                     </div>
 

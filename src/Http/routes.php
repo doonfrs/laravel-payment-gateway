@@ -28,6 +28,9 @@ Route::group([
     Route::get('failure/{order}', [PaymentController::class, 'failure'])
         ->name('failure');
 
+    Route::get('cancel/{order}', [PaymentController::class, 'cancel'])
+        ->name('cancel');
+
     Route::get('status/{order}', [PaymentController::class, 'status'])
         ->name('status');
 
@@ -66,6 +69,9 @@ Route::prefix('{locale}')->where(['locale' => '[a-z]{2}'])->group(function () {
 
         Route::get('failure/{order}', [PaymentController::class, 'failure'])
             ->name('failure');
+
+        Route::get('cancel/{order}', [PaymentController::class, 'cancel'])
+            ->name('cancel');
 
         Route::get('status/{order}', [PaymentController::class, 'status'])
             ->name('status');

@@ -133,6 +133,14 @@ class PaymentOrder extends Model
         ]);
     }
 
+    public function markAsCancelled(array $paymentData = []): void
+    {
+        $this->update([
+            'status' => self::STATUS_CANCELLED,
+            'payment_data' => array_merge($this->payment_data ?? [], $paymentData),
+        ]);
+    }
+
     public function getFormattedAmountAttribute(): string
     {
         return number_format($this->amount, 2).' '.$this->currency;
