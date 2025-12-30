@@ -67,8 +67,8 @@
                         </h2>
                         <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
                             <!-- HyperPay will handle form submission and redirect to shopperResultUrl -->
-                            <form action="{{ $callbackUrl }}?order_code={{ $paymentOrder->order_code }}" 
-                                  class="paymentWidgets" 
+                            <form action="{{ $callbackUrl }}"
+                                  class="paymentWidgets"
                                   data-brands="{{ $paymentMethod->getSetting('supported_brands', 'VISA MASTER AMEX') }}">
                             </form>
                         </div>

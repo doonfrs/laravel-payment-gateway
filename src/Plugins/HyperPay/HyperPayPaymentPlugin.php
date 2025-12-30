@@ -319,7 +319,7 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
             'currency' => $paymentOrder->currency ?? 'USD',
             'paymentType' => 'DB', // Debit
             'merchantTransactionId' => $paymentOrder->order_code,
-            'shopperResultUrl' => $this->getCallbackUrl().'?order_code='.$paymentOrder->order_code,
+            'shopperResultUrl' => $this->getCallbackUrl(),
         ];
 
         // Add customer information if available
