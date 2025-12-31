@@ -97,4 +97,16 @@ return [
     |
     */
     'cancel_redirect' => env('PAYMENT_CANCEL_REDIRECT', 'order'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Success Redirect Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure where to redirect after successful payment.
+    | - 'home': Redirect to home page (/)
+    | - 'order': Redirect to order page (success_url)
+    |
+    */
+    'success_redirect' => env('PAYMENT_SUCCESS_REDIRECT', 'home'),
 ];

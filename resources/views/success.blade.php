@@ -24,28 +24,26 @@
                     </div>
 
                     <!-- Action Button -->
-                    @if ($paymentOrder->success_url)
-                        <div class="text-center mb-6">
-                            <a href="{{ $paymentOrder->success_url }}"
-                                class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                                </svg>
-                                {{ __('continue') }}
-                            </a>
-                        </div>
-                    @endif
+                    @php
+                        $successRedirect = config('payment-gateway.success_redirect', 'home');
+                        $redirectUrl = $successRedirect === 'home' ? '/' : ($paymentOrder->success_url ?? '/');
+                    @endphp
+                    <div class="text-center mb-6">
+                        <a href="{{ $redirectUrl }}"
+                            class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                            {{ __('continue') }}
+                        </a>
+                    </div>
 
                     <!-- Order Details -->
                     <div class="grid md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('order_information') }}</h3>
                             <div class="bg-gray-50 rounded-lg p-4 space-y-3">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('order_code') }}:</span>
-                                    <span class="font-medium text-gray-900">{{ $paymentOrder->order_code }}</span>
-                                </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">{{ __('amount') }}:</span>
                                     <span
@@ -104,19 +102,6 @@
                             <h3 class="text-base font-semibold text-gray-900 mb-2">{{ __('description') }}</h3>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
                                 <p class="text-blue-800 text-sm">{{ $paymentOrder->getLocalizedDescription() }}</p>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if ($paymentOrder->payment_data && isset($paymentOrder->payment_data['transaction_id']))
-                        <div class="mb-4">
-                            <h3 class="text-base font-semibold text-gray-900 mb-2">{{ __('payment_details') }}</h3>
-                            <div class="bg-gray-50 rounded-lg p-3">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600 text-sm">{{ __('transaction_id') }}:</span>
-                                    <span
-                                        class="font-mono text-xs text-gray-900">{{ $paymentOrder->payment_data['transaction_id'] }}</span>
-                                </div>
                             </div>
                         </div>
                     @endif

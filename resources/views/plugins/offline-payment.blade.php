@@ -20,21 +20,10 @@
                                 {{ __('order_summary') }}</h2>
                             <div class="space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('order_code') }}:</span>
-                                    <span class="font-medium text-gray-900">{{ $paymentOrder->order_code }}</span>
-                                </div>
-                                <div class="flex justify-between">
                                     <span class="text-gray-600">{{ __('amount') }}:</span>
                                     <span
                                         class="font-bold text-xl text-green-600">{{ $paymentOrder->formatted_amount }}</span>
                                 </div>
-                                @if ($paymentOrder->getLocalizedDescription())
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ __('description') }}:</span>
-                                        <span
-                                            class="font-medium text-gray-900">{{ $paymentOrder->getLocalizedDescription() }}</span>
-                                    </div>
-                                @endif
                             </div>
                         </div>
 

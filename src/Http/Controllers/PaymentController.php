@@ -296,7 +296,15 @@ class PaymentController extends Controller
             'method' => 'offline_cod',
         ]);
 
-        return redirect()->route('payment-gateway.success', ['order' => $orderCode]);
+        // Redirect based on success_redirect config (skip success page for offline payments)
+        $successRedirect = config('payment-gateway.success_redirect', 'home');
+
+        if ($successRedirect === 'home') {
+            return redirect('/');
+        }
+
+        // 'order' - redirect to success_url
+        return redirect($paymentOrder->success_url ?? '/');
     }
 
     /**
