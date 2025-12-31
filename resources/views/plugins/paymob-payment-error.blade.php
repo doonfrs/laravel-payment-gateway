@@ -72,43 +72,7 @@
                                     {{ __('Payment Initialization Failed') }}
                                 </h3>
                                 <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-                                    <p>
-                                        @php
-                                            $userFriendlyMessage = __('We were unable to initialize your Paymob payment. Please try again or use a different payment method.');
-
-                                            // Check for specific error types and provide appropriate messages
-                                            if (isset($errorMessage)) {
-                                                if (
-                                                    str_contains(strtolower($errorMessage), 'unauthorized') ||
-                                                    str_contains(strtolower($errorMessage), 'invalid') ||
-                                                    str_contains(strtolower($errorMessage), 'api_key') ||
-                                                    str_contains(strtolower($errorMessage), 'token')
-                                                ) {
-                                                    $userFriendlyMessage = __('Invalid Paymob configuration. Please check your API credentials.');
-                                                } elseif (
-                                                    str_contains(strtolower($errorMessage), 'network') ||
-                                                    str_contains(strtolower($errorMessage), 'timeout') ||
-                                                    str_contains(strtolower($errorMessage), 'connection')
-                                                ) {
-                                                    $userFriendlyMessage = __('Network error occurred. Please check your internet connection and try again.');
-                                                } elseif (
-                                                    str_contains(strtolower($errorMessage), 'duplicate') ||
-                                                    str_contains(strtolower($errorMessage), 'already exists')
-                                                ) {
-                                                    $userFriendlyMessage = __('This order has already been processed. Please create a new order.');
-                                                } elseif (
-                                                    str_contains(strtolower($errorMessage), 'currency') ||
-                                                    str_contains(strtolower($errorMessage), 'invalid currency')
-                                                ) {
-                                                    $userFriendlyMessage = __('Invalid currency for this payment method. Please contact support.');
-                                                } else {
-                                                    // Show the actual error message if it's user-friendly
-                                                    $userFriendlyMessage = $errorMessage;
-                                                }
-                                            }
-                                        @endphp
-                                        {{ $userFriendlyMessage }}
-                                    </p>
+                                    <p>{{ __('payment_error_general') }}</p>
                                 </div>
                             </div>
                         </div>

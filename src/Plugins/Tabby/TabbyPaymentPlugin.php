@@ -155,17 +155,11 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             return redirect($checkoutUrl);
 
         } catch (\Exception $e) {
-            Log::error('Tabby Checkout Session Creation Failed', [
-                'order_code' => $paymentOrder->order_code,
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-            ]);
+            report($e);
 
-            // Return error view
             return view('payment-gateway::plugins.tabby-payment-error', [
                 'paymentOrder' => $paymentOrder,
                 'paymentMethod' => $this->paymentMethod,
-                'errorMessage' => $e->getMessage(),
                 'failureUrl' => $this->getFailureUrl($paymentOrder),
             ]);
         }
@@ -462,7 +456,12 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
         ]);
 
         if (! $response->successful()) {
-            throw new \Exception('Tabby API request failed: '.$response->body());
+            Log::error('Tabby API request failed', [
+                'order_code' => $paymentOrder->order_code,
+                'status_code' => $response->status(),
+                'response_body' => $response->body(),
+            ]);
+            throw new \Exception(__('payment_gateway_error'));
         }
 
         $responseData = $response->json();

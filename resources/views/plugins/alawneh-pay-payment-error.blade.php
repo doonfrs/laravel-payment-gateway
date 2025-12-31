@@ -77,13 +77,6 @@
 
                             <div class="text-gray-700 dark:text-gray-300 mb-6 max-w-lg mx-auto">
                                 <p class="text-lg leading-relaxed mb-4">{{ __('alawneh_pay_payment_failed_message') }}</p>
-                                
-                                @if (isset($errorMessage))
-                                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-red-200 dark:border-red-700">
-                                        <p class="text-red-700 dark:text-red-300 font-medium">{{ __('error_details') }}:</p>
-                                        <p class="text-gray-800 dark:text-gray-200 mt-2">{{ $errorMessage }}</p>
-                                    </div>
-                                @endif
                             </div>
 
                             <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 border border-red-200 dark:border-red-700">

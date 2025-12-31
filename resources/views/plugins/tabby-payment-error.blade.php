@@ -72,29 +72,7 @@
                                     {{ __('payment_initialization_failed') }}
                                 </h3>
                                 <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-                                    <p>
-                                        @php
-                                            $userFriendlyMessage = __('payment_error_general');
-
-                                            // Check for specific error types and provide appropriate translated messages
-                                            if (isset($errorMessage)) {
-                                                if (
-                                                    str_contains($errorMessage, 'merchant is null') ||
-                                                    str_contains($errorMessage, 'not_authorized')
-                                                ) {
-                                                    $userFriendlyMessage = __('payment_error_configuration');
-                                                } elseif (
-                                                    str_contains($errorMessage, 'network') ||
-                                                    str_contains($errorMessage, 'timeout')
-                                                ) {
-                                                    $userFriendlyMessage = __('payment_error_network');
-                                                } elseif (str_contains($errorMessage, 'rejected')) {
-                                                    $userFriendlyMessage = __('payment_error_rejected');
-                                                }
-                                            }
-                                        @endphp
-                                        {{ $userFriendlyMessage }}
-                                    </p>
+                                    <p>{{ __('payment_error_general') }}</p>
                                 </div>
                             </div>
                         </div>

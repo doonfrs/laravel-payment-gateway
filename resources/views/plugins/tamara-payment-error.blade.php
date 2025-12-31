@@ -72,41 +72,7 @@
                                     {{ __('payment_initialization_failed') }}
                                 </h3>
                                 <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-                                    <p>
-                                        @php
-                                            $userFriendlyMessage = __('payment_error_general');
-
-                                            // Check for specific error types and provide appropriate translated messages
-                                            if (isset($errorMessage)) {
-                                                if (
-                                                    str_contains($errorMessage, 'unauthorized') ||
-                                                    str_contains($errorMessage, 'not_authorized') ||
-                                                    str_contains($errorMessage, 'invalid_token')
-                                                ) {
-                                                    $userFriendlyMessage = __('payment_error_configuration');
-                                                } elseif (
-                                                    str_contains($errorMessage, 'network') ||
-                                                    str_contains($errorMessage, 'timeout') ||
-                                                    str_contains($errorMessage, 'connection')
-                                                ) {
-                                                    $userFriendlyMessage = __('payment_error_network');
-                                                } elseif (
-                                                    str_contains($errorMessage, 'declined') ||
-                                                    str_contains($errorMessage, 'rejected') ||
-                                                    str_contains($errorMessage, 'not_eligible')
-                                                ) {
-                                                    $userFriendlyMessage = __('payment_error_rejected');
-                                                } elseif (
-                                                    str_contains($errorMessage, 'amount') ||
-                                                    str_contains($errorMessage, 'currency') ||
-                                                    str_contains($errorMessage, 'invalid_request')
-                                                ) {
-                                                    $userFriendlyMessage = __('payment_error_invalid_request');
-                                                }
-                                            }
-                                        @endphp
-                                        {{ $userFriendlyMessage }}
-                                    </p>
+                                    <p>{{ __('payment_error_general') }}</p>
                                 </div>
                             </div>
                         </div>

@@ -142,16 +142,11 @@ class AlawnehPayPaymentPlugin extends PaymentPluginInterface
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Alawneh Pay Payment Failed', [
-                'order_code' => $paymentOrder->order_code,
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-            ]);
+            report($e);
 
             return view('payment-gateway::plugins.alawneh-pay-payment-error', [
                 'paymentOrder' => $paymentOrder,
                 'paymentMethod' => $this->paymentMethod,
-                'errorMessage' => $e->getMessage(),
                 'failureUrl' => $this->getFailureUrl($paymentOrder),
             ]);
         }
@@ -244,11 +239,10 @@ class AlawnehPayPaymentPlugin extends PaymentPluginInterface
 
         return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
             orderCode: $orderCode,
-            message: $callbackData['rejectionReason'] ?? 'Payment failed or was rejected',
+            message: __('payment_failed'),
             status: $status,
             additionalData: [
                 'alawneh_payment_id' => $paymentId,
-                'alawneh_external_id' => $externalId,
                 'alawneh_status' => $status,
             ]
         );
@@ -357,7 +351,12 @@ class AlawnehPayPaymentPlugin extends PaymentPluginInterface
         ]);
 
         if (! $response->successful()) {
-            throw new \Exception('Alawneh Pay API request failed: '.$response->body());
+            Log::error('Alawneh Pay API request failed', [
+                'order_code' => $paymentOrder->order_code,
+                'status_code' => $response->status(),
+                'response_body' => $response->body(),
+            ]);
+            throw new \Exception(__('payment_gateway_error'));
         }
 
         $responseData = $response->json();

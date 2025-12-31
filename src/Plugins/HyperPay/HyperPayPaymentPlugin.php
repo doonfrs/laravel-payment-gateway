@@ -146,16 +146,11 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
             ]);
 
         } catch (\Exception $e) {
-            Log::error('HyperPay Payment Failed', [
-                'order_code' => $paymentOrder->order_code,
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-            ]);
+            report($e);
 
             return view('payment-gateway::plugins.hyperpay-payment-error', [
                 'paymentOrder' => $paymentOrder,
                 'paymentMethod' => $this->paymentMethod,
-                'errorMessage' => $e->getMessage(),
                 'failureUrl' => $this->getFailureUrl($paymentOrder),
             ]);
         }
@@ -211,13 +206,18 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
                         );
                     } else {
                         // Payment failed or pending
+                        Log::warning('HyperPay payment failed', [
+                            'order_code' => $orderCode,
+                            'result_code' => $resultCode,
+                            'result' => $result,
+                        ]);
+
                         return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
                             orderCode: $orderCode ?: 'unknown',
-                            message: $result['description'] ?? 'Payment failed or was rejected',
+                            message: __('payment_failed'),
                             status: $resultCode,
                             additionalData: [
                                 'hyperpay_result_code' => $resultCode,
-                                'hyperpay_result' => $result,
                             ]
                         );
                     }
@@ -353,8 +353,12 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
         ]);
 
         if (! $response->successful()) {
-            $errorBody = $response->body();
-            throw new \Exception('HyperPay API request failed: '.$errorBody);
+            Log::error('HyperPay API request failed', [
+                'order_code' => $paymentOrder->order_code,
+                'status_code' => $response->status(),
+                'response_body' => $response->body(),
+            ]);
+            throw new \Exception(__('payment_gateway_error'));
         }
 
         $responseData = $response->json();

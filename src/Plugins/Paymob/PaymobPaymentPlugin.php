@@ -130,18 +130,11 @@ class PaymobPaymentPlugin extends PaymentPluginInterface
             return redirect()->away($checkoutUrl);
 
         } catch (\Exception $e) {
-            Log::error('Paymob Intention Payment Failed', [
-                'order_code' => $paymentOrder->order_code,
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-            ]);
-
             report($e);
 
             return view('payment-gateway::plugins.paymob-payment-error', [
                 'paymentOrder' => $paymentOrder,
                 'paymentMethod' => $this->paymentMethod,
-                'errorMessage' => $e->getMessage(),
                 'failureUrl' => $this->getFailureUrl($paymentOrder),
             ]);
         }
@@ -199,7 +192,7 @@ class PaymobPaymentPlugin extends PaymentPluginInterface
 
         return \Trinavo\PaymentGateway\Models\CallbackResponse::failure(
             orderCode: (string) $orderCode,
-            message: $callbackData['data']['message'] ?? $callbackData['message'] ?? 'Payment failed or was rejected',
+            message: __('payment_failed'),
             status: $paymobStatus,
             additionalData: [
                 'paymob_txn_response_code' => $paymobStatus,
@@ -288,7 +281,12 @@ class PaymobPaymentPlugin extends PaymentPluginInterface
         ]);
 
         if (! $response->successful()) {
-            throw new \Exception('Paymob create intention request failed: '.$response->body());
+            Log::error('Paymob create intention request failed', [
+                'order_code' => $paymentOrder->order_code,
+                'status_code' => $response->status(),
+                'response_body' => $response->body(),
+            ]);
+            throw new \Exception(__('payment_gateway_error'));
         }
 
         $responseData = $response->json();
