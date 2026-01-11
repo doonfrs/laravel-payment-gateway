@@ -45,6 +45,21 @@ class PaymentController extends Controller
 
             // Verify the payment method is enabled
             if ($paymentMethod->enabled) {
+                // Calculate and apply payment method fee
+                $originalAmount = $paymentOrder->amount;
+                $fee = $paymentMethod->calculateFee($originalAmount);
+
+                if ($fee > 0) {
+                    $newAmount = $originalAmount + $fee;
+                    $paymentOrder->update([
+                        'amount' => $newAmount,
+                        'payment_data' => array_merge($paymentOrder->payment_data ?? [], [
+                            'original_amount' => $originalAmount,
+                            'payment_method_fee' => $fee,
+                        ]),
+                    ]);
+                }
+
                 // Process payment directly with the only available method
                 $response = $this->paymentGateway->processPayment(paymentOrder: $paymentOrder, paymentMethod: $paymentMethod);
 
@@ -89,6 +104,21 @@ class PaymentController extends Controller
         if ($paymentOrder->isPluginIgnored($paymentMethod->name) ||
             $paymentOrder->isPluginIgnored($paymentMethod->plugin_class)) {
             return back()->withErrors(['payment_method_id' => 'Selected payment method is not available for this order']);
+        }
+
+        // Calculate and apply payment method fee
+        $originalAmount = $paymentOrder->amount;
+        $fee = $paymentMethod->calculateFee($originalAmount);
+
+        if ($fee > 0) {
+            $newAmount = $originalAmount + $fee;
+            $paymentOrder->update([
+                'amount' => $newAmount,
+                'payment_data' => array_merge($paymentOrder->payment_data ?? [], [
+                    'original_amount' => $originalAmount,
+                    'payment_method_fee' => $fee,
+                ]),
+            ]);
         }
 
         $response = $this->paymentGateway->processPayment($paymentOrder, $paymentMethod);

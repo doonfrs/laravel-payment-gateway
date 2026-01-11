@@ -25,8 +25,18 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">{{ __('amount') }}:</span>
-                                    <span
-                                        class="font-bold text-xl text-green-600">{{ $paymentOrder->formatted_amount }}</span>
+                                    <span class="font-bold text-xl text-green-600" id="base-amount">{{ $paymentOrder->formatted_amount }}</span>
+                                </div>
+                                <!-- Fee breakdown (shown when payment method with fee is selected) -->
+                                <div id="fee-breakdown" class="hidden space-y-2 pt-2 border-t border-gray-100 mt-2">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500">{{ __('payment_method_fee') }}:</span>
+                                        <span class="text-orange-600" id="fee-amount">+0.00 {{ $paymentOrder->currency }}</span>
+                                    </div>
+                                    <div class="flex justify-between font-semibold">
+                                        <span class="text-gray-700">{{ __('total_with_fee') }}:</span>
+                                        <span class="text-green-600 text-lg" id="total-with-fee">{{ $paymentOrder->formatted_amount }}</span>
+                                    </div>
                                 </div>
                                 @if ($paymentOrder->getLocalizedDescription())
                                     <div class="flex justify-between">
@@ -105,7 +115,9 @@
                             <div class="grid md:grid-cols-2 gap-4 mb-8">
                                 @forelse($paymentMethods as $method)
                                     <div class="payment-method-card border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-in-out"
-                                        data-method-id="{{ $method->id }}">
+                                        data-method-id="{{ $method->id }}"
+                                        data-fee-percentage="{{ $method->fee_percentage ?? 0 }}"
+                                        data-fee-fixed="{{ $method->fee_fixed_amount ?? 0 }}">
                                         <div class="text-center">
                                             @if ($method->logo_url)
                                                 <img src="{{ $method->logo_url }}"
@@ -126,7 +138,11 @@
                                             <h3 class="font-semibold text-gray-900 mb-2">
                                                 {{ $method->getLocalizedDisplayName() }}</h3>
                                             @if ($method->getLocalizedDescription())
-                                                <p class="text-sm text-gray-600">{{ $method->getLocalizedDescription() }}
+                                                <p class="text-sm text-gray-600">{{ $method->getLocalizedDescription() }}</p>
+                                            @endif
+                                            @if ($method->hasFee())
+                                                <p class="text-xs text-orange-600 mt-2">
+                                                    {{ __('fee') }}: {{ $method->getFeeDescription($paymentOrder->currency) }}
                                                 </p>
                                             @endif
                                         </div>
@@ -200,6 +216,43 @@
             const paymentCards = document.querySelectorAll('.payment-method-card');
             const selectedMethodInput = document.getElementById('selected-method');
             const proceedBtn = document.getElementById('proceed-btn');
+            const feeBreakdown = document.getElementById('fee-breakdown');
+            const feeAmountEl = document.getElementById('fee-amount');
+            const totalWithFeeEl = document.getElementById('total-with-fee');
+
+            const baseAmount = {{ $paymentOrder->amount }};
+            const currency = '{{ $paymentOrder->currency }}';
+
+            function calculateFee(feePercentage, feeFixed) {
+                let fee = 0;
+                if (feePercentage > 0) {
+                    fee += baseAmount * (feePercentage / 100);
+                }
+                if (feeFixed > 0) {
+                    fee += parseFloat(feeFixed);
+                }
+                return Math.round(fee * 100) / 100;
+            }
+
+            function formatAmount(amount) {
+                return amount.toFixed(2) + ' ' + currency;
+            }
+
+            function updateFeeDisplay(card) {
+                const feePercentage = parseFloat(card.getAttribute('data-fee-percentage')) || 0;
+                const feeFixed = parseFloat(card.getAttribute('data-fee-fixed')) || 0;
+
+                if (feePercentage > 0 || feeFixed > 0) {
+                    const fee = calculateFee(feePercentage, feeFixed);
+                    const total = baseAmount + fee;
+
+                    feeAmountEl.textContent = '+' + formatAmount(fee);
+                    totalWithFeeEl.textContent = formatAmount(total);
+                    feeBreakdown.classList.remove('hidden');
+                } else {
+                    feeBreakdown.classList.add('hidden');
+                }
+            }
 
             paymentCards.forEach(card => {
                 card.addEventListener('click', function() {
@@ -214,6 +267,9 @@
                     // Set the selected method ID
                     const methodId = this.getAttribute('data-method-id');
                     selectedMethodInput.value = methodId;
+
+                    // Update fee display
+                    updateFeeDisplay(this);
 
                     // Enable proceed button
                     proceedBtn.disabled = false;

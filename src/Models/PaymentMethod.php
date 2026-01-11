@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Crypt;
  * @property string|null $description
  * @property string|null $logo_url
  * @property int $sort_order
+ * @property float|null $fee_percentage
+ * @property float|null $fee_fixed_amount
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Trinavo\PaymentGateway\Models\PaymentOrder> $paymentOrders
@@ -56,11 +58,15 @@ class PaymentMethod extends Model
         'description',
         'logo_url',
         'sort_order',
+        'fee_percentage',
+        'fee_fixed_amount',
     ];
 
     protected $casts = [
         'enabled' => 'boolean',
         'sort_order' => 'integer',
+        'fee_percentage' => 'decimal:2',
+        'fee_fixed_amount' => 'decimal:2',
     ];
 
     public function settings(): HasMany
@@ -205,5 +211,59 @@ class PaymentMethod extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order')->orderBy('name');
+    }
+
+    /**
+     * Calculate the fee amount for a given order amount
+     */
+    public function calculateFee(float $orderAmount): float
+    {
+        $fee = 0;
+
+        if ($this->fee_percentage && $this->fee_percentage > 0) {
+            $fee += $orderAmount * ($this->fee_percentage / 100);
+        }
+
+        if ($this->fee_fixed_amount && $this->fee_fixed_amount > 0) {
+            $fee += $this->fee_fixed_amount;
+        }
+
+        return round($fee, 2);
+    }
+
+    /**
+     * Check if this payment method has any fee configured
+     */
+    public function hasFee(): bool
+    {
+        return ($this->fee_percentage && $this->fee_percentage > 0)
+            || ($this->fee_fixed_amount && $this->fee_fixed_amount > 0);
+    }
+
+    /**
+     * Get a human-readable fee description (e.g., "2.5% + 5.00 SAR")
+     */
+    public function getFeeDescription(?string $currencyCode = null): ?string
+    {
+        if (! $this->hasFee()) {
+            return null;
+        }
+
+        $parts = [];
+
+        if ($this->fee_percentage && $this->fee_percentage > 0) {
+            $parts[] = number_format($this->fee_percentage, 2).'%';
+        }
+
+        if ($this->fee_fixed_amount && $this->fee_fixed_amount > 0) {
+            $formattedAmount = number_format($this->fee_fixed_amount, 2);
+            if ($currencyCode) {
+                $parts[] = $formattedAmount.' '.$currencyCode;
+            } else {
+                $parts[] = $formattedAmount;
+            }
+        }
+
+        return implode(' + ', $parts);
     }
 }

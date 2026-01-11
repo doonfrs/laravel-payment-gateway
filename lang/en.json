@@ -135,5 +135,8 @@
     "payment_was_cancelled": "Payment Was Cancelled",
     "no_charges_made": "No charges were made to your account. You can try again anytime.",
     "go_to_home": "Go to Home",
-    "view_order": "View Order"
+    "view_order": "View Order",
+    "fee": "Fee",
+    "payment_method_fee": "Payment Method Fee",
+    "total_with_fee": "Total with Fee"
 }
