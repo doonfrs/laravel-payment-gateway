@@ -138,5 +138,6 @@
     "view_order": "View Order",
     "fee": "Fee",
     "payment_method_fee": "Payment Method Fee",
-    "total_with_fee": "Total with Fee"
+    "total_with_fee": "Total with Fee",
+    "paytabs_currency_not_available": "PayTabs: Currency :currency is not available for your profile. Please configure \"Cart Currency\" in PayTabs plugin settings to a supported currency, or contact PayTabs to enable this currency."
 }
