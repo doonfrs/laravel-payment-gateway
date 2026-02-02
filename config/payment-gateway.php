@@ -27,6 +27,7 @@ return [
         \Trinavo\PaymentGateway\Plugins\AlawnehPay\AlawnehPayPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\HyperPay\HyperPayPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Paymob\PaymobPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\PayTabs\PayTabsPaymentPlugin::class,
 
         // Add your custom payment plugins here
         // \App\PaymentPlugins\StripePaymentPlugin::class,

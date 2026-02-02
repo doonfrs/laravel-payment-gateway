@@ -138,5 +138,6 @@
     "view_order": "عرض الطلب",
     "fee": "رسوم",
     "payment_method_fee": "رسوم طريقة الدفع",
-    "total_with_fee": "الإجمالي شامل الرسوم"
+    "total_with_fee": "الإجمالي شامل الرسوم",
+    "paytabs_currency_not_available": "PayTabs: العملة :currency غير متاحة لحسابك. يُرجى تعيين \"عملة السلة\" في إعدادات بلجن PayTabs إلى عملة مدعومة، أو التواصل مع PayTabs لتفعيل هذه العملة."
 }
