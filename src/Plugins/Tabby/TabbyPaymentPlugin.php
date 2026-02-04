@@ -412,9 +412,9 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'lang' => app()->getLocale() === 'ar' ? 'ar' : 'en',
             'merchant_code' => $merchantCode,
             'merchant_urls' => [
-                'success' => route('payment-gateway.callback', ['plugin' => 'tabby']).'?status=CLOSED&order_code='.$paymentOrder->order_code,
-                'cancel' => route('payment-gateway.callback', ['plugin' => 'tabby']).'?status=CANCELLED&order_code='.$paymentOrder->order_code,
-                'failure' => route('payment-gateway.callback', ['plugin' => 'tabby']).'?status=FAILED&order_code='.$paymentOrder->order_code,
+                'success' => $this->getCallbackUrl().'?status=CLOSED&order_code='.$paymentOrder->order_code,
+                'cancel' => $this->getCallbackUrl().'?status=CANCELLED&order_code='.$paymentOrder->order_code,
+                'failure' => $this->getCallbackUrl().'?status=FAILED&order_code='.$paymentOrder->order_code,
             ],
         ];
 

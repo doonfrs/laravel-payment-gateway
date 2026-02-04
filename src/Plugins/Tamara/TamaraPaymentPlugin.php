@@ -415,10 +415,10 @@ class TamaraPaymentPlugin extends PaymentPluginInterface
                 'phone_number' => $paymentOrder->customer_phone ?: '',
             ],
             'merchant_url' => [
-                'success' => route('payment-gateway.callback', ['plugin' => 'tamara']).'?status=APPROVED&order_code='.$paymentOrder->order_code,
-                'failure' => route('payment-gateway.callback', ['plugin' => 'tamara']).'?status=DECLINED&order_code='.$paymentOrder->order_code,
-                'cancel' => route('payment-gateway.callback', ['plugin' => 'tamara']).'?status=CANCELLED&order_code='.$paymentOrder->order_code,
-                'notification' => route('payment-gateway.callback', ['plugin' => 'tamara']),
+                'success' => $this->getCallbackUrl().'?status=APPROVED&order_code='.$paymentOrder->order_code,
+                'failure' => $this->getCallbackUrl().'?status=DECLINED&order_code='.$paymentOrder->order_code,
+                'cancel' => $this->getCallbackUrl().'?status=CANCELLED&order_code='.$paymentOrder->order_code,
+                'notification' => $this->getCallbackUrl(),
             ],
         ];
 
