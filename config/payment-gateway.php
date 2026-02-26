@@ -28,6 +28,7 @@ return [
         \Trinavo\PaymentGateway\Plugins\HyperPay\HyperPayPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Paymob\PaymobPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\PayTabs\PayTabsPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\Ziina\ZiinaPaymentPlugin::class,
 
         // Add your custom payment plugins here
         // \App\PaymentPlugins\StripePaymentPlugin::class,
