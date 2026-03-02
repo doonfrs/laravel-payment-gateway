@@ -139,5 +139,16 @@
     "fee": "Fee",
     "payment_method_fee": "Payment Method Fee",
     "total_with_fee": "Total with Fee",
-    "paytabs_currency_not_available": "PayTabs: Currency :currency is not available for your profile. Please configure \"Cart Currency\" in PayTabs plugin settings to a supported currency, or contact PayTabs to enable this currency."
+    "paytabs_currency_not_available": "PayTabs: Currency :currency is not available for your profile. Please configure \"Cart Currency\" in PayTabs plugin settings to a supported currency, or contact PayTabs to enable this currency.",
+    "efawateercom_payment": "eFAWATEERcom Payment",
+    "pay_your_bill_through_bank_app": "Pay your bill through your bank app",
+    "your_bill_number": "Your Bill Number",
+    "copy_bill_number": "Copy Bill Number",
+    "copied": "Copied!",
+    "open_your_bank_app": "Open your bank app",
+    "go_to_efawateercom": "Go to eFAWATEERcom / Bill Payments",
+    "search_for_business_name": "Search for our business name",
+    "enter_your_bill_number": "Enter your bill number:",
+    "confirm_and_pay": "Confirm and pay",
+    "order_confirmed_after_efawateercom": "Your order will be automatically confirmed once we receive your payment through eFAWATEERcom."
 }

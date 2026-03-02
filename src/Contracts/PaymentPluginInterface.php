@@ -94,6 +94,39 @@ abstract class PaymentPluginInterface
     }
 
     /**
+     * Whether this plugin supports inbound API requests from external systems.
+     * Override in plugins that receive server-to-server calls (e.g., bill payment networks).
+     */
+    public function supportsInboundRequests(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Handle an inbound API request from an external system.
+     * Plugins that support inbound requests should override this method.
+     *
+     * @param  string  $action  The action being requested (e.g., 'bill-pull', 'payment-notification')
+     * @param  array  $data  The request payload
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function handleInboundRequest(string $action, array $data): \Illuminate\Http\JsonResponse
+    {
+        return response()->json(['error' => 'Inbound requests not supported by this plugin'], 404);
+    }
+
+    /**
+     * Get the inbound request URL for a specific action
+     */
+    public function getInboundRequestUrl(string $action): string
+    {
+        $pluginKey = app(\Trinavo\PaymentGateway\Services\PluginRegistryService::class)
+            ->getPluginKey(static::class);
+
+        return route('payment-gateway.inbound-request', ['plugin' => $pluginKey, 'action' => $action]);
+    }
+
+    /**
      * Convert configuration fields to array format
      * Supports both ConfigurationField objects and legacy arrays
      */

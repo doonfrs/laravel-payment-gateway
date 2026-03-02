@@ -42,6 +42,10 @@ Route::group([
     // Offline payment confirmation
     Route::post('offline/{order}/confirm', [PaymentController::class, 'offlineConfirm'])
         ->name('offline-confirm');
+
+    // Inbound API requests from external systems (bill payment networks, etc.)
+    Route::any('api/{plugin}/{action}', [PaymentController::class, 'inboundRequest'])
+        ->name('inbound-request');
 });
 
 // Localized routes

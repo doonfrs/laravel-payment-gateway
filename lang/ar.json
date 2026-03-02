@@ -139,5 +139,16 @@
     "fee": "رسوم",
     "payment_method_fee": "رسوم طريقة الدفع",
     "total_with_fee": "الإجمالي شامل الرسوم",
-    "paytabs_currency_not_available": "PayTabs: العملة :currency غير متاحة لحسابك. يُرجى تعيين \"عملة السلة\" في إعدادات بلجن PayTabs إلى عملة مدعومة، أو التواصل مع PayTabs لتفعيل هذه العملة."
+    "paytabs_currency_not_available": "PayTabs: العملة :currency غير متاحة لحسابك. يُرجى تعيين \"عملة السلة\" في إعدادات بلجن PayTabs إلى عملة مدعومة، أو التواصل مع PayTabs لتفعيل هذه العملة.",
+    "efawateercom_payment": "الدفع عبر إي فواتيركم",
+    "pay_your_bill_through_bank_app": "ادفع فاتورتك من خلال تطبيق البنك",
+    "your_bill_number": "رقم الفاتورة",
+    "copy_bill_number": "نسخ رقم الفاتورة",
+    "copied": "تم النسخ!",
+    "open_your_bank_app": "افتح تطبيق البنك الخاص بك",
+    "go_to_efawateercom": "اذهب إلى إي فواتيركم / دفع الفواتير",
+    "search_for_business_name": "ابحث عن اسم شركتنا",
+    "enter_your_bill_number": "أدخل رقم الفاتورة:",
+    "confirm_and_pay": "تأكيد والدفع",
+    "order_confirmed_after_efawateercom": "سيتم تأكيد طلبك تلقائياً بمجرد استلام الدفع عبر إي فواتيركم."
 }

@@ -338,6 +338,35 @@ class PaymentController extends Controller
     }
 
     /**
+     * Handle inbound API requests from external systems (bill payment networks, etc.)
+     */
+    public function inboundRequest(Request $request, string $plugin, string $action)
+    {
+        $pluginClass = $this->getPluginClass($plugin);
+        $paymentMethod = PaymentMethod::where('plugin_class', $pluginClass)
+            ->where('enabled', true)
+            ->first();
+
+        if (! $paymentMethod) {
+            return response()->json(['error' => 'Plugin not found or not enabled'], 404);
+        }
+
+        $pluginInstance = $paymentMethod->getPluginInstance();
+
+        if (! $pluginInstance->supportsInboundRequests()) {
+            return response()->json(['error' => 'Inbound requests not supported by this plugin'], 404);
+        }
+
+        Log::info('Payment Gateway Inbound Request', [
+            'plugin' => $plugin,
+            'action' => $action,
+            'data' => $request->all(),
+        ]);
+
+        return $pluginInstance->handleInboundRequest($action, $request->all());
+    }
+
+    /**
      * Get plugin class name from plugin identifier
      */
     protected function getPluginClass(string $plugin): string
