@@ -30,6 +30,9 @@ return [
         \Trinavo\PaymentGateway\Plugins\PayTabs\PayTabsPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Ziina\ZiinaPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Kashier\KashierPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\TapPayments\TapPaymentsPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\Fawry\FawryPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\MyFatoorah\MyFatoorahPaymentPlugin::class,
 
         // Add your custom payment plugins here
         // \App\PaymentPlugins\StripePaymentPlugin::class,
