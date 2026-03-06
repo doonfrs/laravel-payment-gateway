@@ -29,6 +29,7 @@ return [
         \Trinavo\PaymentGateway\Plugins\Paymob\PaymobPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\PayTabs\PayTabsPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Ziina\ZiinaPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\Kashier\KashierPaymentPlugin::class,
 
         // Add your custom payment plugins here
         // \App\PaymentPlugins\StripePaymentPlugin::class,
