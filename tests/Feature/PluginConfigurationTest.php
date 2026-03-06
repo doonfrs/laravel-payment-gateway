@@ -27,9 +27,8 @@ class PluginConfigurationTest extends TestCase
 
         // Create a payment method using the configured plugin
         $paymentMethod = PaymentMethod::create([
-            'name' => 'test',
+            'name' => json_encode(['en' => 'Test Payment Method']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Test Payment Method',
             'enabled' => true,
             'sort_order' => 1,
         ]);
@@ -104,25 +103,22 @@ class PluginConfigurationTest extends TestCase
 
         // Create payment methods for each plugin
         PaymentMethod::create([
-            'name' => 'dummy',
+            'name' => json_encode(['en' => 'Dummy Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Dummy Payment',
             'enabled' => true,
             'sort_order' => 1,
         ]);
 
         PaymentMethod::create([
-            'name' => 'test1',
+            'name' => json_encode(['en' => 'Test Payment 1']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Test Payment 1',
             'enabled' => true,
             'sort_order' => 2,
         ]);
 
         PaymentMethod::create([
-            'name' => 'test2',
+            'name' => json_encode(['en' => 'Test Payment 2']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Test Payment 2',
             'enabled' => true,
             'sort_order' => 3,
         ]);
@@ -132,8 +128,8 @@ class PluginConfigurationTest extends TestCase
 
         // Should return all enabled payment methods
         $this->assertCount(3, $availableMethods);
-        $this->assertEquals('Dummy Payment', $availableMethods[0]->display_name);
-        $this->assertEquals('Test Payment 1', $availableMethods[1]->display_name);
-        $this->assertEquals('Test Payment 2', $availableMethods[2]->display_name);
+        $this->assertEquals('Dummy Payment', $availableMethods[0]->getLocalizedDisplayName());
+        $this->assertEquals('Test Payment 1', $availableMethods[1]->getLocalizedDisplayName());
+        $this->assertEquals('Test Payment 2', $availableMethods[2]->getLocalizedDisplayName());
     }
 }

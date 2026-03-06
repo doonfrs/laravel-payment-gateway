@@ -3,6 +3,7 @@
 namespace Trinavo\PaymentGateway\Plugins\Tabby;
 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Trinavo\PaymentGateway\Configuration\CheckboxField;
 use Trinavo\PaymentGateway\Configuration\SelectField;
 use Trinavo\PaymentGateway\Configuration\TextField;
@@ -12,6 +13,16 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class TabbyPaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/tabby.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://tabby.ai';
+    }
+
     public function getName(): string
     {
         return __('Tabby Payment Plugin');
@@ -330,7 +341,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
             'data' => $data,
             'headers' => array_map(function ($value) {
                 // Mask sensitive header values
-                if (str_contains(strtolower($value), 'bearer')) {
+                if (Str::contains(strtolower($value), 'bearer')) {
                     return 'Bearer ***'.substr($value, -4);
                 }
 

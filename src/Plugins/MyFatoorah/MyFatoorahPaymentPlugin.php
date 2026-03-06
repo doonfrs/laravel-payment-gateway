@@ -26,6 +26,16 @@ class MyFatoorahPaymentPlugin extends PaymentPluginInterface
         'EGY' => 'https://api-eg.myfatoorah.com',
     ];
 
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/myfatoorah.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://myfatoorah.com';
+    }
+
     public function getName(): string
     {
         return __('MyFatoorah Payment Plugin');

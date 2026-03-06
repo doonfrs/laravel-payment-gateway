@@ -12,6 +12,16 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class AlawnehPayPaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/alawneh-pay.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://alawnehpay.com';
+    }
+
     public function getName(): string
     {
         return __('Alawneh Pay Payment Plugin');

@@ -77,9 +77,8 @@ class ExampleController extends Controller
     public function registerPaymentMethod()
     {
         $paymentMethod = PaymentGateway::registerPaymentMethod([
-            'name' => 'dummy',
+            'name' => json_encode(['en' => 'Dummy Payment Method']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Dummy Payment Method',
             'description' => 'Dummy payment method',
             'enabled' => true,
             'sort_order' => 1,

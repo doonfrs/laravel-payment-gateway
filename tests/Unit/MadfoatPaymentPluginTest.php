@@ -29,9 +29,8 @@ class MadfoatPaymentPluginTest extends TestCase
         parent::setUp();
 
         $this->paymentMethod = PaymentMethod::create([
-            'name' => 'madfoat',
+            'name' => json_encode(['en' => 'Madfoat (eFAWATEERcom)']),
             'plugin_class' => MadfoatPaymentPlugin::class,
-            'display_name' => 'Madfoat (eFAWATEERcom)',
             'enabled' => true,
         ]);
 
@@ -76,9 +75,8 @@ class MadfoatPaymentPluginTest extends TestCase
     public function test_plugin_fails_validation_without_biller_code()
     {
         $method = PaymentMethod::create([
-            'name' => 'madfoat-invalid',
+            'name' => json_encode(['en' => 'Madfoat Invalid']),
             'plugin_class' => MadfoatPaymentPlugin::class,
-            'display_name' => 'Madfoat Invalid',
             'enabled' => true,
         ]);
         $method->setSetting('service_type', 'Sales', false);

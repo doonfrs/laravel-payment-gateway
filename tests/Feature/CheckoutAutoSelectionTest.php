@@ -54,9 +54,8 @@ class CheckoutAutoSelectionTest extends TestCase
 
         // Create only one enabled payment method
         $paymentMethod = PaymentMethod::create([
-            'name' => 'dummy_payment',
+            'name' => json_encode(['en' => 'Dummy Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Dummy Payment',
             'enabled' => true,
             'sort_order' => 1,
         ]);
@@ -82,17 +81,15 @@ class CheckoutAutoSelectionTest extends TestCase
 
         // Create multiple enabled payment methods
         PaymentMethod::create([
-            'name' => 'dummy_payment',
+            'name' => json_encode(['en' => 'Dummy Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Dummy Payment',
             'enabled' => true,
             'sort_order' => 1,
         ]);
 
         PaymentMethod::create([
-            'name' => 'offline_payment',
+            'name' => json_encode(['en' => 'Offline Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Offline\OfflinePaymentPlugin::class,
-            'display_name' => 'Offline Payment',
             'enabled' => true,
             'sort_order' => 2,
         ]);
@@ -138,9 +135,8 @@ class CheckoutAutoSelectionTest extends TestCase
 
         // Create only one payment method but disabled
         $paymentMethod = PaymentMethod::create([
-            'name' => 'dummy_payment',
+            'name' => json_encode(['en' => 'Dummy Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Dummy Payment',
             'enabled' => false, // Disabled
             'sort_order' => 1,
         ]);
@@ -165,17 +161,15 @@ class CheckoutAutoSelectionTest extends TestCase
 
         // Create one enabled and one disabled payment method
         PaymentMethod::create([
-            'name' => 'dummy_payment',
+            'name' => json_encode(['en' => 'Dummy Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Dummy Payment',
             'enabled' => true,
             'sort_order' => 1,
         ]);
 
         PaymentMethod::create([
-            'name' => 'offline_payment',
+            'name' => json_encode(['en' => 'Offline Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Offline\OfflinePaymentPlugin::class,
-            'display_name' => 'Offline Payment',
             'enabled' => false, // Disabled
             'sort_order' => 2,
         ]);
@@ -201,17 +195,15 @@ class CheckoutAutoSelectionTest extends TestCase
 
         // Create two payment methods
         PaymentMethod::create([
-            'name' => 'dummy_payment',
+            'name' => json_encode(['en' => 'Dummy Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Dummy Payment',
             'enabled' => true,
             'sort_order' => 1,
         ]);
 
         PaymentMethod::create([
-            'name' => 'offline_payment',
+            'name' => json_encode(['en' => 'Offline Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Offline\OfflinePaymentPlugin::class,
-            'display_name' => 'Offline Payment',
             'enabled' => true,
             'sort_order' => 2,
         ]);
@@ -237,9 +229,8 @@ class CheckoutAutoSelectionTest extends TestCase
 
         // Create only one enabled payment method
         $paymentMethod = PaymentMethod::create([
-            'name' => 'dummy_payment',
+            'name' => json_encode(['en' => 'Dummy Payment']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Dummy Payment',
             'enabled' => true,
             'sort_order' => 1,
         ]);

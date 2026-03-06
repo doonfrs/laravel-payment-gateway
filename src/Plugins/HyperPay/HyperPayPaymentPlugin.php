@@ -12,6 +12,16 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class HyperPayPaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/hyperpay.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://www.hyperpay.com';
+    }
+
     public function getName(): string
     {
         return __('HyperPay Payment Plugin');

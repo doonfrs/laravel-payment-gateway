@@ -30,9 +30,8 @@ class FawryPaymentPluginTest extends TestCase
         parent::setUp();
 
         $this->paymentMethod = PaymentMethod::create([
-            'name' => 'fawry',
+            'name' => json_encode(['en' => 'Fawry Payment']),
             'plugin_class' => FawryPaymentPlugin::class,
-            'display_name' => 'Fawry Payment',
             'enabled' => true,
         ]);
 

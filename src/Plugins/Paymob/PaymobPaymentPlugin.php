@@ -13,6 +13,16 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class PaymobPaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/paymob.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://paymob.com';
+    }
+
     public function getName(): string
     {
         return __('Paymob Payment Plugin');

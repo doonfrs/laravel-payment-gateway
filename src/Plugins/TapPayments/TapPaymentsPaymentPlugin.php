@@ -15,6 +15,16 @@ class TapPaymentsPaymentPlugin extends PaymentPluginInterface
 {
     private const API_BASE_URL = 'https://api.tap.company/v2';
 
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/tap-payments.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://tap.company';
+    }
+
     public function getName(): string
     {
         return __('Tap Payments Plugin');

@@ -17,6 +17,16 @@ class FawryPaymentPlugin extends PaymentPluginInterface
 
     private const PRODUCTION_URL = 'https://www.atfawry.com';
 
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/fawry.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://www.fawry.com';
+    }
+
     public function getName(): string
     {
         return __('Fawry Payment Plugin');

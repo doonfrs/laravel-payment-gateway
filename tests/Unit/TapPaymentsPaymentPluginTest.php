@@ -30,9 +30,8 @@ class TapPaymentsPaymentPluginTest extends TestCase
         parent::setUp();
 
         $this->paymentMethod = PaymentMethod::create([
-            'name' => 'tap_payments',
+            'name' => json_encode(['en' => 'Tap Payments']),
             'plugin_class' => TapPaymentsPaymentPlugin::class,
-            'display_name' => 'Tap Payments',
             'enabled' => true,
         ]);
 

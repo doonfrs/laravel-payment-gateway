@@ -10,6 +10,16 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class MoyasarPaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/moyasar.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://moyasar.com';
+    }
+
     public function getName(): string
     {
         return __('Moyasar Payment Plugin');

@@ -113,13 +113,7 @@ class PaymentGatewayService
         }
 
         return $paymentMethods->filter(function (PaymentMethod $paymentMethod) use ($ignoredPlugins) {
-            // Check if this payment method's plugin is in the ignored list
-            // We need to check both the plugin class name and the payment method name
-            $pluginClass = $paymentMethod->plugin_class;
-            $pluginName = $paymentMethod->name;
-
-            return ! in_array($pluginName, $ignoredPlugins) &&
-                   ! in_array($pluginClass, $ignoredPlugins);
+            return ! in_array($paymentMethod->plugin_class, $ignoredPlugins);
         });
     }
 

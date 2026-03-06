@@ -29,9 +29,8 @@ class KashierPaymentPluginTest extends TestCase
         parent::setUp();
 
         $this->paymentMethod = PaymentMethod::create([
-            'name' => 'kashier',
+            'name' => json_encode(['en' => 'Kashier Payment']),
             'plugin_class' => KashierPaymentPlugin::class,
-            'display_name' => 'Kashier Payment',
             'enabled' => true,
         ]);
 

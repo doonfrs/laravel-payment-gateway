@@ -8,10 +8,9 @@ use Illuminate\Support\Facades\Crypt;
 
 /**
  * @property int $id
- * @property string $name
+ * @property array<array-key, mixed>|null $name
  * @property string $plugin_class
  * @property bool $enabled
- * @property string|null $display_name
  * @property string|null $description
  * @property string|null $logo_url
  * @property int $sort_order
@@ -33,7 +32,6 @@ use Illuminate\Support\Facades\Crypt;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentMethod query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentMethod whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentMethod whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentMethod whereDisplayName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentMethod whereEnabled($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentMethod whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PaymentMethod whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
@@ -54,7 +52,6 @@ class PaymentMethod extends Model
         'name',
         'plugin_class',
         'enabled',
-        'display_name',
         'description',
         'logo_url',
         'sort_order',
@@ -80,35 +77,29 @@ class PaymentMethod extends Model
     }
 
     /**
-     * Get the localized display name
+     * Get the localized display name from the translatable name field
      */
     public function getLocalizedDisplayName(): string
     {
-        if (! $this->display_name) {
-            return $this->name;
+        if (! $this->name) {
+            return '';
         }
 
-        // Check if display_name is JSON format
-        $decoded = json_decode($this->display_name, true);
+        $decoded = is_array($this->name) ? $this->name : json_decode($this->name, true);
 
-        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-            // It's JSON, get the current locale
+        if (is_array($decoded)) {
             $locale = app()->getLocale();
 
-            // Return the localized text if available, otherwise fallback to 'en' or first available
             if (isset($decoded[$locale])) {
                 return $decoded[$locale];
             } elseif (isset($decoded['en'])) {
                 return $decoded['en'];
             } elseif (! empty($decoded)) {
-                $firstValue = reset($decoded);
-
-                return $firstValue ?: $this->name; // Return first available translation or fallback to name
+                return reset($decoded) ?: '';
             }
         }
 
-        // Not JSON or no valid translations, return as plain text
-        return is_string($this->display_name) ? $this->display_name : $this->name;
+        return is_string($this->name) ? $this->name : '';
     }
 
     /**

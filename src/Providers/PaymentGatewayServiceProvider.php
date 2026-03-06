@@ -74,5 +74,10 @@ class PaymentGatewayServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../../lang' => $this->app->langPath(),
         ], 'lang');
+
+        // Publish public assets (images, etc.)
+        $this->publishes([
+            __DIR__.'/../../public' => public_path('vendor/payment-gateway'),
+        ], 'payment-gateway-assets');
     }
 }

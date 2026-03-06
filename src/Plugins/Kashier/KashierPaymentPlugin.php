@@ -15,6 +15,16 @@ class KashierPaymentPlugin extends PaymentPluginInterface
 {
     private const BASE_URL = 'https://checkout.kashier.io';
 
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/kashier.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://kashier.io';
+    }
+
     public function getName(): string
     {
         return __('Kashier Payment Plugin');

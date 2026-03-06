@@ -13,6 +13,16 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class PayTabsPaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/paytabs.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://site.paytabs.com';
+    }
+
     public function getName(): string
     {
         return __('PayTabs Payment Plugin');

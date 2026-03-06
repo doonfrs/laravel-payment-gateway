@@ -29,9 +29,8 @@ class TamaraPaymentPluginTest extends TestCase
         parent::setUp();
 
         $this->paymentMethod = PaymentMethod::create([
-            'name' => 'tamara',
+            'name' => json_encode(['en' => 'Tamara Payment']),
             'plugin_class' => TamaraPaymentPlugin::class,
-            'display_name' => 'Tamara Payment',
             'enabled' => true,
         ]);
 

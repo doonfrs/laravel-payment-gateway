@@ -10,6 +10,11 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class DummyPaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/dummy.png');
+    }
+
     public function getName(): string
     {
         return 'Dummy Payment Plugin';

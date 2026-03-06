@@ -15,8 +15,7 @@ class PaymentMethodSeeder extends Seeder
         PaymentMethod::updateOrCreate(
             ['plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class],
             [
-                'name' => 'dummy_payment',
-                'display_name' => 'Dummy Payment Gateway',
+                'name' => json_encode(['en' => 'Dummy Payment Gateway']),
                 'description' => 'A dummy payment gateway for testing purposes',
                 'enabled' => true,
                 'sort_order' => 1,

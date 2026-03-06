@@ -12,6 +12,16 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class MadfoatPaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/madfoat.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://www.madfoo3at.com';
+    }
+
     public function getName(): string
     {
         return 'Madfoat (eFAWATEERcom)';

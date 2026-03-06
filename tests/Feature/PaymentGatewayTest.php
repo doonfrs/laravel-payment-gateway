@@ -60,14 +60,13 @@ class PaymentGatewayTest extends TestCase
     public function test_can_register_payment_method()
     {
         $paymentMethod = PaymentGateway::registerPaymentMethod([
-            'name' => 'test_method',
+            'name' => json_encode(['en' => 'Test Payment Method']),
             'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-            'display_name' => 'Test Payment Method',
             'enabled' => true,
         ]);
 
         $this->assertInstanceOf(PaymentMethod::class, $paymentMethod);
-        $this->assertEquals('test_method', $paymentMethod->name);
+        $this->assertEquals('Test Payment Method', $paymentMethod->getLocalizedDisplayName());
         $this->assertTrue($paymentMethod->enabled);
     }
 

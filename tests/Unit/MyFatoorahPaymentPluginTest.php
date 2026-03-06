@@ -30,9 +30,8 @@ class MyFatoorahPaymentPluginTest extends TestCase
         parent::setUp();
 
         $this->paymentMethod = PaymentMethod::create([
-            'name' => 'myfatoorah',
+            'name' => json_encode(['en' => 'MyFatoorah Payment']),
             'plugin_class' => MyFatoorahPaymentPlugin::class,
-            'display_name' => 'MyFatoorah Payment',
             'enabled' => true,
         ]);
 

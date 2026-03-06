@@ -19,6 +19,22 @@ abstract class PaymentPluginInterface
     }
 
     /**
+     * Get the URL for the plugin's logo image.
+     */
+    public static function getLogoUrl(): string
+    {
+        return '';
+    }
+
+    /**
+     * Get the URL for more information about this payment provider.
+     */
+    public static function getMoreInfoUrl(): string
+    {
+        return '';
+    }
+
+    /**
      * Get the plugin name
      */
     abstract public function getName(): string;

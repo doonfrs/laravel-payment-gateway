@@ -9,6 +9,11 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class OfflinePaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/offline.png');
+    }
+
     public function getName(): string
     {
         return 'Offline Payment Plugin';

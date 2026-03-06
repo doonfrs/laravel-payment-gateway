@@ -19,6 +19,16 @@ class ZiinaPaymentPlugin extends PaymentPluginInterface
 
     private const THREE_DECIMAL_CURRENCIES = ['BHD', 'KWD', 'OMR'];
 
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/ziina.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://ziina.com';
+    }
+
     public function getName(): string
     {
         return __('Ziina Payment Plugin');

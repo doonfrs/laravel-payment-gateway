@@ -29,9 +29,8 @@ class TabbyPaymentPluginTest extends TestCase
         parent::setUp();
 
         $this->paymentMethod = PaymentMethod::create([
-            'name' => 'tabby',
+            'name' => json_encode(['en' => 'Tabby Payment']),
             'plugin_class' => TabbyPaymentPlugin::class,
-            'display_name' => 'Tabby Payment',
             'enabled' => true,
         ]);
 

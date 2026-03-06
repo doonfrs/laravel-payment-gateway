@@ -30,9 +30,8 @@ class ZiinaPaymentPluginTest extends TestCase
         parent::setUp();
 
         $this->paymentMethod = PaymentMethod::create([
-            'name' => 'ziina',
+            'name' => json_encode(['en' => 'Ziina Payment']),
             'plugin_class' => ZiinaPaymentPlugin::class,
-            'display_name' => 'Ziina Payment',
             'enabled' => true,
         ]);
 

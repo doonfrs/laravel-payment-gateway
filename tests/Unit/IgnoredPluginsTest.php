@@ -24,25 +24,22 @@ class IgnoredPluginsTest extends TestCase
 
         // Create test payment methods
         PaymentMethod::create([
-            'name' => 'stripe',
+            'name' => json_encode(['en' => 'Credit Card (Stripe)']),
             'plugin_class' => 'App\PaymentPlugins\StripePaymentPlugin',
-            'display_name' => 'Credit Card (Stripe)',
             'enabled' => true,
             'sort_order' => 1,
         ]);
 
         PaymentMethod::create([
-            'name' => 'paypal',
+            'name' => json_encode(['en' => 'PayPal']),
             'plugin_class' => 'App\PaymentPlugins\PayPalPaymentPlugin',
-            'display_name' => 'PayPal',
             'enabled' => true,
             'sort_order' => 2,
         ]);
 
         PaymentMethod::create([
-            'name' => 'dummy',
+            'name' => json_encode(['en' => 'Dummy Payment']),
             'plugin_class' => 'Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin',
-            'display_name' => 'Dummy Payment',
             'enabled' => true,
             'sort_order' => 3,
         ]);
@@ -120,7 +117,7 @@ class IgnoredPluginsTest extends TestCase
         // Get methods for this specific order (should filter out ignored ones)
         $filteredMethods = $service->getAvailablePaymentMethodsForOrder($paymentOrder);
         $this->assertCount(1, $filteredMethods);
-        $this->assertEquals('dummy', $filteredMethods->first()->name);
+        $this->assertEquals('Dummy Payment', $filteredMethods->first()->getLocalizedDisplayName());
     }
 
     public function test_service_filters_by_plugin_class()
@@ -139,10 +136,10 @@ class IgnoredPluginsTest extends TestCase
         $this->assertCount(2, $filteredMethods);
 
         // Should not contain stripe
-        $methodNames = $filteredMethods->pluck('name')->toArray();
-        $this->assertNotContains('stripe', $methodNames);
-        $this->assertContains('paypal', $methodNames);
-        $this->assertContains('dummy', $methodNames);
+        $methodNames = $filteredMethods->map(fn ($m) => $m->getLocalizedDisplayName())->toArray();
+        $this->assertNotContains('Credit Card (Stripe)', $methodNames);
+        $this->assertContains('PayPal', $methodNames);
+        $this->assertContains('Dummy Payment', $methodNames);
     }
 
     public function test_service_create_payment_order_with_ignored_plugins()

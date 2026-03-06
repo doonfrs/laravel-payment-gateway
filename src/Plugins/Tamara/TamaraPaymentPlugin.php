@@ -12,6 +12,16 @@ use Trinavo\PaymentGateway\Models\RefundResponse;
 
 class TamaraPaymentPlugin extends PaymentPluginInterface
 {
+    public static function getLogoUrl(): string
+    {
+        return asset('vendor/payment-gateway/imgs/tamara.png');
+    }
+
+    public static function getMoreInfoUrl(): string
+    {
+        return 'https://tamara.co';
+    }
+
     public function getName(): string
     {
         return __('Tamara Payment Plugin');
