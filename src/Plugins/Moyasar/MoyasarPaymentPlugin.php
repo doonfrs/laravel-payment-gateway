@@ -22,7 +22,7 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Moyasar Payment Plugin');
+        return __('Moyasar');
     }
 
     public function getDescription(): string

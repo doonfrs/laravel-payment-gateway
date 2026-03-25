@@ -29,7 +29,7 @@ class FawryPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Fawry Payment Plugin');
+        return __('Fawry');
     }
 
     public function getDescription(): string

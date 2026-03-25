@@ -107,7 +107,7 @@ class IgnoredPluginsTest extends TestCase
             'amount' => 100.00,
             'currency' => 'USD',
             'customer_name' => 'John Doe',
-            'ignored_plugins' => ['stripe', 'paypal'],
+            'ignored_plugins' => ['App\PaymentPlugins\StripePaymentPlugin', 'App\PaymentPlugins\PayPalPaymentPlugin'],
         ]);
 
         // Get all available methods (should return all 3)

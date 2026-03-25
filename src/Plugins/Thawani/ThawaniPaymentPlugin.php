@@ -34,7 +34,7 @@ class ThawaniPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Thawani Plugin');
+        return __('Thawani');
     }
 
     public function getDescription(): string

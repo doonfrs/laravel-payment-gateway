@@ -27,7 +27,7 @@ class KashierPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Kashier Payment Plugin');
+        return __('Kashier');
     }
 
     public function getDescription(): string

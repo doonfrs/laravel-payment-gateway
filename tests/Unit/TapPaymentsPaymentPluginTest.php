@@ -45,7 +45,7 @@ class TapPaymentsPaymentPluginTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function plugin_returns_correct_name()
     {
-        $this->assertEquals('Tap Payments Plugin', $this->plugin->getName());
+        $this->assertEquals('Tap Payments', $this->plugin->getName());
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

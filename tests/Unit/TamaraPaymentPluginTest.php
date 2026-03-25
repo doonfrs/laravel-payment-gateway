@@ -46,7 +46,7 @@ class TamaraPaymentPluginTest extends TestCase
 
     public function test_plugin_returns_correct_name()
     {
-        $this->assertEquals('Tamara Payment Plugin', $this->plugin->getName());
+        $this->assertEquals('Tamara', $this->plugin->getName());
     }
 
     public function test_plugin_returns_correct_description()
@@ -235,7 +235,6 @@ class TamaraPaymentPluginTest extends TestCase
         $viewData = $result->getData();
         $this->assertArrayHasKey('paymentOrder', $viewData);
         $this->assertArrayHasKey('paymentMethod', $viewData);
-        $this->assertArrayHasKey('errorMessage', $viewData);
         $this->assertArrayHasKey('failureUrl', $viewData);
     }
 

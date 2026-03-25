@@ -16,7 +16,7 @@ class OfflinePaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return 'Offline Payment Plugin';
+        return __('Offline Payment');
     }
 
     public function getDescription(): string

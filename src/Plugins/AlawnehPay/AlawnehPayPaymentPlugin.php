@@ -24,7 +24,7 @@ class AlawnehPayPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Alawneh Pay Payment Plugin');
+        return __('Alawneh Pay');
     }
 
     public function getDescription(): string

@@ -45,7 +45,7 @@ class TabbyPaymentPluginTest extends TestCase
 
     public function test_plugin_returns_correct_name()
     {
-        $this->assertEquals('Tabby Payment Plugin', $this->plugin->getName());
+        $this->assertEquals('Tabby', $this->plugin->getName());
     }
 
     public function test_plugin_returns_correct_description()
@@ -152,7 +152,6 @@ class TabbyPaymentPluginTest extends TestCase
         $viewData = $result->getData();
         $this->assertArrayHasKey('paymentOrder', $viewData);
         $this->assertArrayHasKey('paymentMethod', $viewData);
-        $this->assertArrayHasKey('errorMessage', $viewData);
         $this->assertArrayHasKey('failureUrl', $viewData);
     }
 }

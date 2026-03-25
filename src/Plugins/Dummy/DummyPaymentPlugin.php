@@ -17,7 +17,7 @@ class DummyPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return 'Dummy Payment Plugin';
+        return 'Dummy';
     }
 
     public function getDescription(): string

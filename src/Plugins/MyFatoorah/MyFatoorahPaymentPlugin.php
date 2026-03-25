@@ -38,7 +38,7 @@ class MyFatoorahPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('MyFatoorah Payment Plugin');
+        return __('MyFatoorah');
     }
 
     public function getDescription(): string

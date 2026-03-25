@@ -39,7 +39,7 @@ class GeideaPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Geidea Plugin');
+        return __('Geidea');
     }
 
     public function getDescription(): string

@@ -25,7 +25,7 @@ class PaymobPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Paymob Payment Plugin');
+        return __('Paymob');
     }
 
     public function getDescription(): string

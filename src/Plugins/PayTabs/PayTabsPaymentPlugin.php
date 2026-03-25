@@ -25,7 +25,7 @@ class PayTabsPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('PayTabs Payment Plugin');
+        return __('PayTabs');
     }
 
     public function getDescription(): string

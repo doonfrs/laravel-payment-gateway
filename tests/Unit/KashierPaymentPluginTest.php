@@ -47,7 +47,7 @@ class KashierPaymentPluginTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function plugin_returns_correct_name()
     {
-        $this->assertEquals('Kashier Payment Plugin', $this->plugin->getName());
+        $this->assertEquals('Kashier', $this->plugin->getName());
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

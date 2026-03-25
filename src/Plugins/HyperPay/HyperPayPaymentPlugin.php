@@ -24,7 +24,7 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('HyperPay Payment Plugin');
+        return __('HyperPay');
     }
 
     public function getDescription(): string

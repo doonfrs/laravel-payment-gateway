@@ -46,7 +46,7 @@ class MyFatoorahPaymentPluginTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function plugin_returns_correct_name()
     {
-        $this->assertEquals('MyFatoorah Payment Plugin', $this->plugin->getName());
+        $this->assertEquals('MyFatoorah', $this->plugin->getName());
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

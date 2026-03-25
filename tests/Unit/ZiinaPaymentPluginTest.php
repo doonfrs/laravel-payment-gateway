@@ -46,7 +46,7 @@ class ZiinaPaymentPluginTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function plugin_returns_correct_name()
     {
-        $this->assertEquals('Ziina Payment Plugin', $this->plugin->getName());
+        $this->assertEquals('Ziina', $this->plugin->getName());
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

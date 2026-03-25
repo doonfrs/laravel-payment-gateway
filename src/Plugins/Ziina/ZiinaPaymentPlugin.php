@@ -31,7 +31,7 @@ class ZiinaPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Ziina Payment Plugin');
+        return __('Ziina');
     }
 
     public function getDescription(): string

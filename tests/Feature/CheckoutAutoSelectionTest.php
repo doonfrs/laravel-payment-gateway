@@ -190,7 +190,7 @@ class CheckoutAutoSelectionTest extends TestCase
             'amount' => 100,
             'currency' => 'USD',
             'status' => 'pending',
-            'ignored_plugins' => ['dummy_payment'],
+            'ignored_plugins' => [\Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class],
         ]);
 
         // Create two payment methods

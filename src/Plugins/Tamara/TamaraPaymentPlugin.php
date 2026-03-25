@@ -24,7 +24,7 @@ class TamaraPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Tamara Payment Plugin');
+        return __('Tamara');
     }
 
     public function getDescription(): string

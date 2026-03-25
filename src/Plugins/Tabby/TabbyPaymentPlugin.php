@@ -25,7 +25,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Tabby Payment Plugin');
+        return __('Tabby');
     }
 
     public function getDescription(): string

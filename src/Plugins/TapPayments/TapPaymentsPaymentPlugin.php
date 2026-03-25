@@ -27,7 +27,7 @@ class TapPaymentsPaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Tap Payments Plugin');
+        return __('Tap Payments');
     }
 
     public function getDescription(): string
