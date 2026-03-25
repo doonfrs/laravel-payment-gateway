@@ -48,6 +48,10 @@ use Illuminate\Support\Facades\Crypt;
  */
 class PaymentMethod extends Model
 {
+    protected $attributes = [
+        'sort_order' => 0,
+    ];
+
     protected $fillable = [
         'name',
         'plugin_class',
