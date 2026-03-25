@@ -140,6 +140,16 @@ class PaymentGatewayService
      */
     public function handlePaymentSuccess(PaymentOrder $paymentOrder, array $paymentData = []): void
     {
+        // Idempotency guard: skip if this payment was already processed
+        if ($paymentOrder->isCompleted()) {
+            \Illuminate\Support\Facades\Log::info('Payment already completed, skipping duplicate callback', [
+                'payment_order_id' => $paymentOrder->id,
+                'order_code' => $paymentOrder->order_code,
+            ]);
+
+            return;
+        }
+
         $paymentOrder->markAsCompleted($paymentData);
 
         // Execute success callback if provided
