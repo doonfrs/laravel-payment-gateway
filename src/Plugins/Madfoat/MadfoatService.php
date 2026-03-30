@@ -14,14 +14,11 @@ class MadfoatService
 
     protected int $billExpiryDays;
 
-    protected string $logChannel;
-
-    public function __construct(string $billerCode, string $serviceType, int $billExpiryDays = 7, string $logChannel = 'stack')
+    public function __construct(string $billerCode, string $serviceType, int $billExpiryDays = 7)
     {
         $this->billerCode = $billerCode;
         $this->serviceType = $serviceType;
         $this->billExpiryDays = $billExpiryDays;
-        $this->logChannel = $logChannel;
     }
 
     /**
@@ -318,6 +315,6 @@ class MadfoatService
      */
     public function log(string $message, array $context = []): void
     {
-        Log::channel($this->logChannel)->info("Madfoat: {$message}", $context);
+        Log::info("Madfoat: {$message}", $context);
     }
 }

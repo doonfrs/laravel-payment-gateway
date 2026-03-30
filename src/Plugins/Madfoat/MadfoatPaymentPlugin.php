@@ -73,14 +73,6 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
                 description: 'Comma-separated list of allowed IPs for inbound requests. Leave empty to allow all (for testing).',
                 placeholder: '10.211.211.249,10.211.211.241',
             ),
-            new TextField(
-                name: 'log_channel',
-                label: 'Log Channel',
-                required: false,
-                default: 'stack',
-                description: 'Laravel log channel name for Madfoat request/response logging',
-                placeholder: 'madfoat',
-            ),
         ];
     }
 
@@ -340,7 +332,6 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
             billerCode: $this->paymentMethod->getSetting('biller_code', ''),
             serviceType: $this->paymentMethod->getSetting('service_type', ''),
             billExpiryDays: (int) $this->paymentMethod->getSetting('bill_expiry_days', '7'),
-            logChannel: $this->paymentMethod->getSetting('log_channel', 'stack'),
         );
     }
 
