@@ -151,6 +151,8 @@
     "enter_your_bill_number": "أدخل رقم الفاتورة:",
     "confirm_and_pay": "تأكيد والدفع",
     "order_confirmed_after_efawateercom": "سيتم تأكيد طلبك تلقائياً بمجرد استلام الدفع عبر إي فواتيركم.",
+    "i_have_already_paid": "لقد قمت بالدفع بالفعل",
+    "how_to_pay": "كيفية الدفع",
     "payment_gateway_error": "خطأ في بوابة الدفع",
     "This order has already been paid.": "تم دفع هذا الطلب بالفعل.",
     "Fawry": "فوري",

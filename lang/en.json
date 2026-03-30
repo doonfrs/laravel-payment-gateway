@@ -151,6 +151,8 @@
     "enter_your_bill_number": "Enter your bill number:",
     "confirm_and_pay": "Confirm and pay",
     "order_confirmed_after_efawateercom": "Your order will be automatically confirmed once we receive your payment through eFAWATEERcom.",
+    "i_have_already_paid": "I Have Already Paid",
+    "how_to_pay": "How to Pay",
     "payment_gateway_error": "Payment gateway error",
     "This order has already been paid.": "This order has already been paid.",
     "Fawry Payment Plugin": "Fawry Payment Plugin",

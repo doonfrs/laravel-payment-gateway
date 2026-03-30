@@ -12,7 +12,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-base-200 min-h-screen text-base-content">
     <div class="min-h-screen">
         <main>
             @yield('content')
