@@ -4,6 +4,7 @@ namespace Trinavo\PaymentGateway\Plugins\Madfoat;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Trinavo\PaymentGateway\Configuration\PasswordField;
 use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\CallbackResponse;
@@ -72,6 +73,20 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
                 default: '',
                 description: 'Comma-separated list of allowed IPs for inbound requests. Leave empty to allow all (for testing).',
                 placeholder: '10.211.211.249,10.211.211.241',
+            ),
+            new TextField(
+                name: 'auth_username',
+                label: 'Basic Auth Username',
+                required: false,
+                default: '',
+                description: 'Username for HTTP Basic Authentication on inbound requests from Madfoat. Leave empty to disable Basic Auth.',
+                placeholder: 'e.g. madfoat_user',
+            ),
+            new PasswordField(
+                name: 'auth_password',
+                label: 'Basic Auth Password',
+                required: false,
+                description: 'Password for HTTP Basic Authentication on inbound requests from Madfoat.',
             ),
         ];
     }
@@ -144,6 +159,16 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
             ]);
 
             return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Basic Auth validation
+        if (! $this->isBasicAuthValid()) {
+            Log::warning('Madfoat: Basic Auth failed', [
+                'ip' => request()->ip(),
+                'action' => $action,
+            ]);
+
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         $service->log("Inbound request: {$action}", ['data' => $data]);
@@ -349,6 +374,26 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         $allowed = array_map('trim', explode(',', $allowedIps));
 
         return in_array($ip, $allowed);
+    }
+
+    /**
+     * Validate HTTP Basic Authentication credentials against plugin settings.
+     */
+    protected function isBasicAuthValid(): bool
+    {
+        $expectedUsername = $this->paymentMethod->getSetting('auth_username', '');
+        $expectedPassword = $this->paymentMethod->getSetting('auth_password', '');
+
+        // If no credentials configured, skip Basic Auth check (backward compatible)
+        if (empty($expectedUsername) && empty($expectedPassword)) {
+            return true;
+        }
+
+        $providedUsername = request()->getUser();
+        $providedPassword = request()->getPassword();
+
+        return $providedUsername === $expectedUsername
+            && $providedPassword === $expectedPassword;
     }
 
     /**
