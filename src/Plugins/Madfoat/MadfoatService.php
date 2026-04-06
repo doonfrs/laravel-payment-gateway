@@ -91,7 +91,7 @@ class MadfoatService
                     'TmStp' => now()->format('Y-m-d\TH:i:s'),
                     'GUID' => $guid,
                     'TrsInf' => [
-                        'SdrCode' => $this->billerCode,
+                        'SdrCode' => (int) $this->billerCode,
                         'ResTyp' => 'BILPULRS',
                     ],
                     'Result' => [
@@ -116,10 +116,7 @@ class MadfoatService
                             'BillStatus' => $billStatus,
                             'DueAmount' => $dueAmount,
                             'IssueDate' => $issueDate,
-                            'OpenDate' => $issueDate,
                             'DueDate' => $expiryDate,
-                            'ExpiryDate' => $expiryDate,
-                            'CloseDate' => $isPaid ? now()->format('Y-m-d\TH:i:s') : '',
                             'ServiceType' => $this->serviceType,
                             'BillType' => 'OneOff',
                             'PmtConst' => [
@@ -129,7 +126,7 @@ class MadfoatService
                             ],
                             'AdditionalInfo' => [
                                 'CustName' => Str::limit($customerName, 150, ''),
-                                'FreeText' => '',
+                                'FreeText' => 'Order #' . $billingNo,
                                 'Email' => $customerEmail,
                                 'Phone' => $customerPhone,
                             ],
@@ -151,7 +148,7 @@ class MadfoatService
                     'TmStp' => now()->format('Y-m-d\TH:i:s'),
                     'GUID' => $guid,
                     'TrsInf' => [
-                        'SdrCode' => $this->billerCode,
+                        'SdrCode' => (int) $this->billerCode,
                         'ResTyp' => 'BILPULRS',
                     ],
                     'Result' => [
@@ -179,7 +176,7 @@ class MadfoatService
                     'TmStp' => now()->format('Y-m-d\TH:i:s'),
                     'GUID' => $guid,
                     'TrsInf' => [
-                        'SdrCode' => $this->billerCode,
+                        'SdrCode' => (int) $this->billerCode,
                         'ResTyp' => 'BLRPMTNTFRS',
                     ],
                     'Result' => [
@@ -217,7 +214,7 @@ class MadfoatService
                     'TmStp' => now()->format('Y-m-d\TH:i:s'),
                     'GUID' => $guid,
                     'TrsInf' => [
-                        'SdrCode' => $this->billerCode,
+                        'SdrCode' => (int) $this->billerCode,
                         'ResTyp' => 'PMTACKRS',
                     ],
                     'Result' => [
@@ -255,7 +252,7 @@ class MadfoatService
                     'TmStp' => now()->format('Y-m-d\TH:i:s'),
                     'GUID' => $guid,
                     'TrsInf' => [
-                        'SdrCode' => $this->billerCode,
+                        'SdrCode' => (int) $this->billerCode,
                         'ResTyp' => 'BILRPREPADVALRS',
                     ],
                     'Result' => [
@@ -297,7 +294,7 @@ class MadfoatService
                     'TmStp' => now()->format('Y-m-d\TH:i:s'),
                     'GUID' => $guid,
                     'TrsInf' => [
-                        'SdrCode' => $this->billerCode,
+                        'SdrCode' => (int) $this->billerCode,
                         'ResTyp' => $responseType,
                     ],
                     'Result' => [
