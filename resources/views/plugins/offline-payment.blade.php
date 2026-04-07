@@ -63,9 +63,11 @@
                             <h2 class="text-2xl font-bold text-green-800 mb-4">
                                 {{ __('cash_on_delivery_payment') }}</h2>
 
-                            <div class="text-gray-700 mb-6 max-w-lg mx-auto">
-                                <p class="text-lg leading-relaxed">{{ $description }}</p>
-                            </div>
+                            @if ($description)
+                                <div class="text-gray-700 mb-6 max-w-lg mx-auto">
+                                    <div class="text-lg leading-relaxed">{!! $description !!}</div>
+                                </div>
+                            @endif
 
                             <div class="bg-white rounded-lg p-4 mb-6 border border-green-200">
                                 <div class="flex items-center justify-center space-x-2 text-green-700">

@@ -138,7 +138,7 @@
                                             <h3 class="font-semibold text-gray-900 mb-2">
                                                 {{ $method->getLocalizedDisplayName() }}</h3>
                                             @if ($method->getLocalizedDescription())
-                                                <p class="text-sm text-gray-600">{{ $method->getLocalizedDescription() }}</p>
+                                                <div class="text-sm text-gray-600">{!! $method->getLocalizedDescription() !!}</div>
                                             @endif
                                             @if ($method->hasFee())
                                                 <p class="text-xs text-orange-600 mt-2">

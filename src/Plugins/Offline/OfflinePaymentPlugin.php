@@ -2,7 +2,6 @@
 
 namespace Trinavo\PaymentGateway\Plugins\Offline;
 
-use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 use Trinavo\PaymentGateway\Models\RefundResponse;
@@ -26,17 +25,7 @@ class OfflinePaymentPlugin extends PaymentPluginInterface
 
     public function getConfigurationFields(): array
     {
-        return [
-            new TextField(
-                name: 'description',
-                label: __('payment_instructions_label'),
-                required: false,
-                default: __('manual_payment_default_instructions'),
-                description: __('payment_instructions_helper'),
-                placeholder: __('payment_instructions_placeholder'),
-                maxLength: 500
-            ),
-        ];
+        return [];
     }
 
     public function validateConfiguration(): bool
@@ -47,10 +36,8 @@ class OfflinePaymentPlugin extends PaymentPluginInterface
 
     public function processPayment(PaymentOrder $paymentOrder)
     {
-        // Get the description from configuration
-        $description = $this->paymentMethod->configuration['description'] ?? 'Pay with cash when your order is delivered.';
+        $description = $this->paymentMethod->getLocalizedDescription();
 
-        // Return a view with offline payment confirmation
         return view('payment-gateway::plugins.offline-payment', [
             'paymentOrder' => $paymentOrder,
             'paymentMethod' => $this->paymentMethod,
