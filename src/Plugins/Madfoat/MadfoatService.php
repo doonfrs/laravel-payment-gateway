@@ -83,7 +83,6 @@ class MadfoatService
         $billStatus = $isPaid ? 'Paid' : 'BillNew';
         $dueAmount = $isPaid ? '0.000' : number_format($finalTotal, 3, '.', '');
         $issueDate = $createdAt->format('Y-m-d\TH:i:s');
-        $expiryDate = $createdAt->copy()->addDays($this->billExpiryDays)->format('Y-m-d\TH:i:s');
 
         return [
             'MFEP' => [
@@ -116,7 +115,7 @@ class MadfoatService
                             'BillStatus' => $billStatus,
                             'DueAmount' => $dueAmount,
                             'IssueDate' => $issueDate,
-                            'DueDate' => $expiryDate,
+                            'DueDate' => $issueDate,
                             'ServiceType' => $this->serviceType,
                             'BillType' => 'OneOff',
                             'PmtConst' => [
