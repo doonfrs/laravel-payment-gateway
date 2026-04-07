@@ -16,12 +16,12 @@ class OfflinePaymentPlugin extends PaymentPluginInterface
 
     public function getName(): string
     {
-        return __('Offline Payment');
+        return __('Manual Payment');
     }
 
     public function getDescription(): string
     {
-        return 'An offline payment plugin for cash on delivery scenarios. Shows a description to customers and provides a simple confirmation button.';
+        return __('manual_payment_description');
     }
 
     public function getConfigurationFields(): array
@@ -29,11 +29,11 @@ class OfflinePaymentPlugin extends PaymentPluginInterface
         return [
             new TextField(
                 name: 'description',
-                label: 'Payment Description',
+                label: __('payment_instructions_label'),
                 required: false,
-                default: 'Pay with cash when your order is delivered.',
-                description: 'This description will be shown to customers on the payment page',
-                placeholder: 'Enter payment instructions for customers...',
+                default: __('manual_payment_default_instructions'),
+                description: __('payment_instructions_helper'),
+                placeholder: __('payment_instructions_placeholder'),
                 maxLength: 500
             ),
         ];

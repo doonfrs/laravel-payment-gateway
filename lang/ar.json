@@ -71,11 +71,17 @@
     "completed": "مكتمل",
     "failed": "فاشل",
     "cancelled": "ملغي",
-    "offline_payment_gateway": "بوابة الدفع غير المتصل",
-    "cash_on_delivery": "الدفع عند الاستلام",
-    "cash_on_delivery_payment": "دفع نقداً عند الاستلام",
+    "offline_payment_gateway": "الدفع اليدوي",
+    "cash_on_delivery": "الدفع اليدوي",
+    "cash_on_delivery_payment": "الدفع اليدوي",
     "no_payment_required_now": "لا يلزم الدفع الآن",
     "confirm_order": "تأكيد الطلب",
+    "Manual Payment": "الدفع اليدوي",
+    "manual_payment_description": "إضافة الدفع اليدوي للحالات التي يتم فيها الدفع خارج عملية الشراء الإلكترونية. يعرض وصفاً للعملاء ويوفر زر تأكيد بسيط.",
+    "payment_instructions_label": "تعليمات الدفع",
+    "manual_payment_default_instructions": "سيتم تأكيد طلبك. يرجى اتباع تعليمات الدفع المقدمة من المتجر.",
+    "payment_instructions_helper": "سيظهر هذا الوصف للعملاء في صفحة الدفع",
+    "payment_instructions_placeholder": "أدخل تعليمات الدفع للعملاء...",
     "tabby_payment_gateway": "بوابة دفع تابي",
     "pay_now_or_split_into_installments": "ادفع الآن أو قسط على 4 دفعات بدون فوائد",
     "pay_in_4_installments": "ادفع على 4 أقساط",
@@ -208,5 +214,5 @@
     "Done": "تم",
     "Geidea": "جيديا",
     "Thawani": "ثواني",
-    "Offline Payment": "الدفع عند الاستلام"
+    "Offline Payment": "الدفع اليدوي"
 }
