@@ -73,7 +73,7 @@
 
                     <!-- Action Buttons - Desktop -->
                     <div class="hidden md:flex justify-between items-center">
-                        <a href="{{ payment_gateway_localized_url(route('payment-gateway.checkout', ['order' => $paymentOrder->order_code])) }}"
+                        <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
                             class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
                             {{ __('Cancel') }}
                         </a>
@@ -90,7 +90,7 @@
 
                     <!-- Action Buttons - Mobile (sticky footer) -->
                     <div class="md:hidden fixed bottom-0 start-0 end-0 bg-white border-t border-gray-200 px-4 py-3 flex justify-between items-center z-50">
-                        <a href="{{ payment_gateway_localized_url(route('payment-gateway.checkout', ['order' => $paymentOrder->order_code])) }}"
+                        <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
                             class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
                             {{ __('Cancel') }}
                         </a>
