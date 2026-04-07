@@ -234,12 +234,14 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
     protected function handlePaymentNotification(array $data, MadfoatService $service): JsonResponse
     {
         $guid = $service->extractGuid($data);
-        $billingInfo = $data['MFEP']['MsgBody']['BillingInfo'] ?? [];
+        $billingInfo = $data['MFEP']['MsgBody']['BillingInfo']
+            ?? $data['MFEP']['MsgBody']['Transactions']['TrxInf']
+            ?? [];
         $billingNo = $billingInfo['AcctInfo']['BillingNo'] ?? '';
         $joebppsTrx = $billingInfo['JOEBPPSTrx'] ?? '';
         $paidAmt = $billingInfo['PaidAmt'] ?? '0.000';
         $processDate = $billingInfo['ProcessDate'] ?? now()->format('Y-m-d\TH:i:s');
-        $stmtDate = $billingInfo['StmtDate'] ?? now()->format('Y-m-d');
+        $stmtDate = $billingInfo['StmtDate'] ?? $billingInfo['STMTDate'] ?? now()->format('Y-m-d');
 
         if (empty($billingNo)) {
             $response = $service->buildPaymentNotificationResponse($guid, $joebppsTrx, $processDate, $stmtDate, 1, 'BillingNo is required', 'Error');
@@ -290,10 +292,12 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
     protected function handlePaymentAcknowledgment(array $data, MadfoatService $service): JsonResponse
     {
         $guid = $service->extractGuid($data);
-        $billingInfo = $data['MFEP']['MsgBody']['BillingInfo'] ?? [];
+        $billingInfo = $data['MFEP']['MsgBody']['BillingInfo']
+            ?? $data['MFEP']['MsgBody']['Transactions']['TrxInf']
+            ?? [];
         $joebppsTrx = $billingInfo['JOEBPPSTrx'] ?? '';
         $processDate = $billingInfo['ProcessDate'] ?? now()->format('Y-m-d\TH:i:s');
-        $stmtDate = $billingInfo['StmtDate'] ?? now()->format('Y-m-d');
+        $stmtDate = $billingInfo['StmtDate'] ?? $billingInfo['STMTDate'] ?? now()->format('Y-m-d');
 
         $service->log('Payment acknowledgment received', [
             'joebpps_trx' => $joebppsTrx,
@@ -313,7 +317,9 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         $guid = $service->extractGuid($data);
 
         // For e-commerce, prepaid validation returns the order amount
-        $billingInfo = $data['MFEP']['MsgBody']['BillingInfo'] ?? [];
+        $billingInfo = $data['MFEP']['MsgBody']['BillingInfo']
+            ?? $data['MFEP']['MsgBody']['Transactions']['TrxInf']
+            ?? [];
         $billingNo = $billingInfo['AcctInfo']['BillingNo'] ?? '';
         $validationCode = $billingInfo['ValidationCode'] ?? '';
 
