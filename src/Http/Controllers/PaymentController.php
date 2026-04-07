@@ -207,13 +207,6 @@ class PaymentController extends Controller
 
         // If cancelled, redirect immediately - never show failure page for cancellations
         if ($paymentOrder->status === 'cancelled') {
-            $cancelRedirect = config('payment-gateway.cancel_redirect', 'order');
-
-            if ($cancelRedirect === 'home') {
-                return redirect('/');
-            }
-
-            // 'order' - redirect to order page (failure_url contains the order URL)
             return redirect($paymentOrder->failure_url ?? '/');
         }
 
@@ -240,14 +233,6 @@ class PaymentController extends Controller
             'cancelled_at' => now()->toIso8601String(),
         ]);
 
-        // Redirect based on configuration
-        $cancelRedirect = config('payment-gateway.cancel_redirect', 'order');
-
-        if ($cancelRedirect === 'home') {
-            return redirect('/');
-        }
-
-        // 'order' - redirect to order page (failure_url contains the order URL)
         return redirect($paymentOrder->failure_url ?? '/');
     }
 

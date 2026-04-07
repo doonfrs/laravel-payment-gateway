@@ -105,18 +105,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cancel Redirect Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Configure where to redirect when a payment is cancelled by the user.
-    | - 'home': Redirect to home page (/)
-    | - 'order': Redirect to order page (failure_url)
-    |
-    */
-    'cancel_redirect' => env('PAYMENT_CANCEL_REDIRECT', 'order'),
-
-    /*
-    |--------------------------------------------------------------------------
     | Success Redirect Configuration
     |--------------------------------------------------------------------------
     |
