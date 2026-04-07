@@ -94,6 +94,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Font Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure the Google/Bunny font family used in payment gateway pages.
+    | Override this from your app's service provider to match your app's font.
+    |
+    */
+    'font_family' => 'Almarai',
+
+    /*
+    |--------------------------------------------------------------------------
     | Cancel Redirect Configuration
     |--------------------------------------------------------------------------
     |

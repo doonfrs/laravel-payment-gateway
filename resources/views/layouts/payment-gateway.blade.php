@@ -8,11 +8,17 @@
 
     <title>@yield('title', __('default_title'))</title>
 
+    @php
+        $fontFamily = config('payment-gateway.font_family', 'Almarai');
+        $fontSlug = strtolower($fontFamily);
+    @endphp
+    <link href="https://fonts.bunny.net/css?family={{ $fontSlug }}:300,400,700&display=swap" rel="stylesheet">
+
     <!-- Scripts and Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-base-200 min-h-screen text-base-content">
+<body class="bg-base-200 min-h-screen text-base-content" style="font-family: '{{ $fontFamily }}', sans-serif;">
     <div class="min-h-screen">
         <main>
             @yield('content')
