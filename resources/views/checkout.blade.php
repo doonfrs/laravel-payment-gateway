@@ -6,12 +6,15 @@
     <!-- Header Bar -->
     <div class="bg-base-100 shadow-sm sticky top-0 z-40">
         <div class="container mx-auto max-w-lg px-4">
-            <div class="flex items-center justify-between h-14">
+            <div class="flex items-center h-14">
+                <button type="button" onclick="history.back()"
+                    class="btn btn-ghost btn-sm btn-square -ms-2 me-2">
+                    <svg class="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
                 <h1 class="text-lg font-bold text-base-content">{{ __('payment_checkout') }}</h1>
-                <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
-                    class="text-sm text-base-content/50 hover:text-error transition-colors">
-                    {{ __('cancel_payment') }}
-                </a>
             </div>
         </div>
     </div>
