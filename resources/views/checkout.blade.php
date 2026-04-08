@@ -3,189 +3,130 @@
 @section('title', __('payment_checkout'))
 
 @section('content')
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-4xl mx-auto">
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold">{{ __('payment_checkout') }}</h1>
-                            <p class="text-blue-100 mt-1">{{ __('complete_payment_securely') }}</p>
-                        </div>
-                        <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
-                            class="inline-flex items-center px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200 text-sm">
-                            <svg class="w-4 h-4 ltr:mr-1.5 rtl:ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                            {{ __('cancel_payment') }}
-                        </a>
-                    </div>
-                </div>
-
-                <div class="p-6">
-                    <!-- Order Summary -->
-                    <div class="grid md:grid-cols-2 gap-6 mb-8">
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('order_details') }}</h2>
-                            <div class="space-y-3">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('order_code') }}:</span>
-                                    <span class="font-medium text-gray-900">{{ $paymentOrder->order_code }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('amount') }}:</span>
-                                    <span class="font-bold text-xl text-green-600" id="base-amount">{{ $paymentOrder->formatted_amount }}</span>
-                                </div>
-                                <!-- Fee breakdown (shown when payment method with fee is selected) -->
-                                <div id="fee-breakdown" class="hidden space-y-2 pt-2 border-t border-gray-100 mt-2">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-gray-500">{{ __('payment_method_fee') }}:</span>
-                                        <span class="text-orange-600" id="fee-amount">+0.00 {{ $paymentOrder->currency }}</span>
-                                    </div>
-                                    <div class="flex justify-between font-semibold">
-                                        <span class="text-gray-700">{{ __('total_with_fee') }}:</span>
-                                        <span class="text-green-600 text-lg" id="total-with-fee">{{ $paymentOrder->formatted_amount }}</span>
-                                    </div>
-                                </div>
-                                @if ($paymentOrder->getLocalizedDescription())
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ __('description') }}:</span>
-                                        <span
-                                            class="font-medium text-gray-900">{{ $paymentOrder->getLocalizedDescription() }}</span>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('customer_information') }}</h2>
-                            <div class="space-y-3">
-                                @if ($paymentOrder->customer_name)
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ __('customer_name') }}:</span>
-                                        <span class="font-medium text-gray-900">{{ $paymentOrder->customer_name }}</span>
-                                    </div>
-                                @endif
-                                @if ($paymentOrder->customer_email)
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ __('customer_email') }}:</span>
-                                        <span class="font-medium text-gray-900">{{ $paymentOrder->customer_email }}</span>
-                                    </div>
-                                @endif
-                                @if ($paymentOrder->customer_phone)
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ __('customer_phone') }}:</span>
-                                        <span class="font-medium text-gray-900">{{ $paymentOrder->customer_phone }}</span>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr class="border-gray-200 mb-8">
-
-                    <!-- Payment Methods -->
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-6">
-                            {{ __('select_payment_method') }}</h2>
-
-                        @if (($errors ?? false) && $errors->any())
-                            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h3 class="text-sm font-medium text-red-800">
-                                            {{ __('errors_with_submission') }}</h3>
-                                        <div class="mt-2 text-sm text-red-700">
-                                            <ul class="list-disc pl-5 space-y-1">
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <form method="POST"
-                            action="{{ payment_gateway_localized_url(route('payment-gateway.process', ['order' => $paymentOrder->order_code])) }}"
-                            id="payment-form">
-                            @csrf
-                            <input type="hidden" name="payment_method_id" id="selected-method" required>
-
-                            <div class="grid md:grid-cols-2 gap-4 mb-8">
-                                @forelse($paymentMethods as $method)
-                                    <div class="payment-method-card border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-in-out"
-                                        data-method-id="{{ $method->id }}">
-                                        <div class="text-center">
-                                            @if ($method->logo_url)
-                                                <img src="{{ $method->logo_url }}"
-                                                    alt="{{ $method->getLocalizedDisplayName() }}"
-                                                    class="h-12 mx-auto mb-4 object-contain">
-                                            @else
-                                                <div
-                                                    class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
-                                                        </path>
-                                                    </svg>
-                                                </div>
-                                            @endif
-                                            <h3 class="font-semibold text-gray-900 mb-2">
-                                                {{ $method->getLocalizedDisplayName() }}</h3>
-                                            @if ($method->hasFee())
-                                                <p class="text-xs text-orange-600 mt-2">
-                                                    {{ __('fee') }}: {{ $method->getFeeDescription($paymentOrder->currency) }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @empty
-                                    <div class="col-span-2">
-                                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                            <div class="flex">
-                                                <div class="flex-shrink-0">
-                                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20"
-                                                        fill="currentColor">
-                                                        <path fill-rule="evenodd"
-                                                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                                            clip-rule="evenodd" />
-                                                    </svg>
-                                                </div>
-                                                <div class="ml-3">
-                                                    <h3 class="text-sm font-medium text-yellow-800">
-                                                        {{ __('no_payment_methods_available') }}
-                                                    </h3>
-                                                    <p class="mt-1 text-sm text-yellow-700">
-                                                        {{ __('contact_support_assistance') }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforelse
-                            </div>
-
-                        </form>
-
-                    </div>
-                </div>
+    <!-- Header Bar -->
+    <div class="bg-base-100 shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto max-w-lg px-4">
+            <div class="flex items-center justify-between h-14">
+                <h1 class="text-lg font-bold text-base-content">{{ __('payment_checkout') }}</h1>
+                <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
+                    class="text-sm text-base-content/50 hover:text-error transition-colors">
+                    {{ __('cancel_payment') }}
+                </a>
             </div>
         </div>
+    </div>
+
+    <div class="container mx-auto max-w-lg px-4 py-4 md:py-6">
+
+        <!-- Order Summary -->
+        <div class="bg-base-100 rounded-xl shadow-sm p-5 mb-5">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-xs text-base-content/50 uppercase tracking-wide">{{ __('order_code') }}</div>
+                    <div class="font-semibold text-base-content mt-1">{{ $paymentOrder->order_code }}</div>
+                </div>
+                <div class="text-end">
+                    <div class="text-xs text-base-content/50 uppercase tracking-wide">{{ __('amount') }}</div>
+                    <div class="text-2xl font-bold text-primary mt-1">{{ $paymentOrder->formatted_amount }}</div>
+                </div>
+            </div>
+            @if ($paymentOrder->customer_name || $paymentOrder->customer_email || $paymentOrder->customer_phone || $paymentOrder->getLocalizedDescription())
+                <div class="border-t border-base-200 mt-4 pt-3 text-sm text-base-content/50 space-y-0.5">
+                    @if ($paymentOrder->customer_name)
+                        <div>{{ $paymentOrder->customer_name }}</div>
+                    @endif
+                    @if ($paymentOrder->customer_email)
+                        <div>{{ $paymentOrder->customer_email }}</div>
+                    @endif
+                    @if ($paymentOrder->customer_phone)
+                        <div>{{ $paymentOrder->customer_phone }}</div>
+                    @endif
+                    @if ($paymentOrder->getLocalizedDescription())
+                        <div>{{ $paymentOrder->getLocalizedDescription() }}</div>
+                    @endif
+                </div>
+            @endif
+        </div>
+
+        @if (($errors ?? false) && $errors->any())
+            <div class="alert alert-error mb-5">
+                <svg class="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clip-rule="evenodd" />
+                </svg>
+                <div>
+                    @foreach ($errors->all() as $error)
+                        <p>{{ $error }}</p>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        <!-- Payment Methods -->
+        <form method="POST"
+            action="{{ payment_gateway_localized_url(route('payment-gateway.process', ['order' => $paymentOrder->order_code])) }}"
+            id="payment-form">
+            @csrf
+            <input type="hidden" name="payment_method_id" id="selected-method" required>
+
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-base font-semibold text-base-content">{{ __('select_payment_method') }}</h2>
+                <span class="text-xs text-base-content/40 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    {{ __('complete_payment_securely') }}
+                </span>
+            </div>
+
+            <div class="bg-base-100 rounded-xl shadow-sm overflow-hidden">
+                @forelse($paymentMethods as $method)
+                    <div class="payment-method-card flex items-center gap-4 px-4 py-4 cursor-pointer hover:bg-base-200/60 active:bg-base-200 transition-colors duration-100 {{ !$loop->last ? 'border-b border-base-200' : '' }}"
+                        data-method-id="{{ $method->id }}">
+                        {{-- Logo / Icon --}}
+                        @if ($method->logo_url)
+                            <div class="w-12 h-12 bg-base-200/50 rounded-lg shrink-0 flex items-center justify-center p-1.5">
+                                <img src="{{ $method->logo_url }}"
+                                    alt="{{ $method->getLocalizedDisplayName() }}"
+                                    class="w-full h-full object-contain">
+                            </div>
+                        @else
+                            <div class="w-12 h-12 bg-base-200/50 rounded-lg shrink-0 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-base-content/25" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                                    </path>
+                                </svg>
+                            </div>
+                        @endif
+                        {{-- Name + fee --}}
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-base-content">{{ $method->getLocalizedDisplayName() }}</div>
+                            @if ($method->hasFee())
+                                <div class="text-xs text-base-content/40 mt-0.5">{{ $method->getFeeDescription($paymentOrder->currency) }}</div>
+                            @endif
+                        </div>
+                        {{-- Radio --}}
+                        <div class="payment-radio w-5 h-5 rounded-full border-2 border-base-300 shrink-0 flex items-center justify-center transition-colors">
+                            <div class="w-2.5 h-2.5 rounded-full bg-primary scale-0 transition-transform"></div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-6 text-center text-base-content/50">
+                        <svg class="w-10 h-10 mx-auto mb-2 text-base-content/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                        </svg>
+                        <p class="font-medium">{{ __('no_payment_methods_available') }}</p>
+                        <p class="text-sm mt-1">{{ __('contact_support_assistance') }}</p>
+                    </div>
+                @endforelse
+            </div>
+        </form>
+
     </div>
 @endsection
 
@@ -198,9 +139,24 @@
 
             paymentCards.forEach(card => {
                 card.addEventListener('click', function() {
-                    // Set the selected method ID and submit
+                    // Fill radio visual
+                    const radio = this.querySelector('.payment-radio');
+                    const dot = radio.querySelector('div');
+                    radio.classList.add('border-primary');
+                    radio.classList.remove('border-base-300');
+                    dot.classList.remove('scale-0');
+                    dot.classList.add('scale-100');
+
+                    // Highlight selected row
+                    this.classList.add('bg-primary/5');
+
+                    // Dim other rows
+                    paymentCards.forEach(c => {
+                        if (c !== this) c.classList.add('opacity-30', 'pointer-events-none');
+                    });
+
+                    // Submit
                     selectedMethodInput.value = this.getAttribute('data-method-id');
-                    this.classList.add('ring-2', 'ring-blue-500', 'opacity-50', 'pointer-events-none');
                     paymentForm.submit();
                 });
             });
