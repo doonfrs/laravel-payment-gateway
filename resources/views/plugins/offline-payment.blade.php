@@ -3,11 +3,18 @@
 @section('title', __('offline_payment_gateway'))
 
 @section('content')
+    @php
+        $hasMultiplePaymentMethods = \Trinavo\PaymentGateway\Facades\PaymentGateway::getAvailablePaymentMethodsForOrder($paymentOrder)->count() > 1;
+        $backUrl = $hasMultiplePaymentMethods
+            ? \Trinavo\PaymentGateway\Facades\PaymentGateway::getPaymentUrl($paymentOrder)
+            : route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]);
+    @endphp
+
     <!-- Header Bar -->
     <div class="bg-base-100 shadow-sm sticky top-0 z-40">
         <div class="container mx-auto max-w-lg px-4">
             <div class="flex items-center h-14">
-                <a href="{{ \Trinavo\PaymentGateway\Facades\PaymentGateway::getPaymentUrl($paymentOrder) }}"
+                <a href="{{ $backUrl }}"
                     class="btn btn-ghost btn-sm btn-square -ms-2 me-2">
                     <svg class="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -73,10 +80,10 @@
                 </button>
             </form>
 
-            <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
+            <a href="{{ $backUrl }}"
                 class="btn btn-outline">
-                <x-heroicon-o-x-mark class="w-5 h-5" />
-                {{ __('Cancel') }}
+                <x-heroicon-o-arrow-right class="w-5 h-5" />
+                {{ __('Go Back') }}
             </a>
         </div>
 
@@ -96,10 +103,10 @@
             </button>
         </form>
 
-        <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
+        <a href="{{ $backUrl }}"
             class="btn btn-outline">
-            <x-heroicon-o-x-mark class="w-5 h-5" />
-            {{ __('Cancel') }}
+            <x-heroicon-o-arrow-right class="w-5 h-5" />
+            {{ __('Go Back') }}
         </a>
     </div>
 @endsection
