@@ -3,111 +3,111 @@
 @section('title', __('offline_payment_gateway'))
 
 @section('content')
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-4 py-4">
         <div class="max-w-2xl mx-auto">
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4">
-                    <h1 class="text-2xl font-bold">{{ $paymentMethod->getLocalizedDisplayName() }}</h1>
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <x-heroicon-o-banknotes class="w-6 h-6 text-primary" />
                 </div>
+                <h1 class="text-2xl font-bold text-base-content">{{ $paymentMethod->getLocalizedDisplayName() }}</h1>
+                <p class="text-base-content/70 text-sm mt-1">{{ __('offline_payment_gateway') }}</p>
+                @if (\Trinavo\PaymentGateway\Facades\PaymentGateway::getAvailablePaymentMethodsForOrder($paymentOrder)->count() > 1)
+                    <a href="{{ \Trinavo\PaymentGateway\Facades\PaymentGateway::getPaymentUrl($paymentOrder) }}" class="link link-primary text-sm mt-2 inline-flex items-center gap-1">
+                        <x-heroicon-o-arrow-uturn-left class="w-4 h-4" />
+                        {{ __('Change Payment Method') }}
+                    </a>
+                @endif
+            </div>
 
-                <div class="p-6">
-                    <!-- Order Summary -->
-                    <div class="grid md:grid-cols-2 gap-6 mb-8">
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('order_summary') }}</h2>
-                            <div class="space-y-3">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">{{ __('amount') }}:</span>
-                                    <span
-                                        class="font-bold text-xl text-green-600">{{ $paymentOrder->formatted_amount }}</span>
-                                </div>
-                            </div>
+            <!-- Payment Details Card -->
+            <div class="card bg-base-100 shadow-xl mb-4">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-lg mb-2">{{ __('order_summary') }}</h2>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between items-center py-1.5 border-b border-base-300">
+                            <span class="text-base-content/70 text-sm">{{ __('amount') }}</span>
+                            <span class="font-bold text-lg text-primary">{{ $paymentOrder->formatted_amount }}</span>
                         </div>
 
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                                {{ __('customer_details') }}</h2>
-                            <div class="space-y-3">
-                                @if ($paymentOrder->customer_name)
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ __('customer_name') }}:</span>
-                                        <span class="font-medium text-gray-900">{{ $paymentOrder->customer_name }}</span>
-                                    </div>
-                                @endif
-                                @if ($paymentOrder->customer_email)
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ __('customer_email') }}:</span>
-                                        <span class="font-medium text-gray-900">{{ $paymentOrder->customer_email }}</span>
-                                    </div>
-                                @endif
+                        @if ($paymentOrder->customer_name)
+                            <div class="flex justify-between items-center py-1.5 border-b border-base-300">
+                                <span class="text-base-content/70 text-sm">{{ __('customer_name') }}</span>
+                                <span class="font-semibold text-sm text-base-content">{{ $paymentOrder->customer_name }}</span>
                             </div>
-                        </div>
-                    </div>
+                        @endif
 
-                    <hr class="border-gray-200 mb-8">
-
-                    <!-- Payment Instructions -->
-                    <div class="text-center mb-8">
-                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-8">
-                            <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
-                                    </path>
-                                </svg>
+                        @if ($paymentOrder->customer_email)
+                            <div class="flex justify-between items-center py-1.5">
+                                <span class="text-base-content/70 text-sm">{{ __('customer_email') }}</span>
+                                <span class="font-semibold text-sm text-base-content">{{ $paymentOrder->customer_email }}</span>
                             </div>
-
-                            <h2 class="text-2xl font-bold text-green-800 mb-4">
-                                {{ $paymentMethod->getLocalizedDisplayName() }}</h2>
-
-                            @if ($description)
-                                <div class="text-gray-700 mb-6 max-w-lg mx-auto">
-                                    <div class="text-lg leading-relaxed">{!! $description !!}</div>
-                                </div>
-                            @endif
-
-                        </div>
+                        @endif
                     </div>
-
-                    <!-- Action Buttons - Desktop -->
-                    <div class="hidden md:flex justify-between items-center">
-                        <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
-                            class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
-                            {{ __('Cancel') }}
-                        </a>
-
-                        <form method="POST"
-                            action="{{ payment_gateway_localized_url(route('payment-gateway.offline-confirm', ['order' => $paymentOrder->order_code])) }}">
-                            @csrf
-                            <button type="submit"
-                                class="inline-flex items-center px-8 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors duration-200">
-                                {{ __('confirm_order') }}
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Action Buttons - Mobile (sticky footer) -->
-                    <div class="md:hidden fixed bottom-0 start-0 end-0 bg-white border-t border-gray-200 px-4 py-3 flex justify-between items-center z-50">
-                        <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
-                            class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
-                            {{ __('Cancel') }}
-                        </a>
-
-                        <form method="POST"
-                            action="{{ payment_gateway_localized_url(route('payment-gateway.offline-confirm', ['order' => $paymentOrder->order_code])) }}">
-                            @csrf
-                            <button type="submit"
-                                class="inline-flex items-center px-8 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors duration-200">
-                                {{ __('confirm_order') }}
-                            </button>
-                        </form>
-                    </div>
-                    <!-- Spacer for mobile sticky footer -->
-                    <div class="md:hidden h-16"></div>
                 </div>
             </div>
+
+            <!-- Payment Instructions Card -->
+            @if ($description)
+                <div class="card bg-base-100 shadow-xl mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="card-title text-lg mb-2">
+                            {{ $paymentMethod->getLocalizedDisplayName() }}
+                        </h2>
+                        <div class="text-base-content/80 text-sm leading-relaxed">{!! $description !!}</div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Security Notice -->
+            <div class="alert alert-info mb-4">
+                <x-heroicon-o-information-circle class="w-5 h-5" />
+                <div>
+                    <h3 class="font-bold">{{ __('Secure Payment') }}</h3>
+                    <div class="text-sm">
+                        {{ __('Your payment is processed securely. Transaction details will be recorded for your reference.') }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons - Desktop -->
+            <div class="hidden md:flex justify-between">
+                <form method="POST"
+                    action="{{ payment_gateway_localized_url(route('payment-gateway.offline-confirm', ['order' => $paymentOrder->order_code])) }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">
+                        <x-heroicon-o-check-circle class="w-5 h-5" />
+                        {{ __('confirm_order') }}
+                    </button>
+                </form>
+
+                <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
+                    class="btn btn-outline">
+                    <x-heroicon-o-x-mark class="w-5 h-5" />
+                    {{ __('Cancel') }}
+                </a>
+            </div>
+
+            <!-- Action Buttons - Mobile (sticky footer) -->
+            <div class="md:hidden fixed bottom-0 start-0 end-0 bg-base-100 border-t border-base-300 px-4 py-3 flex justify-between items-center z-50">
+                <form method="POST"
+                    action="{{ payment_gateway_localized_url(route('payment-gateway.offline-confirm', ['order' => $paymentOrder->order_code])) }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">
+                        <x-heroicon-o-check-circle class="w-5 h-5" />
+                        {{ __('confirm_order') }}
+                    </button>
+                </form>
+
+                <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
+                    class="btn btn-outline">
+                    <x-heroicon-o-x-mark class="w-5 h-5" />
+                    {{ __('Cancel') }}
+                </a>
+            </div>
+            <!-- Spacer for mobile sticky footer -->
+            <div class="md:hidden h-16"></div>
         </div>
     </div>
 @endsection

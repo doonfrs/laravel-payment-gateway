@@ -8,8 +8,20 @@
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4">
-                    <h1 class="text-2xl font-bold">{{ __('payment_checkout') }}</h1>
-                    <p class="text-blue-100 mt-1">{{ __('complete_payment_securely') }}</p>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold">{{ __('payment_checkout') }}</h1>
+                            <p class="text-blue-100 mt-1">{{ __('complete_payment_securely') }}</p>
+                        </div>
+                        <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
+                            class="inline-flex items-center px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200 text-sm">
+                            <svg class="w-4 h-4 ltr:mr-1.5 rtl:ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            {{ __('cancel_payment') }}
+                        </a>
+                    </div>
                 </div>
 
                 <div class="p-6">
@@ -115,9 +127,7 @@
                             <div class="grid md:grid-cols-2 gap-4 mb-8">
                                 @forelse($paymentMethods as $method)
                                     <div class="payment-method-card border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-in-out"
-                                        data-method-id="{{ $method->id }}"
-                                        data-fee-percentage="{{ $method->fee_percentage ?? 0 }}"
-                                        data-fee-fixed="{{ $method->fee_fixed_amount ?? 0 }}">
+                                        data-method-id="{{ $method->id }}">
                                         <div class="text-center">
                                             @if ($method->logo_url)
                                                 <img src="{{ $method->logo_url }}"
@@ -137,9 +147,6 @@
                                             @endif
                                             <h3 class="font-semibold text-gray-900 mb-2">
                                                 {{ $method->getLocalizedDisplayName() }}</h3>
-                                            @if ($method->getLocalizedDescription())
-                                                <div class="text-sm text-gray-600">{!! $method->getLocalizedDescription() !!}</div>
-                                            @endif
                                             @if ($method->hasFee())
                                                 <p class="text-xs text-orange-600 mt-2">
                                                     {{ __('fee') }}: {{ $method->getFeeDescription($paymentOrder->currency) }}
@@ -173,36 +180,8 @@
                                 @endforelse
                             </div>
 
-                            @if ($paymentMethods->count() > 0)
-                                <div class="flex justify-center">
-                                    <button type="submit"
-                                        class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                                        id="proceed-btn" disabled>
-                                        <span class="flex items-center">
-                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                                                </path>
-                                            </svg>
-                                            {{ __('proceed_to_payment') }}
-                                        </span>
-                                    </button>
-                                </div>
-                            @endif
                         </form>
 
-                        <!-- Cancel Payment -->
-                        <div class="mt-6 text-center">
-                            <a href="{{ route('payment-gateway.cancel', ['order' => $paymentOrder->order_code]) }}"
-                                class="inline-flex items-center px-4 py-2 text-gray-600 hover:text-red-600 transition-colors duration-200">
-                                <svg class="w-4 h-4 ltr:mr-2 rtl:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                {{ __('cancel_payment') }}
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -215,65 +194,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             const paymentCards = document.querySelectorAll('.payment-method-card');
             const selectedMethodInput = document.getElementById('selected-method');
-            const proceedBtn = document.getElementById('proceed-btn');
-            const feeBreakdown = document.getElementById('fee-breakdown');
-            const feeAmountEl = document.getElementById('fee-amount');
-            const totalWithFeeEl = document.getElementById('total-with-fee');
-
-            const baseAmount = {{ $paymentOrder->amount }};
-            const currency = '{{ $paymentOrder->currency }}';
-
-            function calculateFee(feePercentage, feeFixed) {
-                let fee = 0;
-                if (feePercentage > 0) {
-                    fee += baseAmount * (feePercentage / 100);
-                }
-                if (feeFixed > 0) {
-                    fee += parseFloat(feeFixed);
-                }
-                return Math.round(fee * 100) / 100;
-            }
-
-            function formatAmount(amount) {
-                return amount.toFixed(2) + ' ' + currency;
-            }
-
-            function updateFeeDisplay(card) {
-                const feePercentage = parseFloat(card.getAttribute('data-fee-percentage')) || 0;
-                const feeFixed = parseFloat(card.getAttribute('data-fee-fixed')) || 0;
-
-                if (feePercentage > 0 || feeFixed > 0) {
-                    const fee = calculateFee(feePercentage, feeFixed);
-                    const total = baseAmount + fee;
-
-                    feeAmountEl.textContent = '+' + formatAmount(fee);
-                    totalWithFeeEl.textContent = formatAmount(total);
-                    feeBreakdown.classList.remove('hidden');
-                } else {
-                    feeBreakdown.classList.add('hidden');
-                }
-            }
+            const paymentForm = document.getElementById('payment-form');
 
             paymentCards.forEach(card => {
                 card.addEventListener('click', function() {
-                    // Remove selected class from all cards
-                    paymentCards.forEach(c => {
-                        c.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
-                    });
-
-                    // Add selected class to clicked card
-                    this.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
-
-                    // Set the selected method ID
-                    const methodId = this.getAttribute('data-method-id');
-                    selectedMethodInput.value = methodId;
-
-                    // Update fee display
-                    updateFeeDisplay(this);
-
-                    // Enable proceed button
-                    proceedBtn.disabled = false;
-                    proceedBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    // Set the selected method ID and submit
+                    selectedMethodInput.value = this.getAttribute('data-method-id');
+                    this.classList.add('ring-2', 'ring-blue-500', 'opacity-50', 'pointer-events-none');
+                    paymentForm.submit();
                 });
             });
         });
