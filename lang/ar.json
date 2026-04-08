@@ -214,5 +214,8 @@
     "Done": "تم",
     "Geidea": "جيديا",
     "Thawani": "ثواني",
-    "Offline Payment": "الدفع اليدوي"
+    "Offline Payment": "الدفع اليدوي",
+    "Change Payment Method": "تغيير طريقة الدفع",
+    "Secure Payment": "دفع آمن",
+    "Your payment is processed securely. Transaction details will be recorded for your reference.": "يتم معالجة دفعتك بأمان. سيتم تسجيل تفاصيل المعاملة للرجوع إليها."
 }
