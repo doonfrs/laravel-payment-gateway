@@ -53,8 +53,12 @@
 
         <!-- Payment Instructions -->
         @if ($description)
-            <div class="bg-base-100 rounded-xl shadow-sm p-5 mb-5">
-                <div class="text-base-content text-base leading-relaxed border-b-2 border-error pb-4">{!! $description !!}</div>
+            <div class="bg-warning/10 border border-warning/30 rounded-xl p-5 mb-5">
+                <div class="flex items-center gap-2 mb-2 text-base-content font-bold text-sm">
+                    <x-heroicon-o-exclamation-triangle class="w-5 h-5 shrink-0 text-warning" />
+                    {{ __('note') }}:
+                </div>
+                <div class="text-base-content text-base leading-relaxed">{!! $description !!}</div>
             </div>
         @endif
 

@@ -76,6 +76,7 @@
     "cash_on_delivery_payment": "الدفع اليدوي",
     "no_payment_required_now": "لا يلزم الدفع الآن",
     "confirm_order": "تأكيد الطلب",
+    "note": "ملاحظة",
     "Manual Payment": "الدفع اليدوي",
     "manual_payment_description": "إضافة الدفع اليدوي للحالات التي يتم فيها الدفع خارج عملية الشراء الإلكترونية. يعرض وصفاً للعملاء ويوفر زر تأكيد بسيط.",
     "payment_instructions_label": "تعليمات الدفع",

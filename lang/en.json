@@ -76,6 +76,7 @@
     "cash_on_delivery_payment": "Manual Payment",
     "no_payment_required_now": "No payment required now",
     "confirm_order": "Confirm Order",
+    "note": "Note",
     "Manual Payment": "Manual Payment",
     "manual_payment_description": "A manual payment plugin for scenarios where payment is handled outside the online checkout. Shows a description to customers and provides a simple confirmation button.",
     "payment_instructions_label": "Payment Instructions",
