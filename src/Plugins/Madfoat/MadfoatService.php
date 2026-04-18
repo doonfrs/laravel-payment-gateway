@@ -80,9 +80,16 @@ class MadfoatService
         $customerPhone = $orderData['customer_mobile'] ?? '';
         $createdAt = $orderData['created_at'] ?? now();
 
-        $billStatus = $isPaid ? 'Paid' : 'BillNew';
-        $dueAmount = $isPaid ? '0.000' : number_format($finalTotal, 3, '.', '');
+        // Madfoat sample shows BillStatus "BillNew" even when paid — we match their stated format.
+        $billStatus = 'BillNew';
+        $dueAmount = $isPaid ? '0' : number_format($finalTotal, 3, '.', '');
         $issueDate = $createdAt->format('Y-m-d\TH:i:s');
+
+        $billRecResult = $isPaid
+            ? ['ErrorCode' => 324, 'ErrorDesc' => 'Bill Has Been Paid Previously', 'Severity' => 'Error']
+            : ['ErrorCode' => 0, 'ErrorDesc' => 'Success', 'Severity' => 'Info'];
+
+        $pmtLowerUpper = $isPaid ? '0' : $dueAmount;
 
         return [
             'MFEP' => [
@@ -103,11 +110,7 @@ class MadfoatService
                     'RecCount' => 1,
                     'BillRec' => [
                         [
-                            'Result' => [
-                                'ErrorCode' => 0,
-                                'ErrorDesc' => 'Success',
-                                'Severity' => 'Info',
-                            ],
+                            'Result' => $billRecResult,
                             'AcctInfo' => [
                                 'BillingNo' => $billingNo,
                                 'BillNo' => $billNo ?: $billingNo,
@@ -120,14 +123,72 @@ class MadfoatService
                             'BillType' => 'OneOff',
                             'PmtConst' => [
                                 'AllowPart' => false,
-                                'Lower' => $isPaid ? '0.000' : $dueAmount,
-                                'Upper' => $isPaid ? '0.000' : $dueAmount,
+                                'Lower' => $pmtLowerUpper,
+                                'Upper' => $pmtLowerUpper,
                             ],
                             'AdditionalInfo' => [
                                 'CustName' => Str::limit($customerName, 150, ''),
                                 'FreeText' => 'Order #' . $billingNo,
                                 'Email' => $customerEmail,
                                 'Phone' => $customerPhone,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Build a bill-pull response for an invalid (not-found) billing number.
+     * Madfoat expects a populated BillRec with inner ErrorCode 408, not an empty array.
+     */
+    public function buildBillPullInvalidBillResponse(string $guid, string $billingNo, string $billNo = ''): array
+    {
+        $now = now()->format('Y-m-d\TH:i:s');
+
+        return [
+            'MFEP' => [
+                'MsgHeader' => [
+                    'TmStp' => $now,
+                    'GUID' => $guid,
+                    'TrsInf' => [
+                        'SdrCode' => (int) $this->billerCode,
+                        'ResTyp' => 'BILPULRS',
+                    ],
+                    'Result' => [
+                        'ErrorCode' => 0,
+                        'ErrorDesc' => 'Success',
+                        'Severity' => 'Info',
+                    ],
+                ],
+                'MsgBody' => [
+                    'RecCount' => 1,
+                    'BillRec' => [
+                        [
+                            'Result' => [
+                                'ErrorCode' => 408,
+                                'ErrorDesc' => 'Invalid Billing Number',
+                                'Severity' => 'Error',
+                            ],
+                            'AcctInfo' => [
+                                'BillingNo' => $billingNo,
+                                'BillNo' => $billNo ?: $billingNo,
+                            ],
+                            'BillStatus' => 'BillNew',
+                            'DueAmount' => '0',
+                            'IssueDate' => $now,
+                            'DueDate' => $now,
+                            'ServiceType' => $this->serviceType,
+                            'BillType' => 'OneOff',
+                            'PmtConst' => [
+                                'AllowPart' => false,
+                                'Lower' => '0',
+                                'Upper' => '0',
+                            ],
+                            'AdditionalInfo' => [
+                                'CustName' => 'NO CustName',
+                                'FreeText' => 'NO FreeText',
                             ],
                         ],
                     ],
@@ -243,7 +304,7 @@ class MadfoatService
     /**
      * Build prepaid validation response (BILRPREPADVALRS).
      */
-    public function buildPrepaidValidationResponse(string $guid, string $billingNo, string $dueAmt, string $validationCode, string $serviceType, int $errorCode = 0, string $errorDesc = 'Success', string $severity = 'Info'): array
+    public function buildPrepaidValidationResponse(string $guid, string $billingNo, string $dueAmt, string $validationCode, string $serviceType, int $errorCode = 0, string $errorDesc = 'Success', string $severity = 'Info', string $customerName = '', string $freeText = ''): array
     {
         return [
             'MFEP' => [
@@ -269,12 +330,16 @@ class MadfoatService
                         ],
                         'AcctInfo' => [
                             'BillingNo' => $billingNo,
-                            'BillerCode' => $this->billerCode,
+                            'BillerCode' => (int) $this->billerCode,
                         ],
                         'DueAmt' => $dueAmt,
                         'ValidationCode' => $validationCode,
                         'ServiceTypeDetails' => [
                             'ServiceType' => $serviceType,
+                        ],
+                        'AdditionalInfo' => [
+                            'CustName' => $customerName !== '' ? Str::limit($customerName, 150, '') : '-----------',
+                            'FreeText' => $freeText !== '' ? $freeText : '-----------',
                         ],
                     ],
                 ],

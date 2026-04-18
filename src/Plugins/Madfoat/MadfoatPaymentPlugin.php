@@ -207,8 +207,9 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         $order = $orderClass::find($orderId);
 
         if (! $order) {
-            $response = $service->buildBillPullErrorResponse($guid, 1, 'Bill not found');
-            $service->log('Bill pull: order not found', ['billing_no' => $billingNo, 'order_id' => $orderId]);
+            $billNo = $data['MFEP']['MsgBody']['AcctInfo']['BillNo'] ?? '';
+            $response = $service->buildBillPullInvalidBillResponse($guid, $billingNo, $billNo);
+            $service->log('Bill pull: invalid billing number', ['billing_no' => $billingNo, 'order_id' => $orderId]);
 
             return response()->json($response);
         }
@@ -340,6 +341,7 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         }
 
         $dueAmt = number_format($order->final_total ?? $order->amount ?? 0, 3, '.', '');
+        $customerName = $order->customer_name ?? '';
 
         $response = $service->buildPrepaidValidationResponse(
             guid: $guid,
@@ -347,6 +349,8 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
             dueAmt: $dueAmt,
             validationCode: $validationCode,
             serviceType: $this->paymentMethod->getSetting('service_type', ''),
+            customerName: $customerName,
+            freeText: 'Order #' . $billingNo,
         );
 
         $service->log('Prepaid validation success', ['billing_no' => $billingNo, 'due_amt' => $dueAmt]);
