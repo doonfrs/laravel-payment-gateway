@@ -5,6 +5,7 @@ namespace Trinavo\PaymentGateway\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
+use Trinavo\PaymentGateway\Models\PaymentGatewayInboundRequest;
 use Trinavo\PaymentGateway\Models\PaymentMethod;
 use Trinavo\PaymentGateway\Services\PaymentGatewayService;
 
@@ -347,7 +348,43 @@ class PaymentController extends Controller
             'data' => $request->all(),
         ]);
 
-        return $pluginInstance->handleInboundRequest($action, $request->all());
+        $inboundRecord = PaymentGatewayInboundRequest::create([
+            'plugin' => $plugin,
+            'action' => $action,
+            'payload' => $request->all(),
+            'headers' => [
+                'user-agent' => $request->userAgent(),
+                'content-type' => $request->header('content-type'),
+                'authorization' => $request->hasHeader('authorization') ? '[present]' : null,
+                'x-forwarded-for' => $request->header('x-forwarded-for'),
+            ],
+            'ip_address' => $request->ip(),
+        ]);
+
+        $request->attributes->set('inbound_request_record', $inboundRecord);
+
+        try {
+            $response = $pluginInstance->handleInboundRequest($action, $request->all());
+        } catch (\Throwable $e) {
+            $inboundRecord->update([
+                'response_status' => 500,
+                'handler_exception' => (string) $e,
+            ]);
+            report($e);
+            throw $e;
+        }
+
+        $responseBody = null;
+        if (method_exists($response, 'getData')) {
+            $responseBody = $response->getData(true);
+        }
+
+        $inboundRecord->update([
+            'response_status' => method_exists($response, 'getStatusCode') ? $response->getStatusCode() : null,
+            'response_body' => $responseBody,
+        ]);
+
+        return $response;
     }
 
     /**

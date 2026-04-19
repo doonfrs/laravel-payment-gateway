@@ -226,6 +226,8 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         $response = $service->buildBillPullResponse($data, $order, $orderData);
         $service->log('Bill pull success', ['billing_no' => $billingNo, 'response' => $response]);
 
+        $this->attachInboundRequestToPaymentOrder($this->findPaymentOrderByAppOrderId($orderId)?->id);
+
         return response()->json($response);
     }
 
@@ -268,7 +270,7 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
             $order->save();
 
             // Also try to update the PaymentOrder if one exists
-            $this->markPaymentOrderCompleted($orderId, $joebppsTrx, $data);
+            $paymentOrder = $this->markPaymentOrderCompleted($orderId, $joebppsTrx, $data);
 
             $service->log('Payment notification: order marked as paid', [
                 'order_id' => $orderId,
@@ -276,11 +278,15 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
                 'joebpps_trx' => $joebppsTrx,
             ]);
         } else {
+            $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
+
             $service->log('Payment notification: order already paid (idempotent)', [
                 'order_id' => $orderId,
                 'joebpps_trx' => $joebppsTrx,
             ]);
         }
+
+        $this->attachInboundRequestToPaymentOrder($paymentOrder?->id);
 
         $response = $service->buildPaymentNotificationResponse($guid, $joebppsTrx, $processDate, $stmtDate);
 
@@ -421,26 +427,46 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
     }
 
     /**
-     * Try to mark the corresponding PaymentOrder as completed.
+     * Resolve the PaymentOrder linked to the app-level order id (matched via customer_data->order_id).
      */
-    protected function markPaymentOrderCompleted(int $orderId, string $transactionId, array $mfepData): void
+    protected function findPaymentOrderByAppOrderId(int $orderId): ?PaymentOrder
     {
-        $paymentOrder = PaymentOrder::where('status', 'pending')
-            ->whereJsonContains('customer_data->order_id', $orderId)
+        return PaymentOrder::whereJsonContains('customer_data->order_id', $orderId)
+            ->orWhereJsonContains('customer_data->order_id', (string) $orderId)
             ->first();
+    }
 
-        if (! $paymentOrder) {
-            // Also try with string version of order_id
-            $paymentOrder = PaymentOrder::where('status', 'pending')
-                ->whereJsonContains('customer_data->order_id', (string) $orderId)
-                ->first();
-        }
+    /**
+     * Try to mark the corresponding PaymentOrder as completed.
+     * Returns the resolved PaymentOrder (or null if not found).
+     */
+    protected function markPaymentOrderCompleted(int $orderId, string $transactionId, array $mfepData): ?PaymentOrder
+    {
+        $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
 
-        if ($paymentOrder) {
+        if ($paymentOrder && $paymentOrder->isPending()) {
             $paymentOrder->markAsCompleted([
                 'transaction_id' => $transactionId,
                 'madfoat_data' => $mfepData['MFEP']['MsgBody']['BillingInfo'] ?? [],
             ]);
+        }
+
+        return $paymentOrder;
+    }
+
+    /**
+     * Attach the resolved PaymentOrder id to the current inbound request audit row, if any.
+     */
+    protected function attachInboundRequestToPaymentOrder(?int $paymentOrderId): void
+    {
+        if (! $paymentOrderId) {
+            return;
+        }
+
+        $record = request()->attributes->get('inbound_request_record');
+
+        if ($record instanceof \Trinavo\PaymentGateway\Models\PaymentGatewayInboundRequest) {
+            $record->update(['payment_order_id' => $paymentOrderId]);
         }
     }
 }

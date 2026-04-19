@@ -4,6 +4,7 @@ namespace Trinavo\PaymentGateway\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
@@ -31,6 +32,7 @@ use Illuminate\Support\Str;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Trinavo\PaymentGateway\Models\PaymentMethod|null $paymentMethod
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Trinavo\PaymentGateway\Models\PaymentGatewayInboundRequest> $inboundRequests
  * @property-read string $formatted_amount
  */
 class PaymentOrder extends Model
@@ -94,6 +96,11 @@ class PaymentOrder extends Model
     public function paymentMethod(): BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class);
+    }
+
+    public function inboundRequests(): HasMany
+    {
+        return $this->hasMany(PaymentGatewayInboundRequest::class);
     }
 
     public function isPending(): bool
