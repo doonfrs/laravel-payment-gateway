@@ -51,17 +51,44 @@ class GeideaPaymentPlugin extends PaymentPluginInterface
     {
         return [
             new TextField(
-                name: 'public_key',
-                label: 'Merchant Public Key',
+                name: 'public_key_test',
+                label: 'Merchant Public Key (Test)',
                 required: true,
                 encrypted: true,
-                description: 'Your Geidea merchant public key (used as username for API authentication).'
+                description: 'Your Geidea test merchant public key (used as username for API authentication in test mode).'
             ),
             new PasswordField(
-                name: 'api_password',
-                label: 'API Password',
+                name: 'api_password_test',
+                label: 'API Password (Test)',
                 required: true,
-                description: 'Your Geidea API password (used as password for API authentication).'
+                description: 'Your Geidea test API password (used as password for API authentication in test mode).'
+            ),
+            new TextField(
+                name: 'mid_test',
+                label: 'MID (Test)',
+                required: false,
+                encrypted: false,
+                description: 'Your Geidea test Merchant ID (stored for reference).'
+            ),
+            new TextField(
+                name: 'public_key_live',
+                label: 'Merchant Public Key (Live)',
+                required: false,
+                encrypted: true,
+                description: 'Your Geidea live merchant public key (used as username for API authentication in live mode).'
+            ),
+            new PasswordField(
+                name: 'api_password_live',
+                label: 'API Password (Live)',
+                required: false,
+                description: 'Your Geidea live API password (used as password for API authentication in live mode).'
+            ),
+            new TextField(
+                name: 'mid_live',
+                label: 'MID (Live)',
+                required: false,
+                encrypted: false,
+                description: 'Your Geidea live Merchant ID (stored for reference).'
             ),
             new SelectField(
                 name: 'region',
@@ -86,8 +113,15 @@ class GeideaPaymentPlugin extends PaymentPluginInterface
 
     public function validateConfiguration(): bool
     {
-        return ! empty($this->paymentMethod->getSetting('public_key'))
-            && ! empty($this->paymentMethod->getSetting('api_password'));
+        $testMode = $this->paymentMethod->getSetting('test_mode', true);
+
+        if ($testMode) {
+            return ! empty($this->paymentMethod->getSetting('public_key_test'))
+                && ! empty($this->paymentMethod->getSetting('api_password_test'));
+        }
+
+        return ! empty($this->paymentMethod->getSetting('public_key_live'))
+            && ! empty($this->paymentMethod->getSetting('api_password_live'));
     }
 
     public function processPayment(PaymentOrder $paymentOrder)
@@ -103,8 +137,8 @@ class GeideaPaymentPlugin extends PaymentPluginInterface
         }
 
         try {
-            $publicKey = $this->paymentMethod->getSetting('public_key');
-            $apiPassword = $this->paymentMethod->getSetting('api_password');
+            $publicKey = $this->getPublicKey();
+            $apiPassword = $this->getApiPassword();
 
             if (empty($publicKey) || empty($apiPassword)) {
                 throw new \Exception('Geidea credentials are not configured.');
@@ -214,8 +248,8 @@ class GeideaPaymentPlugin extends PaymentPluginInterface
         $orderCode = $merchantReferenceId ?? 'unknown';
 
         try {
-            $publicKey = $this->paymentMethod->getSetting('public_key');
-            $apiPassword = $this->paymentMethod->getSetting('api_password');
+            $publicKey = $this->getPublicKey();
+            $apiPassword = $this->getApiPassword();
 
             if ($orderId) {
                 $baseUrl = $this->getApiBaseUrl();
@@ -305,8 +339,8 @@ class GeideaPaymentPlugin extends PaymentPluginInterface
         }
 
         try {
-            $publicKey = $this->paymentMethod->getSetting('public_key');
-            $apiPassword = $this->paymentMethod->getSetting('api_password');
+            $publicKey = $this->getPublicKey();
+            $apiPassword = $this->getApiPassword();
             $baseUrl = $this->getApiBaseUrl();
 
             $response = Http::withBasicAuth($publicKey, $apiPassword)
@@ -355,6 +389,36 @@ class GeideaPaymentPlugin extends PaymentPluginInterface
                 message: 'Error processing Geidea refund'
             );
         }
+    }
+
+    private function getPublicKey(): string
+    {
+        $testMode = $this->paymentMethod->getSetting('test_mode', true);
+
+        return (string) $this->paymentMethod->getSetting(
+            $testMode ? 'public_key_test' : 'public_key_live',
+            ''
+        );
+    }
+
+    private function getApiPassword(): string
+    {
+        $testMode = $this->paymentMethod->getSetting('test_mode', true);
+
+        return (string) $this->paymentMethod->getSetting(
+            $testMode ? 'api_password_test' : 'api_password_live',
+            ''
+        );
+    }
+
+    private function getMid(): string
+    {
+        $testMode = $this->paymentMethod->getSetting('test_mode', true);
+
+        return (string) $this->paymentMethod->getSetting(
+            $testMode ? 'mid_test' : 'mid_live',
+            ''
+        );
     }
 
     private function getApiBaseUrl(): string
