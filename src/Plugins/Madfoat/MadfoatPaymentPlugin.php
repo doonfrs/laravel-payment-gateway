@@ -23,6 +23,11 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         return 'https://www.madfoo3at.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['JO'];
+    }
+
     public function getName(): string
     {
         return 'Madfoat (eFAWATEERcom)';

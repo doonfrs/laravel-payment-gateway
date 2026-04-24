@@ -25,6 +25,11 @@ class KashierPaymentPlugin extends PaymentPluginInterface
         return 'https://kashier.io';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['EG', 'SA', 'AE'];
+    }
+
     public function getName(): string
     {
         return __('Kashier');

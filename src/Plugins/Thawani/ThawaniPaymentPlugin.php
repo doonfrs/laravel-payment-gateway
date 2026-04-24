@@ -32,6 +32,11 @@ class ThawaniPaymentPlugin extends PaymentPluginInterface
         return 'https://thawani.om';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['OM'];
+    }
+
     public function getName(): string
     {
         return __('Thawani');

@@ -37,6 +37,11 @@ class GeideaPaymentPlugin extends PaymentPluginInterface
         return 'https://geidea.net';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['SA', 'EG', 'AE'];
+    }
+
     public function getName(): string
     {
         return __('Geidea');

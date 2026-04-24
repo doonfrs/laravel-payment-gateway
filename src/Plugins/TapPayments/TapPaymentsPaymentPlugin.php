@@ -25,6 +25,11 @@ class TapPaymentsPaymentPlugin extends PaymentPluginInterface
         return 'https://tap.company';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['SA', 'AE', 'KW', 'BH', 'QA', 'OM', 'EG', 'JO'];
+    }
+
     public function getName(): string
     {
         return __('Tap Payments');

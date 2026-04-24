@@ -36,6 +36,11 @@ class MyFatoorahPaymentPlugin extends PaymentPluginInterface
         return 'https://myfatoorah.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['KW', 'SA', 'AE', 'QA', 'BH', 'OM', 'JO', 'EG'];
+    }
+
     public function getName(): string
     {
         return __('MyFatoorah');

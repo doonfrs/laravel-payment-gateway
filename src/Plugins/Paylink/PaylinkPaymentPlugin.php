@@ -28,6 +28,11 @@ class PaylinkPaymentPlugin extends PaymentPluginInterface
         return 'https://paylink.sa';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['SA'];
+    }
+
     public function getName(): string
     {
         return __('Paylink');

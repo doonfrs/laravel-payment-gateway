@@ -23,6 +23,11 @@ class PaymobPaymentPlugin extends PaymentPluginInterface
         return 'https://paymob.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['EG', 'SA', 'OM', 'AE', 'PK'];
+    }
+
     public function getName(): string
     {
         return __('Paymob');

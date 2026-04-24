@@ -23,6 +23,11 @@ class PayTabsPaymentPlugin extends PaymentPluginInterface
         return 'https://site.paytabs.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['SA', 'AE', 'EG', 'OM', 'JO', 'KW', 'IQ', 'GB'];
+    }
+
     public function getName(): string
     {
         return __('PayTabs');

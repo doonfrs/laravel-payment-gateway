@@ -22,6 +22,11 @@ class TamaraPaymentPlugin extends PaymentPluginInterface
         return 'https://tamara.co';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['SA', 'AE', 'KW', 'BH'];
+    }
+
     public function getName(): string
     {
         return __('Tamara');

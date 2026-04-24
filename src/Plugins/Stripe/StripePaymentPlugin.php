@@ -34,6 +34,16 @@ class StripePaymentPlugin extends PaymentPluginInterface
         return 'https://stripe.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return [
+            'US', 'CA', 'GB', 'AU', 'NZ', 'SG', 'HK', 'JP', 'MY', 'TH', 'IN', 'AE',
+            'IE', 'DE', 'FR', 'ES', 'IT', 'NL', 'BE', 'PT', 'AT', 'FI', 'SE', 'DK',
+            'NO', 'CH', 'PL', 'CZ', 'GR', 'LU', 'EE', 'LV', 'LT', 'SI', 'SK', 'HU',
+            'RO', 'BG', 'HR', 'CY', 'MT', 'BR', 'MX',
+        ];
+    }
+
     public function getName(): string
     {
         return __('Stripe');

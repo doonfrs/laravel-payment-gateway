@@ -10,7 +10,7 @@ class OfflinePaymentPlugin extends PaymentPluginInterface
 {
     public static function getLogoUrl(): string
     {
-        return asset('vendor/payment-gateway/imgs/offline.png');
+        return asset('vendor/payment-gateway/imgs/offline.svg');
     }
 
     public function getName(): string

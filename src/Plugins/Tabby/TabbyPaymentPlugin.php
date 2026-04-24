@@ -23,6 +23,11 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
         return 'https://tabby.ai';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['SA', 'AE', 'KW', 'BH', 'QA'];
+    }
+
     public function getName(): string
     {
         return __('Tabby');

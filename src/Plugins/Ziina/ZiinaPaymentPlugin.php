@@ -29,6 +29,11 @@ class ZiinaPaymentPlugin extends PaymentPluginInterface
         return 'https://ziina.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['AE'];
+    }
+
     public function getName(): string
     {
         return __('Ziina');

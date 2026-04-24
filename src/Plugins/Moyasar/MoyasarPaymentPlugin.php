@@ -20,6 +20,11 @@ class MoyasarPaymentPlugin extends PaymentPluginInterface
         return 'https://moyasar.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['SA'];
+    }
+
     public function getName(): string
     {
         return __('Moyasar');

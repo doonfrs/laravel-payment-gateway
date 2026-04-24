@@ -22,6 +22,11 @@ class AlawnehPayPaymentPlugin extends PaymentPluginInterface
         return 'https://alawnehpay.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['JO'];
+    }
+
     public function getName(): string
     {
         return __('Alawneh Pay');

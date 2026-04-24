@@ -27,6 +27,11 @@ class FawryPaymentPlugin extends PaymentPluginInterface
         return 'https://www.fawry.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['EG'];
+    }
+
     public function getName(): string
     {
         return __('Fawry');

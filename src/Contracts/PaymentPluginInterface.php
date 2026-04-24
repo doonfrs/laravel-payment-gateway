@@ -35,6 +35,15 @@ abstract class PaymentPluginInterface
     }
 
     /**
+     * ISO 3166-1 alpha-2 country codes where this provider officially operates.
+     * Return an empty array only for manual/internal methods (Offline, Dummy, UserWallet).
+     */
+    public static function getSupportedCountries(): array
+    {
+        return [];
+    }
+
+    /**
      * Get the plugin name
      */
     abstract public function getName(): string;

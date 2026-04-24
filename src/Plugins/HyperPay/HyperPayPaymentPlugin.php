@@ -22,6 +22,11 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
         return 'https://www.hyperpay.com';
     }
 
+    public static function getSupportedCountries(): array
+    {
+        return ['SA', 'AE', 'OM', 'JO', 'LB', 'BH', 'QA'];
+    }
+
     public function getName(): string
     {
         return __('HyperPay');
