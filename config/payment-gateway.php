@@ -33,6 +33,7 @@ return [
         \Trinavo\PaymentGateway\Plugins\TapPayments\TapPaymentsPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Fawry\FawryPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\MyFatoorah\MyFatoorahPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\Stripe\StripePaymentPlugin::class,
 
         // Add your custom payment plugins here
         // \App\PaymentPlugins\StripePaymentPlugin::class,
