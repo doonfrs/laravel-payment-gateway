@@ -111,16 +111,35 @@ class MamopayPaymentPlugin extends PaymentPluginInterface
 
         $body = $this->buildLinkPayload($paymentOrder);
 
+        Log::info('Mamopay processPayment start', [
+            'order_code' => $paymentOrder->order_code,
+            'amount' => $paymentOrder->amount,
+            'currency' => $paymentOrder->currency,
+            'test_mode' => $this->isTestMode(),
+            'customer_email' => $paymentOrder->customer_email,
+            'request_body' => $body,
+        ]);
+
         try {
             $response = Http::withToken($this->getApiKey())
                 ->acceptJson()
                 ->asJson()
                 ->post($this->getBaseUrl().'/links', $body);
         } catch (\Throwable $e) {
+            Log::error('Mamopay create-link HTTP exception', [
+                'order_code' => $paymentOrder->order_code,
+                'exception' => $e->getMessage(),
+            ]);
             report($e);
 
             return $this->errorView($paymentOrder);
         }
+
+        Log::info('Mamopay create-link response', [
+            'order_code' => $paymentOrder->order_code,
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
 
         if (! $response->successful()) {
             Log::error('Mamopay create-link request failed', [
@@ -149,11 +168,22 @@ class MamopayPaymentPlugin extends PaymentPluginInterface
             $paymentOrder->update(['external_transaction_id' => $linkId]);
         }
 
+        Log::info('Mamopay redirecting customer to payment_url', [
+            'order_code' => $paymentOrder->order_code,
+            'payment_link_id' => $linkId,
+            'payment_url' => $paymentUrl,
+        ]);
+
         return redirect()->away($paymentUrl);
     }
 
     public function handleCallback(array $callbackData): CallbackResponse
     {
+        Log::info('Mamopay callback received', [
+            'callback_keys' => array_keys($callbackData),
+            'callback' => $callbackData,
+        ]);
+
         $orderCode = $callbackData['order_code']
             ?? ($callbackData['custom_data']['order_code'] ?? null);
         $transactionId = $callbackData['transactionId'] ?? $callbackData['transaction_id'] ?? null;
@@ -181,10 +211,22 @@ class MamopayPaymentPlugin extends PaymentPluginInterface
                 ->acceptJson()
                 ->get($this->getBaseUrl().'/charges/'.$transactionId);
         } catch (\Throwable $e) {
+            Log::error('Mamopay charge verification HTTP exception', [
+                'order_code' => $orderCode,
+                'transaction_id' => $transactionId,
+                'exception' => $e->getMessage(),
+            ]);
             report($e);
 
             return CallbackResponse::pending($orderCode, $transactionId, __('Payment verification deferred'));
         }
+
+        Log::info('Mamopay charge verification response', [
+            'order_code' => $orderCode,
+            'transaction_id' => $transactionId,
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
 
         if (! $response->successful()) {
             Log::error('Mamopay charges/{id} verification failed', [
@@ -247,7 +289,20 @@ class MamopayPaymentPlugin extends PaymentPluginInterface
 
     public function handleInboundRequest(string $action, array $data): JsonResponse
     {
+        Log::info('Mamopay inbound request received', [
+            'action' => $action,
+            'event_type' => $data['event_type'] ?? null,
+            'status' => $data['status'] ?? null,
+            'charge_id' => $data['id'] ?? null,
+            'external_id' => $data['external_id'] ?? null,
+            'payment_link_id' => $data['payment_link_id'] ?? null,
+            'header_names' => array_keys(request()->headers->all()),
+            'body' => $data,
+        ]);
+
         if ($action !== 'webhook') {
+            Log::warning('Mamopay inbound request: unknown action', ['action' => $action]);
+
             return response()->json(['error' => 'Unknown action'], 404);
         }
 
@@ -291,6 +346,7 @@ class MamopayPaymentPlugin extends PaymentPluginInterface
         }
 
         $audit = $this->extractAuditData($data);
+        $statusBefore = $order->status;
 
         switch ($eventType) {
             case 'charge.succeeded':
@@ -316,6 +372,14 @@ class MamopayPaymentPlugin extends PaymentPluginInterface
                 }
                 break;
         }
+
+        Log::info('Mamopay webhook: processed', [
+            'order_code' => $order->order_code,
+            'event_type' => $eventType,
+            'status_before' => $statusBefore,
+            'status_after' => $order->fresh()->status,
+            'refunded' => $order->fresh()->isRefunded(),
+        ]);
 
         return response()->json(['received' => true]);
     }
