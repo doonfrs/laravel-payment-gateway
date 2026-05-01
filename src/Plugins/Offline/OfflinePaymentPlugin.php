@@ -57,6 +57,22 @@ class OfflinePaymentPlugin extends PaymentPluginInterface
             );
         }
 
+        // before_submit validation: this plugin commits the order without
+        // an external gateway, so this is the host app's last chance to
+        // veto (e.g. cart-changed). The package's callback handler forwards
+        // the message to failure_url via session flash.
+        $paymentOrder = \Trinavo\PaymentGateway\Models\PaymentOrder::where('order_code', $orderCode)->first();
+        if ($paymentOrder) {
+            $validation = app(\Trinavo\PaymentGateway\Services\PaymentGatewayService::class)
+                ->runValidation($paymentOrder, 'before_submit');
+
+            if ($validation !== true) {
+                $message = is_string($validation) ? $validation : __('Payment validation failed. Please review your order and try again.');
+
+                return \Trinavo\PaymentGateway\Models\CallbackResponse::cancelled($orderCode, $message);
+            }
+        }
+
         // For offline payments, we always return success when callback is triggered
         return \Trinavo\PaymentGateway\Models\CallbackResponse::success(
             orderCode: $orderCode,

@@ -177,6 +177,14 @@ class PaymentController extends Controller
 
                 if ($isCancelled) {
                     $this->paymentGateway->handlePaymentCancellation($paymentOrder, $result);
+
+                    // Surface the plugin's cancellation message to the host app's
+                    // failure_url page (e.g. /cart). The plugin sets this when a
+                    // before_submit validation rejects the payment. Reflash in
+                    // failure() carries it through the redirect chain.
+                    if (! empty($result['message'])) {
+                        session()->flash('payment_validation_message', $result['message']);
+                    }
                 } else {
                     $this->paymentGateway->handlePaymentFailure($paymentOrder, $result);
                 }
@@ -216,8 +224,12 @@ class PaymentController extends Controller
             abort(404, 'Payment order not found');
         }
 
-        // If cancelled, redirect immediately - never show failure page for cancellations
+        // If cancelled, redirect immediately - never show failure page for cancellations.
+        // Reflash so any flash (e.g. payment_validation_message set by an internal
+        // plugin's before_submit hook) survives the second hop to failure_url.
         if ($paymentOrder->status === 'cancelled') {
+            session()->reflash();
+
             return redirect($paymentOrder->failure_url ?? '/');
         }
 

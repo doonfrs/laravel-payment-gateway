@@ -8,18 +8,32 @@
         $redirectUrl = $successRedirect === 'home' ? '/' : ($paymentOrder->success_url ?? '/');
     @endphp
 
+    @php
+        $gatewayNotice = session('payment_gateway_notice');
+    @endphp
+
     <div class="container mx-auto max-w-lg px-4 py-6 md:py-10">
 
-        <!-- Success Icon + Message -->
-        <div class="text-center mb-5">
-            <div class="w-14 h-14 bg-success/15 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg class="w-7 h-7 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+        @if ($gatewayNotice)
+            <div role="alert" class="alert alert-info mb-4 flex items-start gap-3 shadow-sm">
+                <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
+                <span>{{ $gatewayNotice }}</span>
             </div>
-            <h1 class="text-xl font-bold text-base-content">{{ __('payment_successful') }}</h1>
-            <p class="text-sm text-base-content/50 mt-1">{{ __('transaction_completed_successfully') }}</p>
-        </div>
+        @else
+            <!-- Success Icon + Message (hidden on duplicate-confirm so we don't double-celebrate) -->
+            <div class="text-center mb-5">
+                <div class="w-14 h-14 bg-success/15 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-7 h-7 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold text-base-content">{{ __('payment_successful') }}</h1>
+                <p class="text-sm text-base-content/50 mt-1">{{ __('transaction_completed_successfully') }}</p>
+            </div>
+        @endif
 
         <!-- Order Details -->
         <div class="bg-base-100 rounded-xl shadow-sm p-4 mb-4">
