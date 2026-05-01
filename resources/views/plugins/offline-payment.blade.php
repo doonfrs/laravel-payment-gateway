@@ -69,6 +69,98 @@
             </div>
         @endif
 
+        @php
+            $shopOrderId = is_array($paymentOrder->customer_data ?? null)
+                ? ($paymentOrder->customer_data['order_id'] ?? null)
+                : null;
+            $shopOrder = null;
+            if ($shopOrderId && class_exists(\App\Models\Order::class)) {
+                $shopOrder = \App\Models\Order::with(['orderItems', 'orderPayments' => fn ($q) => $q->whereNotNull('attachment')])
+                    ->find($shopOrderId);
+            }
+            $linkedItems = $shopOrder
+                ? $shopOrder->orderItems->filter(fn ($oi) => filled($oi->snapshotGet('item.payment_link')))
+                : collect();
+            $existingReceipt = $shopOrder
+                ? optional($shopOrder->orderPayments->firstWhere(fn ($p) => filled($p->attachment)))->attachment
+                : null;
+            $existingReceiptIsPdf = $existingReceipt
+                ? \Illuminate\Support\Str::endsWith(strtolower($existingReceipt), '.pdf')
+                : false;
+            $existingReceiptUrl = $existingReceipt
+                ? \Illuminate\Support\Facades\Storage::disk('public')->url($existingReceipt)
+                : null;
+        @endphp
+
+        @if ($linkedItems->isNotEmpty())
+            <div class="bg-base-100 rounded-xl shadow-sm p-5 mb-5">
+                <div class="font-bold text-sm mb-3">{{ __('Pay per product') }}</div>
+                <ul class="space-y-2">
+                    @foreach ($linkedItems as $oi)
+                        <li class="flex items-center justify-between gap-3">
+                            <span class="truncate text-sm">{{ $oi->display_name }} × {{ format_number($oi->count) }}</span>
+                            <a href="{{ $oi->snapshotGet('item.payment_link') }}"
+                                target="_blank" rel="noopener"
+                                class="btn btn-primary btn-sm">
+                                <x-heroicon-o-arrow-top-right-on-square class="w-4 h-4" />
+                                {{ __('Pay') }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if ($shopOrder && ($paymentMethod?->require_receipt ?? false))
+            <div class="bg-base-100 rounded-xl shadow-sm p-5 mb-5">
+                <div class="font-bold text-sm mb-3">{{ __('Upload payment proof') }}</div>
+
+                @if ($existingReceiptUrl)
+                    <div class="flex items-center gap-3 mb-3">
+                        @if ($existingReceiptIsPdf)
+                            <a href="{{ $existingReceiptUrl }}" target="_blank" rel="noopener"
+                                class="inline-flex items-center gap-2 text-primary">
+                                <x-heroicon-o-document-arrow-down class="w-6 h-6" />
+                                <span class="text-sm">{{ __('Open receipt') }}</span>
+                            </a>
+                        @else
+                            <img src="{{ $existingReceiptUrl }}" alt="{{ __('Payment receipt') }}"
+                                class="h-16 w-16 rounded-sm object-cover" />
+                        @endif
+                        <span class="text-sm text-base-content/60">{{ __('Receipt uploaded') }}</span>
+                    </div>
+                @endif
+
+                @if (session('success'))
+                    <div class="alert alert-success mb-3 text-sm">{{ session('success') }}</div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="alert alert-error mb-3 text-sm">
+                        @foreach ($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                @endif
+
+                <form method="POST"
+                    action="{{ url('/payment/offline/' . $paymentOrder->order_code . '/receipt') }}"
+                    enctype="multipart/form-data" class="space-y-3">
+                    @csrf
+                    <input type="file" name="payment_receipt"
+                        accept="image/*,application/pdf"
+                        class="file-input file-input-bordered w-full" required />
+                    <p class="text-xs text-base-content/60">
+                        {{ __('Image or PDF, up to 5 MB.') }}
+                    </p>
+                    <button type="submit" class="btn btn-secondary btn-sm">
+                        <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+                        {{ $existingReceiptUrl ? __('Replace receipt') : __('Upload payment proof') }}
+                    </button>
+                </form>
+            </div>
+        @endif
+
         <!-- Action Buttons - Desktop -->
         <div class="hidden md:flex justify-between items-center mt-8">
             <form method="POST"
