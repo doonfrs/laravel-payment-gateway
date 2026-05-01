@@ -242,5 +242,6 @@
     "Try Again": "Try Again",
     "Done": "Done",
     "ok": "Ok",
-    "date": "Date"
+    "date": "Date",
+    "Payment validation failed. Please review your order and try again.": "Payment validation failed. Please review your order and try again."
 }

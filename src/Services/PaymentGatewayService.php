@@ -43,7 +43,8 @@ class PaymentGatewayService
         ?string $customerPhone = null, ?array $customerData = null,
         ?string $description = null, ?string $successCallback = null,
         ?string $failureCallback = null, ?string $successUrl = null,
-        ?string $failureUrl = null, ?array $ignoredPlugins = null): PaymentOrder
+        ?string $failureUrl = null, ?array $ignoredPlugins = null,
+        ?string $validationCallback = null): PaymentOrder
     {
         $paymentOrder = PaymentOrder::create([
             'amount' => $amount,
@@ -56,6 +57,7 @@ class PaymentGatewayService
             'description' => $description,
             'success_callback' => $successCallback,
             'failure_callback' => $failureCallback,
+            'validation_callback' => $validationCallback,
             'success_url' => $successUrl,
             'failure_url' => $failureUrl,
             'ignored_plugins' => $ignoredPlugins,
@@ -196,6 +198,49 @@ class PaymentGatewayService
         }
         eval($callback);
 
+    }
+
+    /**
+     * Run the optional validation callback on a payment order.
+     *
+     * The callback returns true to proceed, or a string message to block payment.
+     * Triggers identify the moment in the funnel:
+     *   - 'method_selected'  → fired by the package after the user picks a method
+     *                          on the checkout page, before invoking the plugin's
+     *                          processPayment().
+     *   - 'before_submit'    → fired by an internal plugin from inside its
+     *                          handleCallback(), right before committing money.
+     *
+     * Callbacks have $paymentOrder, $order (alias) and $context (['trigger' => ...])
+     * available in scope. Return value is captured via eval('return ...;').
+     *
+     * @return true|string  true when validation passes, a non-empty string message when it fails.
+     */
+    public function runValidation(PaymentOrder $paymentOrder, string $trigger = 'method_selected'): bool|string
+    {
+        if (empty($paymentOrder->validation_callback)) {
+            return true;
+        }
+
+        $order = $paymentOrder;
+        $context = ['trigger' => $trigger];
+
+        $expression = rtrim(trim($paymentOrder->validation_callback), ';');
+
+        $result = eval('return '.$expression.';');
+
+        if ($result === true) {
+            return true;
+        }
+
+        if (is_string($result) && $result !== '') {
+            return $result;
+        }
+
+        // Anything else (false, null, empty string, non-scalar) is treated as a
+        // generic block to fail safely. The shop's callback should return a
+        // localized message; this fallback is just to make eval misuse loud.
+        return __('Payment validation failed. Please review your order and try again.');
     }
 
     /**

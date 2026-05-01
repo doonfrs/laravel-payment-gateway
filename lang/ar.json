@@ -248,5 +248,6 @@
     "Secure Payment": "دفع آمن",
     "Your payment is processed securely. Transaction details will be recorded for your reference.": "يتم معالجة دفعتك بأمان. سيتم تسجيل تفاصيل المعاملة للرجوع إليها.",
     "ok": "موافق",
-    "date": "التاريخ"
+    "date": "التاريخ",
+    "Payment validation failed. Please review your order and try again.": "تعذر التحقق من الدفع. يرجى مراجعة طلبك والمحاولة مرة أخرى."
 }

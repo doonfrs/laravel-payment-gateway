@@ -46,6 +46,11 @@ class PaymentController extends Controller
 
             // Verify the payment method is enabled
             if ($paymentMethod->enabled) {
+                // Validation callback fires before locking in the method.
+                if ($redirect = $this->blockOnValidation($paymentOrder, 'method_selected')) {
+                    return $redirect;
+                }
+
                 // Calculate and apply payment method fee
                 $originalAmount = $paymentOrder->amount;
                 $fee = $paymentMethod->calculateFee($originalAmount);
@@ -104,6 +109,11 @@ class PaymentController extends Controller
         // Check if the payment method's plugin is ignored for this order
         if ($paymentOrder->isPluginIgnored($paymentMethod->plugin_class)) {
             return back()->withErrors(['payment_method_id' => 'Selected payment method is not available for this order']);
+        }
+
+        // Validation callback fires before locking in the method.
+        if ($redirect = $this->blockOnValidation($paymentOrder, 'method_selected')) {
+            return $redirect;
         }
 
         // Calculate and apply payment method fee
@@ -385,6 +395,33 @@ class PaymentController extends Controller
         ]);
 
         return $response;
+    }
+
+    /**
+     * Run the optional validation callback at a given trigger and, if it
+     * returns a string, cancel the payment + redirect to failure_url with the
+     * message flashed as 'payment_validation_message'. Returns null when
+     * validation passed and the caller should proceed.
+     */
+    protected function blockOnValidation(\Trinavo\PaymentGateway\Models\PaymentOrder $paymentOrder, string $trigger): ?\Symfony\Component\HttpFoundation\Response
+    {
+        $result = $this->paymentGateway->runValidation($paymentOrder, $trigger);
+
+        if ($result === true) {
+            return null;
+        }
+
+        $message = is_string($result) ? $result : __('Payment validation failed. Please review your order and try again.');
+
+        $this->paymentGateway->handlePaymentCancellation($paymentOrder, [
+            'cancelled_by' => 'validation_callback',
+            'cancelled_at' => now()->toIso8601String(),
+            'validation_trigger' => $trigger,
+            'validation_message' => $message,
+        ]);
+
+        return redirect($paymentOrder->failure_url ?? '/')
+            ->with('payment_validation_message', $message);
     }
 
     /**

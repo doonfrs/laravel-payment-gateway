@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
  * @property string|null $description
  * @property string|null $success_callback
  * @property string|null $failure_callback
+ * @property string|null $validation_callback
  * @property string|null $success_url
  * @property string|null $failure_url
  * @property int|null $payment_method_id
@@ -49,6 +50,7 @@ class PaymentOrder extends Model
         'description',
         'success_callback',
         'failure_callback',
+        'validation_callback',
         'success_url',
         'failure_url',
         'payment_method_id',
