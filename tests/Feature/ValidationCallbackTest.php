@@ -158,7 +158,7 @@ class ValidationCallbackTest extends TestCase
         // Add a second so checkout doesn't auto-process; we test the explicit POST below.
         PaymentMethod::create([
             'name' => json_encode(['en' => 'Offline Payment']),
-            'plugin_class' => \Trinavo\PaymentGateway\Plugins\Offline\OfflinePaymentPlugin::class,
+            'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
             'enabled' => true,
             'sort_order' => 2,
         ]);
@@ -196,7 +196,7 @@ class ValidationCallbackTest extends TestCase
         ]);
         PaymentMethod::create([
             'name' => json_encode(['en' => 'Offline Payment']),
-            'plugin_class' => \Trinavo\PaymentGateway\Plugins\Offline\OfflinePaymentPlugin::class,
+            'plugin_class' => \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
             'enabled' => true,
             'sort_order' => 2,
         ]);

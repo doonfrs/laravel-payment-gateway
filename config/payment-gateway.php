@@ -20,7 +20,6 @@ return [
     */
     'plugins' => [
         \Trinavo\PaymentGateway\Plugins\Dummy\DummyPaymentPlugin::class,
-        \Trinavo\PaymentGateway\Plugins\Offline\OfflinePaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Moyasar\MoyasarPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Tabby\TabbyPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Tamara\TamaraPaymentPlugin::class,
