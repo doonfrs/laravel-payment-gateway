@@ -192,6 +192,11 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
 
     /**
      * Handle bill pull request (BILPULRQ → BILPULRS).
+     *
+     * Reads bill details from the PaymentOrder, not from a host-app Order
+     * model. The PaymentOrder already carries amount/customer details set
+     * at cart-checkout time, and this plugin doesn't need (or want) to
+     * know what host model the order_id refers to.
      */
     protected function handleBillPull(array $data, MadfoatService $service): JsonResponse
     {
@@ -206,12 +211,9 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         }
 
         $orderId = $service->parseBillingNumber($billingNo);
+        $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
 
-        // Use the app's Order model dynamically to avoid tight coupling
-        $orderClass = $this->getOrderModelClass();
-        $order = $orderClass::find($orderId);
-
-        if (! $order) {
+        if (! $paymentOrder) {
             $billNo = $data['MFEP']['MsgBody']['AcctInfo']['BillNo'] ?? '';
             $response = $service->buildBillPullInvalidBillResponse($guid, $billingNo, $billNo);
             $service->log('Bill pull: invalid billing number', ['billing_no' => $billingNo, 'order_id' => $orderId]);
@@ -220,24 +222,30 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         }
 
         $orderData = [
-            'final_total' => $order->final_total ?? $order->amount ?? 0,
-            'paid' => (bool) ($order->paid ?? false),
-            'customer_name' => $order->customer_name ?? '',
-            'customer_email' => $order->customer_email ?? '',
-            'customer_mobile' => $order->customer_mobile ?? $order->customer_phone ?? '',
-            'created_at' => $order->created_at ?? now(),
+            'final_total' => $paymentOrder->amount ?? 0,
+            'paid' => $paymentOrder->isCompleted(),
+            'customer_name' => $paymentOrder->customer_name ?? '',
+            'customer_email' => $paymentOrder->customer_email ?? '',
+            'customer_mobile' => $paymentOrder->customer_phone ?? '',
+            'created_at' => $paymentOrder->created_at ?? now(),
         ];
 
-        $response = $service->buildBillPullResponse($data, $order, $orderData);
+        $response = $service->buildBillPullResponse($data, $paymentOrder, $orderData);
         $service->log('Bill pull success', ['billing_no' => $billingNo, 'response' => $response]);
 
-        $this->attachInboundRequestToPaymentOrder($this->findPaymentOrderByAppOrderId($orderId)?->id);
+        $this->attachInboundRequestToPaymentOrder($paymentOrder->id);
 
         return response()->json($response);
     }
 
     /**
      * Handle payment notification (BLRPMTNTFRQ → BLRPMTNTFRS).
+     *
+     * Bank-confirms-payment webhook. The host's order side is updated by
+     * delegating to CartService::setOrderAsPaid — which has the
+     * withTrashed/restore/log/report logic for the
+     * draft-soft-deleted-while-bill-was-pending race. This plugin no
+     * longer references App\Models\Order or guesses a model class.
      */
     protected function handlePaymentNotification(array $data, MadfoatService $service): JsonResponse
     {
@@ -259,39 +267,48 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         }
 
         $orderId = $service->parseBillingNumber($billingNo);
-        $orderClass = $this->getOrderModelClass();
-        $order = $orderClass::find($orderId);
+        $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
 
-        if (! $order) {
+        if (! $paymentOrder) {
             $response = $service->buildPaymentNotificationResponse($guid, $joebppsTrx, $processDate, $stmtDate, 1, 'Order not found', 'Error');
-            $service->log('Payment notification: order not found', ['billing_no' => $billingNo]);
+            $service->log('Payment notification: payment order not found', [
+                'billing_no' => $billingNo,
+                'order_id' => $orderId,
+            ]);
 
             return response()->json($response);
         }
 
-        // Mark order as paid if not already
-        if (! ($order->paid ?? false)) {
-            $order->paid = true;
-            $order->save();
+        if ($paymentOrder->isCompleted()) {
+            // Idempotent re-delivery: bank may re-send the notification.
+            $service->log('Payment notification: already completed (idempotent)', [
+                'order_id' => $orderId,
+                'joebpps_trx' => $joebppsTrx,
+            ]);
+        } else {
+            // Delegate to the host. CartService::setOrderAsPaid handles
+            // withTrashed restore, status promotion, notifications, cart
+            // conversion, and audit logging (Log::warning + report() on a
+            // restored draft). This plugin doesn't need to know any of that.
+            \App\Services\CartService::setOrderAsPaid(
+                orderId: $orderId,
+                paymentMethodId: $paymentOrder->payment_method_id,
+                paymentOrder: $paymentOrder,
+            );
 
-            // Also try to update the PaymentOrder if one exists
-            $paymentOrder = $this->markPaymentOrderCompleted($orderId, $joebppsTrx, $data);
+            $paymentOrder->markAsCompleted([
+                'transaction_id' => $joebppsTrx,
+                'madfoat_data' => $data['MFEP']['MsgBody'] ?? [],
+            ]);
 
             $service->log('Payment notification: order marked as paid', [
                 'order_id' => $orderId,
                 'paid_amount' => $paidAmt,
                 'joebpps_trx' => $joebppsTrx,
             ]);
-        } else {
-            $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
-
-            $service->log('Payment notification: order already paid (idempotent)', [
-                'order_id' => $orderId,
-                'joebpps_trx' => $joebppsTrx,
-            ]);
         }
 
-        $this->attachInboundRequestToPaymentOrder($paymentOrder?->id);
+        $this->attachInboundRequestToPaymentOrder($paymentOrder->id);
 
         $response = $service->buildPaymentNotificationResponse($guid, $joebppsTrx, $processDate, $stmtDate);
 
@@ -342,17 +359,16 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         }
 
         $orderId = $service->parseBillingNumber($billingNo);
-        $orderClass = $this->getOrderModelClass();
-        $order = $orderClass::find($orderId);
+        $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
 
-        if (! $order) {
+        if (! $paymentOrder) {
             $response = $service->buildErrorResponse('BILRPREPADVALRS', $guid, 1, 'Order not found');
 
             return response()->json($response);
         }
 
-        $dueAmt = number_format($order->final_total ?? $order->amount ?? 0, 3, '.', '');
-        $customerName = $order->customer_name ?? '';
+        $dueAmt = number_format($paymentOrder->amount ?? 0, 3, '.', '');
+        $customerName = $paymentOrder->customer_name ?? '';
 
         $response = $service->buildPrepaidValidationResponse(
             guid: $guid,
@@ -418,20 +434,6 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
     }
 
     /**
-     * Get the Order model class.
-     * Uses the app's Order model if available, falls back to generic lookup.
-     */
-    protected function getOrderModelClass(): string
-    {
-        // Check common locations for the Order model
-        if (class_exists('App\\Models\\Order')) {
-            return 'App\\Models\\Order';
-        }
-
-        return 'App\\Order';
-    }
-
-    /**
      * Resolve the PaymentOrder linked to the app-level order id (matched via customer_data->order_id).
      */
     protected function findPaymentOrderByAppOrderId(int $orderId): ?PaymentOrder
@@ -439,24 +441,6 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         return PaymentOrder::whereJsonContains('customer_data->order_id', $orderId)
             ->orWhereJsonContains('customer_data->order_id', (string) $orderId)
             ->first();
-    }
-
-    /**
-     * Try to mark the corresponding PaymentOrder as completed.
-     * Returns the resolved PaymentOrder (or null if not found).
-     */
-    protected function markPaymentOrderCompleted(int $orderId, string $transactionId, array $mfepData): ?PaymentOrder
-    {
-        $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
-
-        if ($paymentOrder && $paymentOrder->isPending()) {
-            $paymentOrder->markAsCompleted([
-                'transaction_id' => $transactionId,
-                'madfoat_data' => $mfepData['MFEP']['MsgBody']['BillingInfo'] ?? [],
-            ]);
-        }
-
-        return $paymentOrder;
     }
 
     /**
