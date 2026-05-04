@@ -57,6 +57,39 @@ class MadfoatService
     }
 
     /**
+     * Strip formatting and return the phone if it matches Madfoat's
+     * AdditionalInfo.Phone regex; otherwise return ''.
+     * Spec: ^(\+|[0-9]){1}[0-9]{9,19}$
+     */
+    public function sanitizePhone(?string $phone): string
+    {
+        if ($phone === null || $phone === '') {
+            return '';
+        }
+
+        $cleaned = preg_replace('/[\s\-\(\)\.]/', '', $phone) ?? '';
+
+        if (preg_match('/^(\+|[0-9])[0-9]{9,19}$/', $cleaned) !== 1) {
+            return '';
+        }
+
+        return $cleaned;
+    }
+
+    /**
+     * True if the email passes Madfoat's AdditionalInfo.Email regex.
+     * Spec: ^.+@[a-zA-Z0-9._+\-]+\.[a-zA-Z]{2,6}$
+     */
+    public function isValidEmail(?string $email): bool
+    {
+        if ($email === null || $email === '') {
+            return false;
+        }
+
+        return preg_match('/^.+@[a-zA-Z0-9._+\-]+\.[a-zA-Z]{2,6}$/', $email) === 1;
+    }
+
+    /**
      * Handle postpaid bill pull request (BILPULRQ → BILPULRS).
      *
      * @param  array  $mfepRequest  The full MFEP request payload
@@ -90,6 +123,19 @@ class MadfoatService
             : ['ErrorCode' => 0, 'ErrorDesc' => 'Success', 'Severity' => 'Info'];
 
         $pmtLowerUpper = $isPaid ? '0' : $dueAmount;
+
+        // Madfoat schema-rejects the bill if Phone/Email are empty or malformed; only emit when valid.
+        $additionalInfo = [
+            'CustName' => Str::limit($customerName, 150, ''),
+            'FreeText' => 'Order #' . $billingNo,
+        ];
+        $cleanPhone = $this->sanitizePhone($customerPhone);
+        if ($cleanPhone !== '') {
+            $additionalInfo['Phone'] = $cleanPhone;
+        }
+        if ($this->isValidEmail($customerEmail)) {
+            $additionalInfo['Email'] = $customerEmail;
+        }
 
         return [
             'MFEP' => [
@@ -126,12 +172,7 @@ class MadfoatService
                                 'Lower' => $pmtLowerUpper,
                                 'Upper' => $pmtLowerUpper,
                             ],
-                            'AdditionalInfo' => [
-                                'CustName' => Str::limit($customerName, 150, ''),
-                                'FreeText' => 'Order #' . $billingNo,
-                                'Email' => $customerEmail,
-                                'Phone' => $customerPhone,
-                            ],
+                            'AdditionalInfo' => $additionalInfo,
                         ],
                     ],
                 ],

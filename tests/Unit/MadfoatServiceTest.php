@@ -163,4 +163,164 @@ class MadfoatServiceTest extends TestCase
 
         $this->service->log('Test message', ['key' => 'value']);
     }
+
+    /** @test */
+    public function sanitize_phone_returns_empty_for_null_or_empty_input()
+    {
+        $this->assertSame('', $this->service->sanitizePhone(null));
+        $this->assertSame('', $this->service->sanitizePhone(''));
+    }
+
+    /** @test */
+    public function sanitize_phone_returns_valid_local_number_unchanged()
+    {
+        $this->assertSame('0795368814', $this->service->sanitizePhone('0795368814'));
+    }
+
+    /** @test */
+    public function sanitize_phone_strips_formatting_and_keeps_leading_plus()
+    {
+        $this->assertSame('+962795368814', $this->service->sanitizePhone('+962 79 536-8814'));
+        $this->assertSame('+962795368814', $this->service->sanitizePhone('+962-79-536-8814'));
+        $this->assertSame('+962795368814', $this->service->sanitizePhone('+962 (79) 536.8814'));
+    }
+
+    /** @test */
+    public function sanitize_phone_returns_empty_for_input_too_short_to_match_madfoat_regex()
+    {
+        $this->assertSame('', $this->service->sanitizePhone('12345')); // < 10 chars
+        $this->assertSame('', $this->service->sanitizePhone('079'));
+    }
+
+    /** @test */
+    public function sanitize_phone_returns_empty_for_input_with_letters()
+    {
+        $this->assertSame('', $this->service->sanitizePhone('07AB36881'));
+    }
+
+    /** @test */
+    public function is_valid_email_recognizes_well_formed_addresses()
+    {
+        $this->assertTrue($this->service->isValidEmail('mszjannoun@gmail.com'));
+        $this->assertTrue($this->service->isValidEmail('a.b+tag@example.co'));
+    }
+
+    /** @test */
+    public function is_valid_email_rejects_empty_or_malformed()
+    {
+        $this->assertFalse($this->service->isValidEmail(null));
+        $this->assertFalse($this->service->isValidEmail(''));
+        $this->assertFalse($this->service->isValidEmail('not-an-email'));
+        $this->assertFalse($this->service->isValidEmail('foo@bar')); // no TLD
+    }
+
+    /** @test */
+    public function bill_pull_response_omits_phone_and_email_when_blank()
+    {
+        $response = $this->service->buildBillPullResponse(
+            $this->billPullRequest('0000000050'),
+            $this->stubOrder(),
+            [
+                'final_total' => 1.0,
+                'paid' => false,
+                'customer_name' => 'kok',
+                'customer_email' => '',
+                'customer_mobile' => '',
+                'created_at' => now(),
+            ],
+        );
+
+        $additionalInfo = $response['MFEP']['MsgBody']['BillRec'][0]['AdditionalInfo'];
+        $this->assertArrayNotHasKey('Phone', $additionalInfo);
+        $this->assertArrayNotHasKey('Email', $additionalInfo);
+        $this->assertSame('kok', $additionalInfo['CustName']);
+    }
+
+    /** @test */
+    public function bill_pull_response_includes_phone_and_email_when_valid()
+    {
+        $response = $this->service->buildBillPullResponse(
+            $this->billPullRequest('0000000050'),
+            $this->stubOrder(),
+            [
+                'final_total' => 1.0,
+                'paid' => false,
+                'customer_name' => 'kok',
+                'customer_email' => 'mszjannoun@gmail.com',
+                'customer_mobile' => '0795368814',
+                'created_at' => now(),
+            ],
+        );
+
+        $additionalInfo = $response['MFEP']['MsgBody']['BillRec'][0]['AdditionalInfo'];
+        $this->assertSame('0795368814', $additionalInfo['Phone']);
+        $this->assertSame('mszjannoun@gmail.com', $additionalInfo['Email']);
+    }
+
+    /** @test */
+    public function bill_pull_response_sanitizes_phone_formatting()
+    {
+        $response = $this->service->buildBillPullResponse(
+            $this->billPullRequest('0000000050'),
+            $this->stubOrder(),
+            [
+                'final_total' => 1.0,
+                'paid' => false,
+                'customer_name' => 'kok',
+                'customer_email' => '',
+                'customer_mobile' => '+962 79 536-8814',
+                'created_at' => now(),
+            ],
+        );
+
+        $this->assertSame(
+            '+962795368814',
+            $response['MFEP']['MsgBody']['BillRec'][0]['AdditionalInfo']['Phone']
+        );
+    }
+
+    /** @test */
+    public function bill_pull_response_omits_phone_when_input_is_unrecoverable()
+    {
+        $response = $this->service->buildBillPullResponse(
+            $this->billPullRequest('0000000050'),
+            $this->stubOrder(),
+            [
+                'final_total' => 1.0,
+                'paid' => false,
+                'customer_name' => 'kok',
+                'customer_email' => '',
+                'customer_mobile' => 'abc',
+                'created_at' => now(),
+            ],
+        );
+
+        $this->assertArrayNotHasKey(
+            'Phone',
+            $response['MFEP']['MsgBody']['BillRec'][0]['AdditionalInfo']
+        );
+    }
+
+    private function billPullRequest(string $billingNo): array
+    {
+        return [
+            'MFEP' => [
+                'MsgHeader' => [
+                    'GUID' => 'test-guid',
+                    'TrsInf' => ['ReqTyp' => 'BILPULRQ'],
+                ],
+                'MsgBody' => [
+                    'AcctInfo' => [
+                        'BillingNo' => $billingNo,
+                        'BillNo' => $billingNo,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    private function stubOrder(): \Illuminate\Database\Eloquent\Model
+    {
+        return new class extends \Illuminate\Database\Eloquent\Model {};
+    }
 }
