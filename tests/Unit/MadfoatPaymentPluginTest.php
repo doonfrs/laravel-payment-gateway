@@ -34,7 +34,7 @@ class MadfoatPaymentPluginTest extends TestCase
             'enabled' => true,
         ]);
 
-        $this->paymentMethod->setSetting('biller_code', '12345', false);
+        $this->paymentMethod->setSetting('sdr_code_test', '12345', false);
         $this->paymentMethod->setSetting('service_type', 'Sales', false);
         $this->paymentMethod->setSetting('bill_expiry_days', '7', false);
 
@@ -59,12 +59,13 @@ class MadfoatPaymentPluginTest extends TestCase
         $this->assertNotEmpty($fields);
 
         $fieldNames = array_map(fn ($f) => $f->getName(), $fields);
-        $this->assertContains('biller_code', $fieldNames);
+        $this->assertContains('sdr_code_test', $fieldNames);
+        $this->assertContains('sdr_code_production', $fieldNames);
+        $this->assertContains('test_mode', $fieldNames);
         $this->assertContains('service_type', $fieldNames);
         $this->assertContains('bill_expiry_days', $fieldNames);
         $this->assertContains('instructions', $fieldNames);
         $this->assertContains('allowed_ips', $fieldNames);
-        $this->assertContains('log_channel', $fieldNames);
     }
 
     public function test_plugin_validates_configuration_with_required_fields()
@@ -72,7 +73,7 @@ class MadfoatPaymentPluginTest extends TestCase
         $this->assertTrue($this->plugin->validateConfiguration());
     }
 
-    public function test_plugin_fails_validation_without_biller_code()
+    public function test_plugin_fails_validation_without_sdr_code()
     {
         $method = PaymentMethod::create([
             'name' => json_encode(['en' => 'Madfoat Invalid']),
@@ -83,6 +84,25 @@ class MadfoatPaymentPluginTest extends TestCase
 
         $plugin = new MadfoatPaymentPlugin($method);
         $this->assertFalse($plugin->validateConfiguration());
+    }
+
+    public function test_live_mode_requires_production_sdr_code()
+    {
+        $method = PaymentMethod::create([
+            'name' => json_encode(['en' => 'Madfoat Live']),
+            'plugin_class' => MadfoatPaymentPlugin::class,
+            'enabled' => true,
+        ]);
+        $method->setSetting('service_type', 'Sales', false);
+        $method->setSetting('sdr_code_test', '12345', false);
+        $method->setSetting('test_mode', false, false);
+
+        $plugin = new MadfoatPaymentPlugin($method);
+        $this->assertFalse($plugin->validateConfiguration());
+
+        $method->setSetting('sdr_code_production', '99999', false);
+        $plugin = new MadfoatPaymentPlugin($method);
+        $this->assertTrue($plugin->validateConfiguration());
     }
 
     public function test_plugin_supports_inbound_requests()

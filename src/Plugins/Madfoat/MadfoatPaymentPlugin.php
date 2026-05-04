@@ -4,6 +4,7 @@ namespace Trinavo\PaymentGateway\Plugins\Madfoat;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Trinavo\PaymentGateway\Configuration\CheckboxField;
 use Trinavo\PaymentGateway\Configuration\PasswordField;
 use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
@@ -42,10 +43,17 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
     {
         return [
             new TextField(
-                name: 'biller_code',
-                label: 'Biller Code',
+                name: 'sdr_code_test',
+                label: 'SdrCode (Test)',
                 required: true,
-                description: 'Your biller code assigned by Madfoat/eFAWATEERcom',
+                description: 'Your SdrCode (biller code) assigned by Madfoat/eFAWATEERcom for the test/sandbox environment',
+                placeholder: 'e.g. 12345',
+            ),
+            new TextField(
+                name: 'sdr_code_production',
+                label: 'SdrCode (Production)',
+                required: false,
+                description: 'Your SdrCode (biller code) assigned by Madfoat/eFAWATEERcom for the production environment',
                 placeholder: 'e.g. 12345',
             ),
             new TextField(
@@ -93,13 +101,22 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
                 required: false,
                 description: 'Password for HTTP Basic Authentication on inbound requests from Madfoat.',
             ),
+            new CheckboxField(
+                name: 'test_mode',
+                label: 'Test Mode',
+                default: true,
+                description: 'Enable test/sandbox mode for Madfoat (eFAWATEERcom).'
+            ),
         ];
     }
 
     public function validateConfiguration(): bool
     {
-        return ! empty($this->paymentMethod->getSetting('biller_code'))
-            && ! empty($this->paymentMethod->getSetting('service_type'));
+        if (empty($this->paymentMethod->getSetting('service_type'))) {
+            return false;
+        }
+
+        return ! empty($this->getSdrCode());
     }
 
     public function processPayment(PaymentOrder $paymentOrder)
@@ -391,10 +408,22 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
     protected function getMadfoatService(): MadfoatService
     {
         return new MadfoatService(
-            billerCode: $this->paymentMethod->getSetting('biller_code', ''),
+            sdrCode: $this->getSdrCode(),
             serviceType: $this->paymentMethod->getSetting('service_type', ''),
             billExpiryDays: (int) $this->paymentMethod->getSetting('bill_expiry_days', '7'),
         );
+    }
+
+    /**
+     * Resolve the active SdrCode based on test_mode.
+     */
+    protected function getSdrCode(): string
+    {
+        $testMode = $this->paymentMethod->getSetting('test_mode', true);
+
+        return $testMode
+            ? (string) $this->paymentMethod->getSetting('sdr_code_test', '')
+            : (string) $this->paymentMethod->getSetting('sdr_code_production', '');
     }
 
     /**

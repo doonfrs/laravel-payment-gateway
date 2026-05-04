@@ -22,10 +22,9 @@ class MadfoatServiceTest extends TestCase
     {
         parent::setUp();
         $this->service = new MadfoatService(
-            billerCode: '12345',
+            sdrCode: '12345',
             serviceType: 'Sales',
             billExpiryDays: 7,
-            logChannel: 'stack',
         );
     }
 
@@ -156,12 +155,8 @@ class MadfoatServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_logs_messages_to_configured_channel()
+    public function it_logs_messages_with_madfoat_prefix()
     {
-        Log::shouldReceive('channel')
-            ->with('stack')
-            ->once()
-            ->andReturnSelf();
         Log::shouldReceive('info')
             ->with('Madfoat: Test message', ['key' => 'value'])
             ->once();
