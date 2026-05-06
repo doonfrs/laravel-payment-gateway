@@ -92,19 +92,30 @@ class NomodPaymentPlugin extends PaymentPluginInterface
         try {
             $apiKey = $this->getApiKey();
             if (empty($apiKey)) {
+                Log::error('Nomod API key is not configured', [
+                    'order_code' => $paymentOrder->order_code,
+                    'test_mode' => (bool) $this->paymentMethod->getSetting('test_mode', true),
+                ]);
                 throw new \Exception('Nomod API key is not configured.');
             }
 
             $payload = $this->buildCheckoutPayload($paymentOrder);
+
+            Log::info('Nomod Create Checkout Request', [
+                'order_code' => $paymentOrder->order_code,
+                'url' => self::API_BASE.'/v1/checkout',
+                'payload' => $payload,
+            ]);
 
             $response = Http::withHeaders(['X-API-KEY' => $apiKey])
                 ->acceptJson()
                 ->asJson()
                 ->post(self::API_BASE.'/v1/checkout', $payload);
 
-            Log::info('Nomod Checkout Response', [
+            Log::info('Nomod Create Checkout Response', [
                 'order_code' => $paymentOrder->order_code,
                 'status_code' => $response->status(),
+                'response_body' => $response->body(),
             ]);
 
             if (! $response->successful()) {
@@ -119,13 +130,28 @@ class NomodPaymentPlugin extends PaymentPluginInterface
             $checkout = $response->json();
 
             if (empty($checkout['id']) || empty($checkout['url'])) {
+                Log::error('Nomod returned an invalid checkout session', [
+                    'order_code' => $paymentOrder->order_code,
+                    'response_body' => $response->body(),
+                ]);
                 throw new \Exception('Nomod did not return a valid checkout session.');
             }
 
             $paymentOrder->update(['remote_transaction_id' => $checkout['id']]);
 
+            Log::info('Nomod Checkout Created', [
+                'order_code' => $paymentOrder->order_code,
+                'checkout_id' => $checkout['id'],
+                'status' => $checkout['status'] ?? null,
+                'redirect_url' => $checkout['url'],
+            ]);
+
             return redirect()->away($checkout['url']);
         } catch (\Exception $e) {
+            Log::error('Nomod processPayment exception', [
+                'order_code' => $paymentOrder->order_code,
+                'message' => $e->getMessage(),
+            ]);
             report($e);
 
             return view('payment-gateway::plugins.nomod-payment-error', [
@@ -165,12 +191,27 @@ class NomodPaymentPlugin extends PaymentPluginInterface
         try {
             $apiKey = $this->getApiKey();
             if (empty($apiKey)) {
+                Log::error('Nomod API key is not configured', [
+                    'order_code' => $orderCode,
+                    'checkout_id' => $checkoutId,
+                ]);
                 throw new \Exception('Nomod API key is not configured.');
             }
+
+            Log::info('Nomod Get Checkout Request', [
+                'checkout_id' => $checkoutId,
+                'url' => self::API_BASE.'/v1/checkout/'.$checkoutId,
+            ]);
 
             $response = Http::withHeaders(['X-API-KEY' => $apiKey])
                 ->acceptJson()
                 ->get(self::API_BASE.'/v1/checkout/'.urlencode($checkoutId));
+
+            Log::info('Nomod Get Checkout Response', [
+                'checkout_id' => $checkoutId,
+                'status_code' => $response->status(),
+                'response_body' => $response->body(),
+            ]);
 
             if (! $response->successful()) {
                 Log::error('Nomod checkout retrieval failed', [
@@ -191,6 +232,13 @@ class NomodPaymentPlugin extends PaymentPluginInterface
             $chargeId = $checkout['charges'][0]['id'] ?? null;
 
             if ($status === 'cancelled' || ($cancelledFlag && $status !== 'paid')) {
+                Log::info('Nomod Payment Cancelled', [
+                    'order_code' => $resolvedOrderCode,
+                    'checkout_id' => $checkoutId,
+                    'nomod_status' => $status,
+                    'cancelled_flag' => $cancelledFlag,
+                ]);
+
                 return CallbackResponse::cancelled(
                     orderCode: $resolvedOrderCode,
                     message: 'Payment cancelled on Nomod checkout'
@@ -198,6 +246,12 @@ class NomodPaymentPlugin extends PaymentPluginInterface
             }
 
             if ($status === 'paid') {
+                Log::info('Nomod Payment Successful', [
+                    'order_code' => $resolvedOrderCode,
+                    'checkout_id' => $checkoutId,
+                    'charge_id' => $chargeId,
+                ]);
+
                 return CallbackResponse::success(
                     orderCode: $resolvedOrderCode,
                     transactionId: $chargeId ?: ('nomod_'.$checkoutId),
@@ -211,6 +265,11 @@ class NomodPaymentPlugin extends PaymentPluginInterface
             }
 
             if ($status === 'created') {
+                Log::info('Nomod Payment Pending', [
+                    'order_code' => $resolvedOrderCode,
+                    'checkout_id' => $checkoutId,
+                ]);
+
                 return CallbackResponse::pending(
                     orderCode: $resolvedOrderCode,
                     transactionId: $checkoutId,
@@ -222,6 +281,12 @@ class NomodPaymentPlugin extends PaymentPluginInterface
                 );
             }
 
+            Log::warning('Nomod Payment Failed With Unhandled Status', [
+                'order_code' => $resolvedOrderCode,
+                'checkout_id' => $checkoutId,
+                'nomod_status' => $status,
+            ]);
+
             return CallbackResponse::failure(
                 orderCode: $resolvedOrderCode,
                 message: __('payment_failed'),
@@ -232,6 +297,11 @@ class NomodPaymentPlugin extends PaymentPluginInterface
                 ]
             );
         } catch (\Exception $e) {
+            Log::error('Nomod handleCallback exception', [
+                'order_code' => $orderCode,
+                'checkout_id' => $checkoutId,
+                'message' => $e->getMessage(),
+            ]);
             report($e);
 
             return CallbackResponse::failure(
@@ -243,14 +313,26 @@ class NomodPaymentPlugin extends PaymentPluginInterface
 
     public function refund(PaymentOrder $paymentOrder): RefundResponse
     {
+        Log::info('Nomod Refund Started', [
+            'order_code' => $paymentOrder->order_code,
+            'amount' => $paymentOrder->amount,
+        ]);
+
         try {
             $apiKey = $this->getApiKey();
             if (empty($apiKey)) {
+                Log::error('Nomod API key is not configured', [
+                    'order_code' => $paymentOrder->order_code,
+                ]);
                 throw new \Exception('Nomod API key is not configured.');
             }
 
             $checkoutId = $paymentOrder->remote_transaction_id;
             if (empty($checkoutId)) {
+                Log::warning('Nomod refund aborted: missing checkout id', [
+                    'order_code' => $paymentOrder->order_code,
+                ]);
+
                 return RefundResponse::failure(
                     orderCode: $paymentOrder->order_code,
                     message: 'Missing Nomod checkout id for this order'
@@ -261,7 +343,21 @@ class NomodPaymentPlugin extends PaymentPluginInterface
                 ->acceptJson()
                 ->get(self::API_BASE.'/v1/checkout/'.urlencode($checkoutId));
 
+            Log::info('Nomod Get Checkout For Refund Response', [
+                'order_code' => $paymentOrder->order_code,
+                'checkout_id' => $checkoutId,
+                'status_code' => $checkoutResponse->status(),
+                'response_body' => $checkoutResponse->body(),
+            ]);
+
             if (! $checkoutResponse->successful()) {
+                Log::error('Nomod refund aborted: cannot fetch checkout', [
+                    'order_code' => $paymentOrder->order_code,
+                    'checkout_id' => $checkoutId,
+                    'status_code' => $checkoutResponse->status(),
+                    'response_body' => $checkoutResponse->body(),
+                ]);
+
                 return RefundResponse::failure(
                     orderCode: $paymentOrder->order_code,
                     message: 'Unable to fetch Nomod checkout for refund'
@@ -272,6 +368,12 @@ class NomodPaymentPlugin extends PaymentPluginInterface
             $chargeId = $checkout['charges'][0]['id'] ?? null;
 
             if (empty($chargeId)) {
+                Log::warning('Nomod refund aborted: no charge found', [
+                    'order_code' => $paymentOrder->order_code,
+                    'checkout_id' => $checkoutId,
+                    'checkout_status' => $checkout['status'] ?? null,
+                ]);
+
                 return RefundResponse::failure(
                     orderCode: $paymentOrder->order_code,
                     message: 'No charge found for this Nomod checkout'
@@ -280,12 +382,26 @@ class NomodPaymentPlugin extends PaymentPluginInterface
 
             $amount = number_format((float) $paymentOrder->amount, 2, '.', '');
 
+            Log::info('Nomod Refund Request', [
+                'order_code' => $paymentOrder->order_code,
+                'charge_id' => $chargeId,
+                'amount' => $amount,
+                'url' => self::API_BASE.'/v1/charges/'.$chargeId.'/refund',
+            ]);
+
             $refundResponse = Http::withHeaders(['X-API-KEY' => $apiKey])
                 ->acceptJson()
                 ->asJson()
                 ->post(self::API_BASE.'/v1/charges/'.urlencode($chargeId).'/refund', [
                     'amount' => $amount,
                 ]);
+
+            Log::info('Nomod Refund Response', [
+                'order_code' => $paymentOrder->order_code,
+                'charge_id' => $chargeId,
+                'status_code' => $refundResponse->status(),
+                'response_body' => $refundResponse->body(),
+            ]);
 
             if (! $refundResponse->successful()) {
                 Log::error('Nomod refund failed', [
@@ -301,6 +417,12 @@ class NomodPaymentPlugin extends PaymentPluginInterface
                 );
             }
 
+            Log::info('Nomod Refund Successful', [
+                'order_code' => $paymentOrder->order_code,
+                'charge_id' => $chargeId,
+                'refunded_amount' => $amount,
+            ]);
+
             return RefundResponse::success(
                 orderCode: $paymentOrder->order_code,
                 refundedAmount: (float) $paymentOrder->amount,
@@ -309,6 +431,10 @@ class NomodPaymentPlugin extends PaymentPluginInterface
                 message: 'Refund completed successfully via Nomod',
             );
         } catch (\Exception $e) {
+            Log::error('Nomod refund exception', [
+                'order_code' => $paymentOrder->order_code,
+                'message' => $e->getMessage(),
+            ]);
             report($e);
 
             return RefundResponse::failure(
