@@ -34,6 +34,7 @@ return [
         \Trinavo\PaymentGateway\Plugins\MyFatoorah\MyFatoorahPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Stripe\StripePaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Mamopay\MamopayPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\Nomod\NomodPaymentPlugin::class,
 
         // Add your custom payment plugins here
         // \App\PaymentPlugins\StripePaymentPlugin::class,
