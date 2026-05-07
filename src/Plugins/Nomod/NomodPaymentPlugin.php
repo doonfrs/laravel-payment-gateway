@@ -4,6 +4,7 @@ namespace Trinavo\PaymentGateway\Plugins\Nomod;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Trinavo\PaymentGateway\Configuration\CheckboxField;
 use Trinavo\PaymentGateway\Configuration\TextField;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
@@ -456,7 +457,7 @@ class NomodPaymentPlugin extends PaymentPluginInterface
     private function buildCheckoutPayload(PaymentOrder $paymentOrder): array
     {
         $callbackUrl = $this->getCallbackUrl();
-        $cancelUrl = $callbackUrl.(str_contains($callbackUrl, '?') ? '&' : '?').'cancelled=1';
+        $cancelUrl = $callbackUrl.(Str::contains($callbackUrl, '?') ? '&' : '?').'cancelled=1';
         $amount = number_format((float) $paymentOrder->amount, 2, '.', '');
         $currency = strtoupper((string) ($paymentOrder->currency ?? 'AED'));
         $description = $paymentOrder->description ?: ('Order '.$paymentOrder->order_code);
@@ -486,7 +487,7 @@ class NomodPaymentPlugin extends PaymentPluginInterface
         ];
 
         $customer = array_filter([
-            'first_name' => $paymentOrder->customer_name,
+            ...$this->splitCustomerName($paymentOrder->customer_name),
             'email' => $paymentOrder->customer_email,
             'phone_number' => $paymentOrder->customer_phone ?? null,
         ], static fn ($v) => ! empty($v));
@@ -496,5 +497,29 @@ class NomodPaymentPlugin extends PaymentPluginInterface
         }
 
         return $payload;
+    }
+
+    /**
+     * Nomod requires both first_name and last_name. If the merchant only stored a
+     * single name (e.g. "Admin"), reuse it as last_name so the API doesn't reject
+     * the customer with `customer_invalid_last_name`.
+     */
+    private function splitCustomerName(?string $fullName): array
+    {
+        $fullName = trim((string) $fullName);
+
+        if ($fullName === '') {
+            return [];
+        }
+
+        $parts = preg_split('/\s+/', $fullName, 2) ?: [];
+
+        $first = $parts[0] ?? '';
+        $last = $parts[1] ?? $first;
+
+        return [
+            'first_name' => $first,
+            'last_name' => $last,
+        ];
     }
 }
