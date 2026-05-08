@@ -89,9 +89,9 @@
                     <div class="payment-method-card flex items-center gap-4 px-4 py-4 cursor-pointer hover:bg-base-200/60 active:bg-base-200 transition-colors duration-100 {{ !$loop->last ? 'border-b border-base-200' : '' }}"
                         data-method-id="{{ $method->id }}">
                         {{-- Logo / Icon --}}
-                        @if ($method->logo_url)
+                        @if ($method->getDisplayLogoUrl())
                             <div class="w-12 h-12 bg-base-200/50 rounded-lg shrink-0 flex items-center justify-center p-1.5">
-                                <img src="{{ $method->logo_url }}"
+                                <img src="{{ $method->getDisplayLogoUrl() }}"
                                     alt="{{ $method->getLocalizedDisplayName() }}"
                                     class="w-full h-full object-contain">
                             </div>

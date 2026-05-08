@@ -5,6 +5,8 @@ namespace Trinavo\PaymentGateway\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -134,6 +136,29 @@ class PaymentMethod extends Model
 
         // Not JSON or no valid translations, return as plain text
         return $this->description;
+    }
+
+    /**
+     * Resolve the logo to a browser-usable URL.
+     *
+     * `logo_url` may be either an absolute URL (when seeded from a plugin's
+     * `getLogoUrl()` via `asset()`) or a relative path on the public disk
+     * (when uploaded via Filament). Relative paths are wrapped with
+     * Storage::url() so the browser hits `/storage/...`.
+     */
+    public function getDisplayLogoUrl(): ?string
+    {
+        $value = $this->logo_url;
+
+        if (! $value) {
+            return null;
+        }
+
+        if (Str::startsWith($value, ['http://', 'https://', '/'])) {
+            return $value;
+        }
+
+        return Storage::disk('public')->url($value);
     }
 
     public function getSetting(string $key, $default = null)
