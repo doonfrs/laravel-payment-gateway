@@ -143,7 +143,7 @@ class SofizPayPaymentPlugin extends PaymentPluginInterface
             }
 
             if ($cibTransactionId) {
-                $paymentOrder->update(['remote_transaction_id' => $cibTransactionId]);
+                $paymentOrder->update(['external_transaction_id' => $cibTransactionId]);
             }
 
             return redirect()->away($paymentUrl);
@@ -189,7 +189,7 @@ class SofizPayPaymentPlugin extends PaymentPluginInterface
 
         // Fallback: if memo is missing but we have a transaction id, try to find the order.
         if (! $orderCode && $cibTransactionId) {
-            $paymentOrder = PaymentOrder::where('remote_transaction_id', $cibTransactionId)->first();
+            $paymentOrder = PaymentOrder::where('external_transaction_id', $cibTransactionId)->first();
             $orderCode = $paymentOrder?->order_code;
         }
 
@@ -207,7 +207,7 @@ class SofizPayPaymentPlugin extends PaymentPluginInterface
         // Resolve the CIB transaction id if the callback didn't provide one.
         if (! $cibTransactionId) {
             $paymentOrder = PaymentOrder::where('order_code', $orderCode)->first();
-            $cibTransactionId = $paymentOrder?->remote_transaction_id;
+            $cibTransactionId = $paymentOrder?->external_transaction_id;
         }
 
         if (! $cibTransactionId) {

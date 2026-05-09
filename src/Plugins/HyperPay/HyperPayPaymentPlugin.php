@@ -146,7 +146,7 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
             ]);
 
             // Store checkout ID
-            $paymentOrder->update(['remote_transaction_id' => $checkoutData['id']]);
+            $paymentOrder->update(['external_transaction_id' => $checkoutData['id']]);
 
             // Return payment view with widget
             return view('payment-gateway::plugins.hyperpay-payment', [
@@ -252,10 +252,10 @@ class HyperPayPaymentPlugin extends PaymentPluginInterface
 
         // Fallback: if we have order code but no resourcePath, try to find payment
         if ($orderCode && ! $resourcePath) {
-            // Try to get payment order and check its remote_transaction_id
+            // Try to get payment order and check its external_transaction_id
             $paymentOrder = \Trinavo\PaymentGateway\Models\PaymentOrder::where('order_code', $orderCode)->first();
-            if ($paymentOrder && $paymentOrder->remote_transaction_id) {
-                $resourcePath = '/v1/checkouts/'.$paymentOrder->remote_transaction_id.'/payment';
+            if ($paymentOrder && $paymentOrder->external_transaction_id) {
+                $resourcePath = '/v1/checkouts/'.$paymentOrder->external_transaction_id.'/payment';
                 return $this->handleCallback(['resourcePath' => $resourcePath, 'order_code' => $orderCode]);
             }
         }

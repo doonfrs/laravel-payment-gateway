@@ -166,7 +166,7 @@ class StripePaymentPlugin extends PaymentPluginInterface
                 throw new \Exception('Stripe did not return a valid checkout session.');
             }
 
-            $paymentOrder->update(['remote_transaction_id' => $session['id']]);
+            $paymentOrder->update(['external_transaction_id' => $session['id']]);
 
             return redirect()->away($session['url']);
         } catch (\Exception $e) {
@@ -365,7 +365,7 @@ class StripePaymentPlugin extends PaymentPluginInterface
 
     private function resolvePaymentIntentId(PaymentOrder $paymentOrder): ?string
     {
-        $remoteId = $paymentOrder->remote_transaction_id;
+        $remoteId = $paymentOrder->external_transaction_id;
 
         if (empty($remoteId)) {
             return null;

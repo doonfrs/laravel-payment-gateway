@@ -115,7 +115,7 @@ Body (`*/*`, JSON accepted):
 Key fields the plugin must use:
 
 - **`url`** — the URL we redirect the customer to (`return redirect()->away($response['url'])`)
-- **`id`** — the checkout id; store on `PaymentOrder->remote_transaction_id` for status verification
+- **`id`** — the checkout id; store on `PaymentOrder->external_transaction_id` for status verification
 - **`status`** — initially `created`; becomes `paid` / `cancelled` / `expired` over the session lifecycle
 - **`charges`** — populated once payment is captured; each charge has its own id (used for refunds)
 
@@ -223,7 +223,7 @@ The plugin therefore relies on the **redirect-back + server-side status check** 
 
 1. Customer is redirected by Nomod to one of `success_url` / `failure_url` / `cancelled_url`
 2. The plugin's `handleCallback()` runs at `/payment-gateway/callback/nomod`
-3. Plugin **does not trust the redirect query string** — it calls `GET /v1/checkout/{id}` using the stored `remote_transaction_id` and reads `status` from the authenticated API response
+3. Plugin **does not trust the redirect query string** — it calls `GET /v1/checkout/{id}` using the stored `external_transaction_id` and reads `status` from the authenticated API response
 4. The result is mapped to `CallbackResponse::success/failure/cancelled` as in §5
 
 If Nomod adds webhooks later, we can add an `inboundRequest` handler — the plumbing is already there in `PaymentPluginInterface::handleInboundRequest()` (see [src/Contracts/PaymentPluginInterface.php](../src/Contracts/PaymentPluginInterface.php)).

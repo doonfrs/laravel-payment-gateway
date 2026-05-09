@@ -130,7 +130,7 @@ class PaymobPaymentPlugin extends PaymentPluginInterface
 
             // Store the intention ID for later reference
             $paymentOrder->update([
-                'remote_transaction_id' => $intentionData['id'] ?? $clientSecret,
+                'external_transaction_id' => $intentionData['id'] ?? $clientSecret,
             ]);
 
             // Build the unified checkout URL

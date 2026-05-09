@@ -144,7 +144,7 @@ class AlawnehPayPaymentPlugin extends PaymentPluginInterface
 
             // Store the payment information
             if (isset($paymentResponse['paymentId'])) {
-                $paymentOrder->update(['remote_transaction_id' => $paymentResponse['paymentId']]);
+                $paymentOrder->update(['external_transaction_id' => $paymentResponse['paymentId']]);
             }
 
             // Return success view with payment details

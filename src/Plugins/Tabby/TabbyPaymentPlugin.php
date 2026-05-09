@@ -491,7 +491,7 @@ class TabbyPaymentPlugin extends PaymentPluginInterface
         // Check for successful creation
         if (isset($responseData['status']) && $responseData['status'] === 'created') {
             // Store the remote transaction ID
-            $paymentOrder->update(['remote_transaction_id' => $responseData['id']]);
+            $paymentOrder->update(['external_transaction_id' => $responseData['id']]);
 
             // Get the payment URL
             $paymentUrl = $responseData['configuration']['available_products']['installments'][0]['web_url'] ?? null;

@@ -490,7 +490,7 @@ class TamaraPaymentPlugin extends PaymentPluginInterface
         if (isset($responseData['checkout_url'])) {
             // Store the remote transaction ID
             if (isset($responseData['order_id'])) {
-                $paymentOrder->update(['remote_transaction_id' => $responseData['order_id']]);
+                $paymentOrder->update(['external_transaction_id' => $responseData['order_id']]);
             }
 
             return $responseData['checkout_url'];

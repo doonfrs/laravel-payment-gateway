@@ -152,7 +152,7 @@ class PayTabsPaymentPlugin extends PaymentPluginInterface
             }
 
             $paymentOrder->update([
-                'remote_transaction_id' => $paymentRequest['tran_ref'] ?? null,
+                'external_transaction_id' => $paymentRequest['tran_ref'] ?? null,
             ]);
 
             Log::info('PayTabs Payment Redirect URL Generated', [
