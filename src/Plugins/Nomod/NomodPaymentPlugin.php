@@ -265,10 +265,14 @@ class NomodPaymentPlugin extends PaymentPluginInterface
                 );
             }
 
-            if ($status === 'created') {
+            // Nomod's live API returns "enabled" for an active, not-yet-paid
+            // checkout (the public docs call this state "created"). Treat both
+            // as pending so the customer can still complete the same checkout.
+            if ($status === 'created' || $status === 'enabled') {
                 Log::info('Nomod Payment Pending', [
                     'order_code' => $resolvedOrderCode,
                     'checkout_id' => $checkoutId,
+                    'nomod_status' => $status,
                 ]);
 
                 return CallbackResponse::pending(
