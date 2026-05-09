@@ -138,7 +138,7 @@ class NomodPaymentPlugin extends PaymentPluginInterface
                 throw new \Exception('Nomod did not return a valid checkout session.');
             }
 
-            $paymentOrder->update(['remote_transaction_id' => $checkout['id']]);
+            $paymentOrder->update(['external_transaction_id' => $checkout['id']]);
 
             Log::info('Nomod Checkout Created', [
                 'order_code' => $paymentOrder->order_code,
@@ -175,7 +175,7 @@ class NomodPaymentPlugin extends PaymentPluginInterface
 
         if (! $checkoutId && $orderCode) {
             $paymentOrder = PaymentOrder::where('order_code', $orderCode)->first();
-            $checkoutId = $paymentOrder?->remote_transaction_id;
+            $checkoutId = $paymentOrder?->external_transaction_id;
         }
 
         if (! $checkoutId) {
@@ -328,7 +328,7 @@ class NomodPaymentPlugin extends PaymentPluginInterface
                 throw new \Exception('Nomod API key is not configured.');
             }
 
-            $checkoutId = $paymentOrder->remote_transaction_id;
+            $checkoutId = $paymentOrder->external_transaction_id;
             if (empty($checkoutId)) {
                 Log::warning('Nomod refund aborted: missing checkout id', [
                     'order_code' => $paymentOrder->order_code,
@@ -457,7 +457,9 @@ class NomodPaymentPlugin extends PaymentPluginInterface
     private function buildCheckoutPayload(PaymentOrder $paymentOrder): array
     {
         $callbackUrl = $this->getCallbackUrl();
-        $cancelUrl = $callbackUrl.(Str::contains($callbackUrl, '?') ? '&' : '?').'cancelled=1';
+        $separator = Str::contains($callbackUrl, '?') ? '&' : '?';
+        $callbackUrlWithRef = $callbackUrl.$separator.'reference_id='.urlencode($paymentOrder->order_code);
+        $cancelUrl = $callbackUrlWithRef.'&cancelled=1';
         $amount = number_format((float) $paymentOrder->amount, 2, '.', '');
         $currency = strtoupper((string) ($paymentOrder->currency ?? 'AED'));
         $description = $paymentOrder->description ?: ('Order '.$paymentOrder->order_code);
@@ -466,8 +468,8 @@ class NomodPaymentPlugin extends PaymentPluginInterface
             'reference_id' => $paymentOrder->order_code,
             'amount' => $amount,
             'currency' => $currency,
-            'success_url' => $callbackUrl,
-            'failure_url' => $callbackUrl,
+            'success_url' => $callbackUrlWithRef,
+            'failure_url' => $callbackUrlWithRef,
             'cancelled_url' => $cancelUrl,
             'items' => [
                 [
