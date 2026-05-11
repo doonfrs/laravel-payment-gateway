@@ -121,8 +121,18 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
 
     public function processPayment(PaymentOrder $paymentOrder)
     {
+        $service = $this->getMadfoatService();
         $orderId = $paymentOrder->customer_data['order_id'] ?? null;
-        $billingNumber = $orderId ? $this->getMadfoatService()->generateBillingNumber((int) $orderId) : $paymentOrder->order_code;
+        $billingNumber = $orderId ? $service->generateBillingNumber((int) $orderId) : $paymentOrder->order_code;
+
+        $service->log('Bill displayed to customer', [
+            'payment_order_id' => $paymentOrder->id,
+            'order_code' => $paymentOrder->order_code,
+            'order_id' => $orderId,
+            'billing_number' => $billingNumber,
+            'amount' => $paymentOrder->amount,
+            'currency' => $paymentOrder->currency,
+        ]);
 
         $instructions = $this->paymentMethod->getSetting(
             'instructions',
