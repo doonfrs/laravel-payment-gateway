@@ -240,10 +240,18 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         $orderId = $service->parseBillingNumber($billingNo);
         $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
 
-        if (! $paymentOrder) {
+        // A CANCELLED PaymentOrder means the customer abandoned this draft and
+        // started a new checkout for the same cart (CartService::abandonExistingDraftsForCart
+        // flips the status). The bill is stale — reject it so the bank refuses
+        // payment and the customer is steered to the current bill.
+        if (! $paymentOrder || $paymentOrder->isCancelled()) {
             $billNo = $data['MFEP']['MsgBody']['AcctInfo']['BillNo'] ?? '';
             $response = $service->buildBillPullInvalidBillResponse($guid, $billingNo, $billNo);
-            $service->log('Bill pull: invalid billing number', ['billing_no' => $billingNo, 'order_id' => $orderId]);
+            $service->log('Bill pull: invalid billing number', [
+                'billing_no' => $billingNo,
+                'order_id' => $orderId,
+                'payment_order_status' => $paymentOrder?->status,
+            ]);
 
             return response()->json($response);
         }
