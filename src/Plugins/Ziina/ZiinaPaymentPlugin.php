@@ -173,21 +173,42 @@ class ZiinaPaymentPlugin extends PaymentPluginInterface
 
         try {
             $apiKey = $this->getApiKey();
+            $testMode = $this->paymentMethod->getSetting('test_mode', true);
             $currency = strtoupper($paymentOrder->currency ?? 'AED');
             $amountInSmallestUnit = $this->convertToSmallestUnit($paymentOrder->amount, $currency);
+
+            $payload = [
+                'payment_intent_id' => $paymentIntentId,
+                'amount' => $amountInSmallestUnit,
+            ];
+
+            $endpoint = self::API_BASE_URL.'/refund';
+            $requestContext = [
+                'order_code' => $paymentOrder->order_code,
+                'amount_original' => $paymentOrder->amount,
+                'amount_smallest_unit' => $amountInSmallestUnit,
+                'currency' => $currency,
+                'request_url' => $endpoint,
+                'request_method' => 'POST',
+                'api_key_hint' => $this->maskApiKey($apiKey),
+                'api_key_mode' => $testMode ? 'test' : 'live',
+                'request_payload' => $payload,
+            ];
+
+            Log::info('Ziina Refund Request', $requestContext);
 
             $response = Http::timeout(30)->withHeaders([
                 'Authorization' => 'Bearer '.$apiKey,
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
-            ])->post(self::API_BASE_URL.'/refund', [
-                'payment_intent_id' => $paymentIntentId,
-                'amount' => $amountInSmallestUnit,
-            ]);
+            ])->post($endpoint, $payload);
+
+            $responseHeaders = $this->extractResponseHeaders($response);
 
             Log::info('Ziina Refund Response', [
                 'order_code' => $paymentOrder->order_code,
                 'status_code' => $response->status(),
+                'response_headers' => $responseHeaders,
                 'response_body' => $response->body(),
             ]);
 
@@ -209,11 +230,12 @@ class ZiinaPaymentPlugin extends PaymentPluginInterface
             $errorBody = $response->json();
             $errorMessage = $errorBody['message'] ?? $response->body();
 
-            Log::error('Ziina Refund Failed', [
-                'order_code' => $paymentOrder->order_code,
+            Log::error('Ziina Refund Failed', array_merge($requestContext, [
                 'status_code' => $response->status(),
+                'response_headers' => $responseHeaders,
+                'response_body' => $response->body(),
                 'error' => $errorMessage,
-            ]);
+            ]));
 
             return RefundResponse::failure(
                 orderCode: $paymentOrder->order_code,
@@ -414,31 +436,43 @@ class ZiinaPaymentPlugin extends PaymentPluginInterface
             'test' => (bool) $testMode,
         ];
 
-        Log::info('Ziina Create Payment Intent Request', [
+        $endpoint = self::API_BASE_URL.'/payment_intent';
+        $requestContext = [
             'order_code' => $paymentOrder->order_code,
             'amount_original' => $paymentOrder->amount,
             'amount_smallest_unit' => $amountInSmallestUnit,
             'currency' => $currency,
             'test_mode' => $testMode,
-        ]);
+            'request_url' => $endpoint,
+            'request_method' => 'POST',
+            'api_key_hint' => $this->maskApiKey($apiKey),
+            'api_key_mode' => $testMode ? 'test' : 'live',
+            'request_payload' => $data,
+        ];
+
+        Log::info('Ziina Create Payment Intent Request', $requestContext);
 
         $response = Http::timeout(30)->withHeaders([
             'Authorization' => 'Bearer '.$apiKey,
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-        ])->post(self::API_BASE_URL.'/payment_intent', $data);
+        ])->post($endpoint, $data);
+
+        $responseHeaders = $this->extractResponseHeaders($response);
 
         Log::info('Ziina Create Payment Intent Response', [
+            'order_code' => $paymentOrder->order_code,
             'status_code' => $response->status(),
+            'response_headers' => $responseHeaders,
             'response_body' => $response->body(),
         ]);
 
         if (! $response->successful()) {
-            Log::error('Ziina create payment intent failed', [
-                'order_code' => $paymentOrder->order_code,
+            Log::error('Ziina create payment intent failed', array_merge($requestContext, [
                 'status_code' => $response->status(),
+                'response_headers' => $responseHeaders,
                 'response_body' => $response->body(),
-            ]);
+            ]));
             throw new \Exception(__('payment_gateway_error'));
         }
 
@@ -481,16 +515,23 @@ class ZiinaPaymentPlugin extends PaymentPluginInterface
     {
         try {
             $apiKey = $this->getApiKey();
+            $testMode = $this->paymentMethod->getSetting('test_mode', true);
+            $endpoint = self::API_BASE_URL.'/payment_intent/'.$paymentIntentId;
 
             $response = Http::timeout(30)->withHeaders([
                 'Authorization' => 'Bearer '.$apiKey,
                 'Accept' => 'application/json',
-            ])->get(self::API_BASE_URL.'/payment_intent/'.$paymentIntentId);
+            ])->get($endpoint);
 
             if (! $response->successful()) {
                 Log::warning('Ziina payment intent verification failed', [
                     'payment_intent_id' => $paymentIntentId,
+                    'request_url' => $endpoint,
+                    'request_method' => 'GET',
+                    'api_key_hint' => $this->maskApiKey($apiKey),
+                    'api_key_mode' => $testMode ? 'test' : 'live',
                     'status_code' => $response->status(),
+                    'response_headers' => $this->extractResponseHeaders($response),
                     'response_body' => $response->body(),
                 ]);
 
@@ -507,6 +548,52 @@ class ZiinaPaymentPlugin extends PaymentPluginInterface
 
             return null;
         }
+    }
+
+    /**
+     * Mask the API key, keeping only the first 4 and last 4 characters.
+     * Lets Ziina identify the account/key without exposing the secret in logs.
+     */
+    private function maskApiKey(?string $apiKey): string
+    {
+        if (empty($apiKey)) {
+            return '';
+        }
+
+        $length = strlen($apiKey);
+
+        if ($length <= 8) {
+            return str_repeat('*', $length).' (len='.$length.')';
+        }
+
+        return substr($apiKey, 0, 4).str_repeat('*', $length - 8).substr($apiKey, -4).' (len='.$length.')';
+    }
+
+    /**
+     * Extract a subset of response headers useful for Ziina to trace the request on their side
+     * (e.g. x-request-id). Falls back to all headers if none of the known tracing headers exist.
+     */
+    private function extractResponseHeaders(\Illuminate\Http\Client\Response $response): array
+    {
+        $headers = $response->headers();
+        $interesting = [
+            'x-request-id',
+            'x-correlation-id',
+            'x-trace-id',
+            'cf-ray',
+            'date',
+            'content-type',
+            'server',
+        ];
+
+        $result = [];
+        foreach ($headers as $name => $values) {
+            if (in_array(strtolower($name), $interesting, true)) {
+                $result[$name] = is_array($values) && count($values) === 1 ? $values[0] : $values;
+            }
+        }
+
+        return $result ?: $headers;
     }
 
     private function verifyWebhookHmac(?string $rawBody, ?string $receivedSignature): bool
