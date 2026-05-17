@@ -152,7 +152,8 @@ class PaymentOrder extends Model
 
     public function getFormattedAmountAttribute(): string
     {
-        return number_format($this->amount, 2).' '.$this->currency;
+        return app(\Trinavo\PaymentGateway\Contracts\AmountFormatter::class)
+            ->format($this->amount, $this->currency);
     }
 
     /**

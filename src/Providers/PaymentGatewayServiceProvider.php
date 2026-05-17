@@ -18,6 +18,15 @@ class PaymentGatewayServiceProvider extends ServiceProvider
             'payment-gateway'
         );
 
+        // Bind the amount formatter contract — hosts can override by setting
+        // `payment-gateway.amount_formatter` in their published config.
+        $this->app->bind(
+            \Trinavo\PaymentGateway\Contracts\AmountFormatter::class,
+            fn ($app) => $app->make(
+                config('payment-gateway.amount_formatter', \Trinavo\PaymentGateway\Support\DefaultAmountFormatter::class)
+            )
+        );
+
         // Register the main service
         $this->app->singleton(PaymentGatewayService::class, function ($app) {
             return new PaymentGatewayService;

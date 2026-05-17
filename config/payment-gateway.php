@@ -116,4 +116,17 @@ return [
     |
     */
     'success_redirect' => env('PAYMENT_SUCCESS_REDIRECT', 'home'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Amount Formatter
+    |--------------------------------------------------------------------------
+    |
+    | FQCN of a class implementing Trinavo\PaymentGateway\Contracts\AmountFormatter.
+    | Used to format the order amount + currency for display (PaymentOrder::formatted_amount).
+    | Override this in your host app's config/payment-gateway.php to apply your own
+    | rounding rules (e.g. read from an AppSetting model).
+    |
+    */
+    'amount_formatter' => \Trinavo\PaymentGateway\Support\DefaultAmountFormatter::class,
 ];
