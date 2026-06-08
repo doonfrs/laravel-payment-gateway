@@ -11,9 +11,12 @@ use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\CallbackResponse;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 use Trinavo\PaymentGateway\Models\RefundResponse;
+use Trinavo\PaymentGateway\Plugins\Madfoat\Concerns\MadfoatTransportTrait;
 
 class MadfoatPaymentPlugin extends PaymentPluginInterface
 {
+    use MadfoatTransportTrait;
+
     public static function getLogoUrl(): string
     {
         return asset('vendor/payment-gateway/imgs/madfoat.png');
@@ -445,42 +448,6 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
     }
 
     /**
-     * Check if the given IP is allowed to make inbound requests.
-     */
-    protected function isIpAllowed(string $ip): bool
-    {
-        $allowedIps = $this->paymentMethod->getSetting('allowed_ips', '');
-
-        if (empty($allowedIps)) {
-            return true; // No restriction — allow all (for testing)
-        }
-
-        $allowed = array_map('trim', explode(',', $allowedIps));
-
-        return in_array($ip, $allowed);
-    }
-
-    /**
-     * Validate HTTP Basic Authentication credentials against plugin settings.
-     */
-    protected function isBasicAuthValid(): bool
-    {
-        $expectedUsername = $this->paymentMethod->getSetting('auth_username', '');
-        $expectedPassword = $this->paymentMethod->getSetting('auth_password', '');
-
-        // If no credentials configured, skip Basic Auth check (backward compatible)
-        if (empty($expectedUsername) && empty($expectedPassword)) {
-            return true;
-        }
-
-        $providedUsername = request()->getUser();
-        $providedPassword = request()->getPassword();
-
-        return $providedUsername === $expectedUsername
-            && $providedPassword === $expectedPassword;
-    }
-
-    /**
      * Resolve the PaymentOrder linked to the app-level order id (matched via customer_data->order_id).
      */
     protected function findPaymentOrderByAppOrderId(int $orderId): ?PaymentOrder
@@ -488,21 +455,5 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         return PaymentOrder::whereJsonContains('customer_data->order_id', $orderId)
             ->orWhereJsonContains('customer_data->order_id', (string) $orderId)
             ->first();
-    }
-
-    /**
-     * Attach the resolved PaymentOrder id to the current inbound request audit row, if any.
-     */
-    protected function attachInboundRequestToPaymentOrder(?int $paymentOrderId): void
-    {
-        if (! $paymentOrderId) {
-            return;
-        }
-
-        $record = request()->attributes->get('inbound_request_record');
-
-        if ($record instanceof \Trinavo\PaymentGateway\Models\PaymentGatewayInboundRequest) {
-            $record->update(['payment_order_id' => $paymentOrderId]);
-        }
     }
 }
