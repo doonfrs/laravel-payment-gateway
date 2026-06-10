@@ -44,7 +44,8 @@ class PaymentGatewayService
         ?string $description = null, ?string $successCallback = null,
         ?string $failureCallback = null, ?string $successUrl = null,
         ?string $failureUrl = null, ?array $ignoredPlugins = null,
-        ?string $validationCallback = null): PaymentOrder
+        ?string $validationCallback = null,
+        ?array $allowedPaymentMethodIds = null): PaymentOrder
     {
         $paymentOrder = PaymentOrder::create([
             'amount' => $amount,
@@ -61,6 +62,7 @@ class PaymentGatewayService
             'success_url' => $successUrl,
             'failure_url' => $failureUrl,
             'ignored_plugins' => $ignoredPlugins,
+            'allowed_payment_method_ids' => $allowedPaymentMethodIds,
         ]);
 
         return $paymentOrder;
@@ -102,6 +104,7 @@ class PaymentGatewayService
     /**
      * Get available payment methods for a specific payment order
      * This will filter out any plugins that are ignored for this order
+     * and restrict to the order's allowed payment method ids when set
      */
     public function getAvailablePaymentMethodsForOrder(PaymentOrder $paymentOrder): \Illuminate\Database\Eloquent\Collection
     {
@@ -110,12 +113,15 @@ class PaymentGatewayService
         // Filter out ignored plugins
         $ignoredPlugins = $paymentOrder->getIgnoredPlugins();
 
-        if (empty($ignoredPlugins)) {
-            return $paymentMethods;
+        if (! empty($ignoredPlugins)) {
+            $paymentMethods = $paymentMethods->filter(function (PaymentMethod $paymentMethod) use ($ignoredPlugins) {
+                return ! in_array($paymentMethod->plugin_class, $ignoredPlugins);
+            });
         }
 
-        return $paymentMethods->filter(function (PaymentMethod $paymentMethod) use ($ignoredPlugins) {
-            return ! in_array($paymentMethod->plugin_class, $ignoredPlugins);
+        // Restrict to the methods snapshotted on the order (e.g. per user level)
+        return $paymentMethods->filter(function (PaymentMethod $paymentMethod) use ($paymentOrder) {
+            return $paymentOrder->isPaymentMethodAllowed($paymentMethod->id);
         });
     }
 

@@ -111,6 +111,11 @@ class PaymentController extends Controller
             return back()->withErrors(['payment_method_id' => 'Selected payment method is not available for this order']);
         }
 
+        // Check the method against the order's allowed payment methods (e.g. per user level)
+        if (! $paymentOrder->isPaymentMethodAllowed($paymentMethod->id)) {
+            return back()->withErrors(['payment_method_id' => 'Selected payment method is not available for this order']);
+        }
+
         // Validation callback fires before locking in the method.
         if ($redirect = $this->blockOnValidation($paymentOrder, 'method_selected')) {
             return $redirect;

@@ -57,6 +57,7 @@ class PaymentOrder extends Model
         'external_transaction_id',
         'payment_data',
         'ignored_plugins',
+        'allowed_payment_method_ids',
         'paid_at',
         'refunded',
         'refund_data',
@@ -67,6 +68,7 @@ class PaymentOrder extends Model
         'customer_data' => 'array',
         'payment_data' => 'array',
         'ignored_plugins' => 'array',
+        'allowed_payment_method_ids' => 'array',
         'paid_at' => 'datetime',
         'refunded' => 'boolean',
         'refund_data' => 'array',
@@ -178,6 +180,29 @@ class PaymentOrder extends Model
     public function setIgnoredPlugins(array $plugins): void
     {
         $this->update(['ignored_plugins' => $plugins]);
+    }
+
+    /**
+     * Get the payment method ids this order is restricted to.
+     * Null means no restriction (all enabled methods are available).
+     */
+    public function getAllowedPaymentMethodIds(): ?array
+    {
+        return $this->allowed_payment_method_ids;
+    }
+
+    /**
+     * Check if a payment method is allowed for this payment order
+     */
+    public function isPaymentMethodAllowed(int $paymentMethodId): bool
+    {
+        $allowedIds = $this->getAllowedPaymentMethodIds();
+
+        if (empty($allowedIds)) {
+            return true;
+        }
+
+        return in_array($paymentMethodId, $allowedIds);
     }
 
     /**
