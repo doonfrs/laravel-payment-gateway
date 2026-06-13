@@ -98,7 +98,25 @@ class PaymentGatewayService
      */
     public function getAvailablePaymentMethods(): \Illuminate\Database\Eloquent\Collection
     {
-        return PaymentMethod::enabled()->ordered()->get();
+        return $this->applyAvailabilityGuard(PaymentMethod::enabled()->ordered()->get());
+    }
+
+    /**
+     * Apply the optional host-app availability guard
+     * (config payment-gateway.method_availability_guard) so the host can hide
+     * payment methods at runtime - e.g. by tenant subscription - independently
+     * of the per-order allow-list snapshot. Keeps every method when no guard is
+     * configured. The guard receives a PaymentMethod and returns true to allow.
+     */
+    protected function applyAvailabilityGuard(\Illuminate\Database\Eloquent\Collection $paymentMethods): \Illuminate\Database\Eloquent\Collection
+    {
+        $guard = config('payment-gateway.method_availability_guard');
+
+        if (! is_callable($guard)) {
+            return $paymentMethods->values();
+        }
+
+        return $paymentMethods->filter(fn (PaymentMethod $method) => $guard($method) === true)->values();
     }
 
     /**
@@ -120,9 +138,14 @@ class PaymentGatewayService
         }
 
         // Restrict to the methods snapshotted on the order (e.g. per user level)
-        return $paymentMethods->filter(function (PaymentMethod $paymentMethod) use ($paymentOrder) {
+        $paymentMethods = $paymentMethods->filter(function (PaymentMethod $paymentMethod) use ($paymentOrder) {
             return $paymentOrder->isPaymentMethodAllowed($paymentMethod->id);
         });
+
+        // Apply the runtime availability guard (e.g. tenant subscription) so a
+        // method that was allowed when the order was created is hidden now if
+        // the current plan no longer permits it.
+        return $this->applyAvailabilityGuard($paymentMethods->values());
     }
 
     /**

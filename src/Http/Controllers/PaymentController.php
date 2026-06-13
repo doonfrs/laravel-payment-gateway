@@ -116,6 +116,21 @@ class PaymentController extends Controller
             return back()->withErrors(['payment_method_id' => 'Selected payment method is not available for this order']);
         }
 
+        // Runtime availability guard (e.g. tenant subscription). Rejects a
+        // paid-only method the current plan no longer permits, even if it was
+        // allowed when the order was created (tamper / pre-existing order).
+        $availabilityGuard = config('payment-gateway.method_availability_guard');
+        if (is_callable($availabilityGuard)) {
+            $availability = $availabilityGuard($paymentMethod);
+            if ($availability !== true) {
+                $message = is_string($availability) && $availability !== ''
+                    ? $availability
+                    : 'Selected payment method is not available';
+
+                return back()->withErrors(['payment_method_id' => $message]);
+            }
+        }
+
         // Validation callback fires before locking in the method.
         if ($redirect = $this->blockOnValidation($paymentOrder, 'method_selected')) {
             return $redirect;
