@@ -218,6 +218,45 @@ class PaymentController extends Controller
     }
 
     /**
+     * Handle an interactive on-site step for a multi-step plugin flow.
+     *
+     * Resolves the order + plugin and hands the posted data to the plugin's
+     * handleWebAction(), returning its response (a view or redirect) verbatim.
+     * Used by flows that need on-site round-trips (e.g. OTP entry) which the
+     * terminal callback() route cannot render.
+     */
+    public function interact(Request $request)
+    {
+        // Read by route-parameter name (not positional args) so the localized
+        // {locale} prefix can't shift these when it isn't stripped.
+        $orderCode = (string) $request->route('order');
+        $plugin = (string) $request->route('plugin');
+
+        $paymentOrder = $this->paymentGateway->getPaymentOrderByCode($orderCode);
+
+        if (! $paymentOrder) {
+            abort(404, 'Payment order not found');
+        }
+
+        if ($paymentOrder->isCompleted()) {
+            return redirect()->route('payment-gateway.success', ['order' => $orderCode])
+                ->with('message', __('This order has already been paid.'));
+        }
+
+        $pluginClass = $this->getPluginClass($plugin);
+
+        $paymentMethod = PaymentMethod::where('plugin_class', $pluginClass)
+            ->where('enabled', true)
+            ->first();
+
+        if (! $paymentMethod) {
+            abort(404, 'Payment method not available');
+        }
+
+        return $paymentMethod->getPluginInstance()->handleWebAction($paymentOrder, $request->all());
+    }
+
+    /**
      * Show payment success page
      */
     public function success(Request $request, string $orderCode)

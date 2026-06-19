@@ -21,6 +21,10 @@ Route::group([
     Route::any('callback/{plugin}', [PaymentController::class, 'callback'])
         ->name('callback');
 
+    // Interactive on-site step for multi-step plugin flows (e.g. OTP entry)
+    Route::any('interact/{order}/{plugin}', [PaymentController::class, 'interact'])
+        ->name('interact');
+
     // Payment result pages
     Route::get('success/{order}', [PaymentController::class, 'success'])
         ->name('success');
@@ -66,6 +70,10 @@ Route::prefix('{locale}')->where(['locale' => '[a-z]{2}'])->group(function () {
         // Payment callback from external gateways
         Route::any('callback/{plugin}', [PaymentController::class, 'callback'])
             ->name('callback');
+
+        // Interactive on-site step for multi-step plugin flows (e.g. OTP entry)
+        Route::any('interact/{order}/{plugin}', [PaymentController::class, 'interact'])
+            ->name('interact');
 
         // Payment result pages
         Route::get('success/{order}', [PaymentController::class, 'success'])

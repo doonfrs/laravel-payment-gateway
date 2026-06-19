@@ -37,6 +37,16 @@ class PaymentGatewayServiceProvider extends ServiceProvider
             )
         );
 
+        // Bind the currency converter contract — hosts can convert order
+        // amounts to a plugin's required currency by setting
+        // `payment-gateway.currency_converter` in their published config.
+        $this->app->bind(
+            \Trinavo\PaymentGateway\Contracts\CurrencyConverter::class,
+            fn ($app) => $app->make(
+                config('payment-gateway.currency_converter', \Trinavo\PaymentGateway\Support\NullCurrencyConverter::class)
+            )
+        );
+
         // Register the main service
         $this->app->singleton(PaymentGatewayService::class, function ($app) {
             return new PaymentGatewayService;

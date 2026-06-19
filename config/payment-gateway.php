@@ -35,6 +35,7 @@ return [
         \Trinavo\PaymentGateway\Plugins\Stripe\StripePaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Mamopay\MamopayPaymentPlugin::class,
         \Trinavo\PaymentGateway\Plugins\Nomod\NomodPaymentPlugin::class,
+        \Trinavo\PaymentGateway\Plugins\BankOfKhartoum\BokPaymentPlugin::class,
 
         // Add your custom payment plugins here
         // \App\PaymentPlugins\StripePaymentPlugin::class,
@@ -50,6 +51,19 @@ return [
     |
     */
     'default_currency' => 'USD',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Currency Converter
+    |--------------------------------------------------------------------------
+    |
+    | FQCN of a class implementing Trinavo\PaymentGateway\Contracts\CurrencyConverter.
+    | Used by plugins that must charge in a currency different from the order
+    | currency. The default NullCurrencyConverter returns the amount unchanged;
+    | hosts bind their own (same convention as inbound_billing_handler).
+    |
+    */
+    'currency_converter' => \Trinavo\PaymentGateway\Support\NullCurrencyConverter::class,
 
     /*
     |--------------------------------------------------------------------------

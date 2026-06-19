@@ -152,6 +152,35 @@ abstract class PaymentPluginInterface
     }
 
     /**
+     * Handle an on-site interactive step for a multi-step payment flow.
+     *
+     * Unlike handleCallback() (whose result the controller treats as a terminal
+     * success/failure), the response returned here is sent to the browser
+     * verbatim - so a plugin can render the next step of an interactive flow
+     * (e.g. an OTP entry form) or redirect on completion. Posted to via the
+     * `payment-gateway.interact` route. Plugins that need multi-step on-site
+     * flows override this; the default declines.
+     *
+     * @param  array  $data  The posted request payload
+     * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
+     */
+    public function handleWebAction(PaymentOrder $paymentOrder, array $data)
+    {
+        abort(404);
+    }
+
+    /**
+     * Get the interactive web-action URL for this plugin and order.
+     */
+    public function getInteractUrl(PaymentOrder $paymentOrder): string
+    {
+        $pluginKey = app(\Trinavo\PaymentGateway\Services\PluginRegistryService::class)
+            ->getPluginKey(static::class);
+
+        return route('payment-gateway.interact', ['order' => $paymentOrder->order_code, 'plugin' => $pluginKey]);
+    }
+
+    /**
      * Convert configuration fields to array format
      * Supports both ConfigurationField objects and legacy arrays
      */
