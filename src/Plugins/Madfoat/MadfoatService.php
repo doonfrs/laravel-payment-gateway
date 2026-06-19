@@ -5,6 +5,7 @@ namespace Trinavo\PaymentGateway\Plugins\Madfoat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Trinavo\PaymentGateway\Support\Inbound\BillDescriptor;
 
 class MadfoatService
 {
@@ -173,6 +174,68 @@ class MadfoatService
                                 'Upper' => $pmtLowerUpper,
                             ],
                             'AdditionalInfo' => $additionalInfo,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Build a bill-pull response from a host-supplied BillDescriptor, for a
+     * BillingNo the gateway does not own (resolved via InboundBillingHandler).
+     *
+     * Differs from buildBillPullResponse: the bill is never "previously paid",
+     * and when the descriptor allows overpayment the PmtConst is an open range
+     * so the payer may submit any amount.
+     */
+    public function buildExternalBillPullResponse(string $guid, string $billingNo, string $billNo, BillDescriptor $descriptor): array
+    {
+        $now = now()->format('Y-m-d\TH:i:s');
+
+        $pmtConst = $descriptor->allowOverpayment
+            ? ['AllowPart' => true, 'Lower' => '0.001', 'Upper' => '100000.000']
+            : ['AllowPart' => false, 'Lower' => $descriptor->amount, 'Upper' => $descriptor->amount];
+
+        return [
+            'MFEP' => [
+                'MsgHeader' => [
+                    'TmStp' => $now,
+                    'GUID' => $guid,
+                    'TrsInf' => [
+                        'SdrCode' => (int) $this->sdrCode,
+                        'ResTyp' => 'BILPULRS',
+                    ],
+                    'Result' => [
+                        'ErrorCode' => 0,
+                        'ErrorDesc' => 'Success',
+                        'Severity' => 'Info',
+                    ],
+                ],
+                'MsgBody' => [
+                    'RecCount' => 1,
+                    'BillRec' => [
+                        [
+                            'Result' => [
+                                'ErrorCode' => 0,
+                                'ErrorDesc' => 'Success',
+                                'Severity' => 'Info',
+                            ],
+                            'AcctInfo' => [
+                                'BillingNo' => $billingNo,
+                                'BillNo' => $billNo ?: $billingNo,
+                            ],
+                            'BillStatus' => 'BillNew',
+                            'DueAmount' => $descriptor->amount,
+                            'IssueDate' => $now,
+                            'DueDate' => $now,
+                            'ServiceType' => $this->serviceType,
+                            'BillType' => 'OneOff',
+                            'PmtConst' => $pmtConst,
+                            'AdditionalInfo' => [
+                                'CustName' => Str::limit($descriptor->customerName, 150, ''),
+                                'FreeText' => $descriptor->note ?? 'Payment',
+                            ],
                         ],
                     ],
                 ],

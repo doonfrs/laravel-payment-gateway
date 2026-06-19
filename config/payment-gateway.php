@@ -129,4 +129,18 @@ return [
     |
     */
     'amount_formatter' => \Trinavo\PaymentGateway\Support\DefaultAmountFormatter::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Inbound Billing Handler
+    |--------------------------------------------------------------------------
+    |
+    | FQCN of a class implementing Trinavo\PaymentGateway\Contracts\InboundBillingHandler.
+    | Called when a provider-initiated bill inquiry or payment (e.g. an
+    | eFAWATEERcom bill-pull / payment-notification) carries a reference that is
+    | not one of the gateway's own PaymentOrders. The default declines everything;
+    | override it in your host app to claim such references (e.g. wallet top-ups).
+    |
+    */
+    'inbound_billing_handler' => \Trinavo\PaymentGateway\Support\NullInboundBillingHandler::class,
 ];

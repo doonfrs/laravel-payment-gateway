@@ -7,13 +7,14 @@ use Illuminate\Support\Facades\Log;
 use Trinavo\PaymentGateway\Configuration\CheckboxField;
 use Trinavo\PaymentGateway\Configuration\PasswordField;
 use Trinavo\PaymentGateway\Configuration\TextField;
+use Trinavo\PaymentGateway\Contracts\InboundBillingHandler;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
-use Trinavo\PaymentGateway\Events\PrepaidPaymentReceived;
-use Trinavo\PaymentGateway\Events\PrepaidPaymentValidationRequested;
 use Trinavo\PaymentGateway\Models\CallbackResponse;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
 use Trinavo\PaymentGateway\Models\RefundResponse;
 use Trinavo\PaymentGateway\Plugins\Madfoat\Concerns\MadfoatTransportTrait;
+use Trinavo\PaymentGateway\Support\Inbound\InboundBillContext;
+use Trinavo\PaymentGateway\Support\Inbound\InboundPaymentContext;
 
 class MadfoatPaymentPlugin extends PaymentPluginInterface
 {
@@ -67,13 +68,6 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
                 required: true,
                 description: 'Service type code registered with eFAWATEERcom',
                 placeholder: 'e.g. Sales',
-            ),
-            new TextField(
-                name: 'prepaid_service_type',
-                label: 'Prepaid Service Type',
-                required: false,
-                description: 'Optional. Inbound MFEP requests whose ServiceType equals this value are treated as PREPAID payments. The plugin fires PrepaidPaymentValidationRequested + PrepaidPaymentReceived events; host listeners resolve the customer by BillingNo and credit (e.g. wallet top-up). Leave empty to keep this method as postpaid-only.',
-                placeholder: 'e.g. Pay_Fees',
             ),
             new TextField(
                 name: 'bill_expiry_days',
@@ -252,6 +246,28 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         $orderId = $service->parseBillingNumber($billingNo);
         $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
 
+        // BillingNo did not resolve to any app order. Give the host a chance to
+        // claim it (e.g. a customer identifier for a wallet top-up) via the
+        // InboundBillingHandler. A CANCELLED order is NOT eligible — it stays
+        // on the invalid-bill path below.
+        if (! $paymentOrder) {
+            $descriptor = app(InboundBillingHandler::class)->describeBill(
+                new InboundBillContext(paymentMethod: $this->paymentMethod, reference: $billingNo)
+            );
+
+            if ($descriptor !== null) {
+                $billNo = $data['MFEP']['MsgBody']['AcctInfo']['BillNo'] ?? '';
+                $response = $service->buildExternalBillPullResponse($guid, $billingNo, $billNo, $descriptor);
+                $service->log('Bill pull (external) success', [
+                    'billing_no' => $billingNo,
+                    'amount' => $descriptor->amount,
+                    'customer_name' => $descriptor->customerName,
+                ]);
+
+                return response()->json($response);
+            }
+        }
+
         // A CANCELLED PaymentOrder means the customer abandoned this draft and
         // started a new checkout for the same cart (CartService::abandonExistingDraftsForCart
         // flips the status). The bill is stale — reject it so the bank refuses
@@ -305,9 +321,6 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         $paidAmt = $billingInfo['PaidAmt'] ?? '0.000';
         $processDate = $billingInfo['ProcessDate'] ?? now()->format('Y-m-d\TH:i:s');
         $stmtDate = $billingInfo['StmtDate'] ?? $billingInfo['STMTDate'] ?? now()->format('Y-m-d');
-        $incomingServiceType = $billingInfo['ServiceTypeDetails']['ServiceType']
-            ?? $data['MFEP']['MsgBody']['ServiceType']
-            ?? '';
 
         if (empty($billingNo)) {
             $response = $service->buildPaymentNotificationResponse($guid, $joebppsTrx, $processDate, $stmtDate, 1, 'BillingNo is required', 'Error');
@@ -316,32 +329,23 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
             return response()->json($response);
         }
 
-        $prepaidServiceType = (string) $this->paymentMethod->getSetting('prepaid_service_type', '');
-        if ($prepaidServiceType !== '' && $incomingServiceType === $prepaidServiceType) {
-            return $this->handlePaymentNotificationForPrepaid(
+        $orderId = $service->parseBillingNumber($billingNo);
+        $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
+
+        if (! $paymentOrder) {
+            // BillingNo did not resolve to an app order. Offer it to the host's
+            // InboundBillingHandler (e.g. a wallet top-up). The default handler
+            // declines, preserving the original "order not found" behaviour.
+            return $this->handleInboundPaymentForHost(
                 billingNo: $billingNo,
                 joebppsTrx: $joebppsTrx,
                 paidAmt: (string) $paidAmt,
-                incomingServiceType: $incomingServiceType,
                 processDate: $processDate,
                 stmtDate: $stmtDate,
                 guid: $guid,
                 rawData: $data,
                 service: $service,
             );
-        }
-
-        $orderId = $service->parseBillingNumber($billingNo);
-        $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
-
-        if (! $paymentOrder) {
-            $response = $service->buildPaymentNotificationResponse($guid, $joebppsTrx, $processDate, $stmtDate, 1, 'Order not found', 'Error');
-            $service->log('Payment notification: payment order not found', [
-                'billing_no' => $billingNo,
-                'order_id' => $orderId,
-            ]);
-
-            return response()->json($response);
         }
 
         if ($paymentOrder->isCompleted()) {
@@ -381,27 +385,23 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
     }
 
     /**
-     * Payment notification path for the prepaid wallet-top-up flow.
+     * Payment notification path for a BillingNo the gateway does not own.
      *
-     * Idempotent on the provider transaction id (JOEBPPSTrx): a re-delivered
-     * notification for an already-recorded transaction is acknowledged as
-     * success without re-firing PrepaidPaymentReceived. Otherwise the plugin
-     * dispatches PrepaidPaymentValidationRequested to resolve the customer,
-     * records a synthetic PaymentOrder (carrying the listener-supplied
-     * customer_data + the BillingNo), marks it completed, and dispatches
-     * PrepaidPaymentReceived. The host listener for that event does the
-     * provider-agnostic credit work (e.g. wallet top-up).
+     * Idempotent on the provider transaction id (JOEBPPSTrx) only — NOT on the
+     * BillingNo — so the same reference can be paid any number of times (each
+     * is a distinct transaction), while a re-delivered identical JOEBPPSTrx is
+     * acknowledged without re-handling. Records a pending PaymentOrder (audit +
+     * idempotency), offers it to the host's InboundBillingHandler, and
+     * completes or fails it on the handler's verdict.
      *
-     * Unknown BillingNo is logged + acknowledged as success rather than
-     * rejected, because the customer has already been debited by the bank;
-     * bouncing on the provider only causes retries. Reconciliation is via
-     * the inbound-request audit log.
+     * Unknown reference is acknowledged as success (the payer was already
+     * debited by the bank; bouncing only causes retries) and reconciled via
+     * the inbound-request + failed-PaymentOrder audit trail.
      */
-    protected function handlePaymentNotificationForPrepaid(
+    protected function handleInboundPaymentForHost(
         string $billingNo,
         string $joebppsTrx,
         string $paidAmt,
-        string $incomingServiceType,
         string $processDate,
         string $stmtDate,
         string $guid,
@@ -414,7 +414,7 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
             ->first();
 
         if ($existing) {
-            $service->log('Prepaid payment notification: duplicate JOEBPPSTrx (idempotent)', [
+            $service->log('Inbound payment notification: duplicate JOEBPPSTrx (idempotent)', [
                 'billing_no' => $billingNo,
                 'joebpps_trx' => $joebppsTrx,
                 'payment_order_id' => $existing->id,
@@ -426,69 +426,56 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
             return response()->json($response);
         }
 
-        $event = new PrepaidPaymentValidationRequested(
-            paymentMethod: $this->paymentMethod,
-            billingNo: $billingNo,
-            dueAmount: $paidAmt,
-        );
-        event($event);
-
-        if ($event->identity === null) {
-            $service->log('Prepaid payment notification: user not found (manual reconcile needed)', [
-                'billing_no' => $billingNo,
-                'joebpps_trx' => $joebppsTrx,
-                'paid_amount' => $paidAmt,
-                'service_type' => $incomingServiceType,
-            ]);
-            report(new \RuntimeException(sprintf(
-                'Prepaid payment received for unknown BillingNo "%s" (JOEBPPSTrx %s, amount %s)',
-                $billingNo,
-                $joebppsTrx,
-                $paidAmt,
-            )));
-
-            $response = $service->buildPaymentNotificationResponse($guid, $joebppsTrx, $processDate, $stmtDate);
-
-            return response()->json($response);
-        }
-
-        $identity = $event->identity;
-
+        // Pre-create the audit/idempotency record so the host can reference it.
         $paymentOrder = PaymentOrder::create([
-            'order_code' => 'PF-' . substr($joebppsTrx, 0, 14),
+            'order_code' => 'IN-' . substr($joebppsTrx, 0, 14),
             'amount' => (float) $paidAmt,
             'currency' => 'JOD',
             'status' => PaymentOrder::STATUS_PENDING,
-            'customer_name' => $identity->name,
-            'customer_data' => array_merge($identity->meta, [
-                'user_id' => $identity->userId,
-                'user_identifier' => $identity->userIdentifier,
-            ]),
+            'customer_data' => ['reference' => $billingNo],
             'payment_method_id' => $this->paymentMethod->id,
             'external_transaction_id' => $joebppsTrx,
-            'description' => 'Prepaid payment via ' . ($this->paymentMethod->getLocalizedDisplayName() ?: 'Madfoat'),
+            'description' => 'Inbound payment via ' . ($this->paymentMethod->getLocalizedDisplayName() ?: 'Madfoat'),
         ]);
+
+        $handled = app(InboundBillingHandler::class)->handlePayment(new InboundPaymentContext(
+            paymentMethod: $this->paymentMethod,
+            reference: $billingNo,
+            providerTransactionId: $joebppsTrx,
+            amount: $paidAmt,
+            paymentOrder: $paymentOrder,
+            raw: $rawData['MFEP']['MsgBody'] ?? [],
+        ));
+
+        if (! $handled) {
+            // Reference is neither an order nor claimed by the host. Drop the
+            // provisional record and fall back to the original "order not
+            // found" response — the raw request is still kept in the gateway's
+            // inbound-request audit log. With the default NullInboundBillingHandler
+            // this path is byte-identical to the pre-feature behaviour.
+            $paymentOrder->delete();
+
+            $response = $service->buildPaymentNotificationResponse($guid, $joebppsTrx, $processDate, $stmtDate, 1, 'Order not found', 'Error');
+            $service->log('Payment notification: payment order not found', [
+                'billing_no' => $billingNo,
+                'joebpps_trx' => $joebppsTrx,
+            ]);
+
+            return response()->json($response);
+        }
 
         $paymentOrder->markAsCompleted([
             'transaction_id' => $joebppsTrx,
             'madfoat_data' => $rawData['MFEP']['MsgBody'] ?? [],
         ]);
 
-        event(new PrepaidPaymentReceived(
-            paymentOrder: $paymentOrder->refresh(),
-            paymentMethod: $this->paymentMethod,
-            identity: $identity,
-            providerTransactionId: $joebppsTrx,
-        ));
-
         $this->attachInboundRequestToPaymentOrder($paymentOrder->id);
 
-        $service->log('Prepaid payment notification: credited via PrepaidPaymentReceived event', [
+        $service->log('Inbound payment notification: handled by host', [
             'billing_no' => $billingNo,
             'joebpps_trx' => $joebppsTrx,
             'paid_amount' => $paidAmt,
             'payment_order_id' => $paymentOrder->id,
-            'customer_name' => $identity->name,
         ]);
 
         $response = $service->buildPaymentNotificationResponse($guid, $joebppsTrx, $processDate, $stmtDate);
@@ -522,16 +509,10 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
     /**
      * Handle prepaid validation (BILRPREPADVALRQ → BILRPREPADVALRS).
      *
-     * Two code paths share this handler:
-     *  - Existing postpaid e-commerce flow (BillingNo = padded order id) when
-     *    the inbound ServiceType matches the method's `service_type` setting
-     *    or no `prepaid_service_type` is configured. Looks up a PaymentOrder
-     *    by app order id and echoes its fixed amount.
-     *  - New prepaid wallet-top-up flow when the inbound ServiceType matches
-     *    the method's `prepaid_service_type` setting. Dispatches
-     *    PrepaidPaymentValidationRequested so the host can resolve the
-     *    BillingNo against its own customer identifier and supply a name; we
-     *    echo the customer-entered DueAmt unchanged.
+     * Order found → echo the order's fixed amount. Otherwise offer the
+     * BillingNo to the host's InboundBillingHandler with the customer-entered
+     * amount as `proposedAmount`; if the host describes a bill, echo its name +
+     * amount. The default handler declines, preserving "Order not found".
      */
     protected function handlePrepaidValidation(array $data, MadfoatService $service): JsonResponse
     {
@@ -542,9 +523,6 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
             ?? [];
         $billingNo = $billingInfo['AcctInfo']['BillingNo'] ?? '';
         $validationCode = $billingInfo['ValidationCode'] ?? '';
-        $incomingServiceType = $billingInfo['ServiceTypeDetails']['ServiceType']
-            ?? $data['MFEP']['MsgBody']['ServiceType']
-            ?? '';
         $incomingDueAmt = (string) ($billingInfo['DueAmt'] ?? '0.000');
 
         if (empty($billingNo)) {
@@ -553,23 +531,39 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
             return response()->json($response);
         }
 
-        $prepaidServiceType = (string) $this->paymentMethod->getSetting('prepaid_service_type', '');
-        if ($prepaidServiceType !== '' && $incomingServiceType === $prepaidServiceType) {
-            return $this->handlePrepaidValidationForPrepaid(
-                billingNo: $billingNo,
-                validationCode: $validationCode,
-                dueAmt: $incomingDueAmt,
-                incomingServiceType: $incomingServiceType,
-                guid: $guid,
-                service: $service,
-            );
-        }
-
         $orderId = $service->parseBillingNumber($billingNo);
         $paymentOrder = $this->findPaymentOrderByAppOrderId($orderId);
 
         if (! $paymentOrder) {
-            $response = $service->buildErrorResponse('BILRPREPADVALRS', $guid, 1, 'Order not found');
+            $descriptor = app(InboundBillingHandler::class)->describeBill(
+                new InboundBillContext(
+                    paymentMethod: $this->paymentMethod,
+                    reference: $billingNo,
+                    proposedAmount: $incomingDueAmt,
+                )
+            );
+
+            if ($descriptor === null) {
+                $response = $service->buildErrorResponse('BILRPREPADVALRS', $guid, 1, 'Order not found');
+
+                return response()->json($response);
+            }
+
+            $response = $service->buildPrepaidValidationResponse(
+                guid: $guid,
+                billingNo: $billingNo,
+                dueAmt: $descriptor->amount,
+                validationCode: $validationCode,
+                serviceType: $this->paymentMethod->getSetting('service_type', ''),
+                customerName: $descriptor->customerName,
+                freeText: $descriptor->note ?? ('Payment for ' . $descriptor->customerName),
+            );
+
+            $service->log('Prepaid validation (external) success', [
+                'billing_no' => $billingNo,
+                'due_amt' => $descriptor->amount,
+                'customer_name' => $descriptor->customerName,
+            ]);
 
             return response()->json($response);
         }
@@ -588,61 +582,6 @@ class MadfoatPaymentPlugin extends PaymentPluginInterface
         );
 
         $service->log('Prepaid validation success', ['billing_no' => $billingNo, 'due_amt' => $dueAmt]);
-
-        return response()->json($response);
-    }
-
-    /**
-     * Prepaid validation path for the wallet-top-up flow.
-     *
-     * Dispatches PrepaidPaymentValidationRequested synchronously; a host
-     * listener populates `customerName` and `customerData`. Null
-     * `customerName` after dispatch means the BillingNo did not resolve to
-     * any known customer, which we report to the provider as "User not
-     * found" so the bank app shows an error before the customer pays. The
-     * customer-entered DueAmt is echoed unchanged.
-     */
-    protected function handlePrepaidValidationForPrepaid(
-        string $billingNo,
-        string $validationCode,
-        string $dueAmt,
-        string $incomingServiceType,
-        string $guid,
-        MadfoatService $service,
-    ): JsonResponse {
-        $event = new PrepaidPaymentValidationRequested(
-            paymentMethod: $this->paymentMethod,
-            billingNo: $billingNo,
-            dueAmount: $dueAmt,
-        );
-        event($event);
-
-        if ($event->identity === null) {
-            $service->log('Prepaid validation: user not found for billing_no', [
-                'billing_no' => $billingNo,
-                'service_type' => $incomingServiceType,
-            ]);
-            $response = $service->buildErrorResponse('BILRPREPADVALRS', $guid, 1, 'User not found');
-
-            return response()->json($response);
-        }
-
-        $response = $service->buildPrepaidValidationResponse(
-            guid: $guid,
-            billingNo: $billingNo,
-            dueAmt: $dueAmt,
-            validationCode: $validationCode,
-            serviceType: $incomingServiceType,
-            customerName: $event->identity->name,
-            freeText: 'Top-up for ' . $event->identity->name,
-        );
-
-        $service->log('Prepaid validation (prepaid mode) success', [
-            'billing_no' => $billingNo,
-            'service_type' => $incomingServiceType,
-            'due_amt' => $dueAmt,
-            'customer_name' => $event->identity->name,
-        ]);
 
         return response()->json($response);
     }

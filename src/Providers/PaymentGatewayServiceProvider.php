@@ -27,6 +27,16 @@ class PaymentGatewayServiceProvider extends ServiceProvider
             )
         );
 
+        // Bind the inbound billing handler contract — hosts can claim inbound
+        // bills/payments for references the gateway doesn't own by setting
+        // `payment-gateway.inbound_billing_handler` in their published config.
+        $this->app->bind(
+            \Trinavo\PaymentGateway\Contracts\InboundBillingHandler::class,
+            fn ($app) => $app->make(
+                config('payment-gateway.inbound_billing_handler', \Trinavo\PaymentGateway\Support\NullInboundBillingHandler::class)
+            )
+        );
+
         // Register the main service
         $this->app->singleton(PaymentGatewayService::class, function ($app) {
             return new PaymentGatewayService;
