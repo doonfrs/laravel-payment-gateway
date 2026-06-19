@@ -340,7 +340,8 @@ class AlawnehPayPaymentPlugin extends PaymentPluginInterface
         $baseUrl = $this->getApiUrl();
 
         $data = [
-            'amount' => (string) round($paymentOrder->amount, 2),
+            // Alawneh Pay (Jordan) settles in JOD; convert the base-currency order total.
+            'amount' => (string) round((float) $this->convertAmount($paymentOrder, 'JOD'), 2),
             'paymentType' => 'MONEY_TRANSFER',
             'paymentMethod' => 'MOBILE_ONLINE',
             'thirdPartyExternalId' => $paymentOrder->order_code,

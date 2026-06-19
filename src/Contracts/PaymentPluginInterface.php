@@ -152,6 +152,23 @@ abstract class PaymentPluginInterface
     }
 
     /**
+     * Convert a payment order's amount into the currency a gateway requires.
+     *
+     * Payment orders are created in the store's base currency; a gateway that
+     * only settles in a fixed currency (e.g. Paymera -> SYP, Bank of Khartoum
+     * -> SDG) calls this to get the right amount. Returns the amount unchanged
+     * when the order is already in $toCurrency (the default NullCurrencyConverter
+     * also returns it unchanged when the host has not bound a converter).
+     */
+    protected function convertAmount(PaymentOrder $paymentOrder, string $toCurrency): string
+    {
+        $from = $paymentOrder->currency ?: config('payment-gateway.default_currency', 'USD');
+
+        return app(\Trinavo\PaymentGateway\Contracts\CurrencyConverter::class)
+            ->convert((float) $paymentOrder->amount, $from, $toCurrency);
+    }
+
+    /**
      * Handle an on-site interactive step for a multi-step payment flow.
      *
      * Unlike handleCallback() (whose result the controller treats as a terminal

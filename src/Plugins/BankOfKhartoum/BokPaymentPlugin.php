@@ -6,7 +6,6 @@ use Trinavo\PaymentGateway\Configuration\CheckboxField;
 use Trinavo\PaymentGateway\Configuration\NumberField;
 use Trinavo\PaymentGateway\Configuration\PasswordField;
 use Trinavo\PaymentGateway\Configuration\TextField;
-use Trinavo\PaymentGateway\Contracts\CurrencyConverter;
 use Trinavo\PaymentGateway\Contracts\PaymentPluginInterface;
 use Trinavo\PaymentGateway\Models\CallbackResponse;
 use Trinavo\PaymentGateway\Models\PaymentOrder;
@@ -365,10 +364,8 @@ class BokPaymentPlugin extends PaymentPluginInterface
      */
     protected function sdgAmount(PaymentOrder $paymentOrder): string
     {
-        $from = $paymentOrder->currency ?: config('payment-gateway.default_currency', 'USD');
-
-        $amount = (float) app(CurrencyConverter::class)
-            ->convert((float) $paymentOrder->amount, $from, 'SDG');
+        // Bank of Khartoum settles in SDG; convert the base-currency order total.
+        $amount = (float) $this->convertAmount($paymentOrder, 'SDG');
 
         // number_format always emits 2 decimals, so trim trailing zeros/point:
         // 1200.00 -> "1200", 12.50 -> "12.5".

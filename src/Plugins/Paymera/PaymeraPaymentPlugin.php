@@ -134,7 +134,8 @@ class PaymeraPaymentPlugin extends PaymentPluginInterface
             $payload = [
                 'lang' => $this->resolveLang(),
                 'terminalId' => $terminalId,
-                'amount' => (int) round((float) $paymentOrder->amount),
+                // Paymera eGate (Syria) settles in SYP; convert the base-currency order total.
+                'amount' => (int) round((float) $this->convertAmount($paymentOrder, 'SYP')),
                 'callbackURL' => $callbackUrl,
                 'triggerURL' => $callbackUrl,
                 'notes' => 'Order ' . $paymentOrder->order_code,

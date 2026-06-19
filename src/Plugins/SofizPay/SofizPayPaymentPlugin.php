@@ -113,7 +113,8 @@ class SofizPayPaymentPlugin extends PaymentPluginInterface
 
             $query = array_filter([
                 'account' => $account,
-                'amount' => number_format((float) $paymentOrder->amount, 2, '.', ''),
+                // SofizPay (CIB/Algeria) settles in DZD; convert the base-currency order total.
+                'amount' => number_format((float) $this->convertAmount($paymentOrder, 'DZD'), 2, '.', ''),
                 'full_name' => $paymentOrder->customer_name ?: 'Customer',
                 'phone' => $paymentOrder->customer_phone ?: '',
                 'email' => $paymentOrder->customer_email ?: '',
